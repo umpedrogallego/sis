@@ -1,0 +1,59 @@
+name: Gerar Índices do Storyboard
+
+on:
+  push:
+    paths:
+      - 'img/**'
+      - 'data/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+    - name: Checkout do Repositório
+      uses: actions/checkout@v4
+
+    - name: Configurar Python
+      uses: actions/setup-python@v5
+      with:
+        python-node: '3.10'
+
+    - name: Executar Script de Varredura
+      run: |
+        python -c "
+        import os, json
+
+        # 1. Varre a pasta de imagens e gera o manifesto
+        formatos_validos = ('.png', '.jpg', '.jpeg', '.webp', '.gif')
+        if os.path.exists('img'):
+            imagens = [f for f in os.listdir('img') if f.lower().endswith(formatos_validos)]
+            imagens.sort()
+        else:
+            imagens = []
+        
+        with open('data/manifesto.json', 'w', encoding='utf-8') as f:
+            json.dump(imagens, f, indent=2, ensure_ascii=False)
+
+        # 2. Varre a pasta data por outros arquivos de versão (ignorando os índices)
+        ignorar = ['manifesto.json', 'versoes.json']
+        if os.path.exists('data'):
+            versoes = [f for f in os.listdir('data') if f.lower().endswith('.json') and f not in ignorar]
+            versoes.sort(reverse=True)
+        else:
+            versoes = []
+
+        with open('data/versoes.json', 'w', encoding='utf-8') as f:
+            json.dump(versoes, f, indent=2, ensure_ascii=False)
+        "
+
+    - name: Commitar e dar Push nos Índices Atualizados
+      run: |
+        git config --global user.name 'GitHub Actions Bot'
+        git config --global user.email 'actions@github.com'
+        git add data/manifesto.json data/versoes.json
+        # Só commita se houver alterações reais nos arquivos
+        git diff-index --quiet HEAD || git commit -m '🤖 Auto-update: Índices de mídias e versões atualizados'
+        git push
