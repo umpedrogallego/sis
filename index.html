@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Mesa de Stills & Storyboard Pro+ [GitHub Pages]</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body, html {
+            width: 100%; height: 100%; overflow: hidden;
+            background-color: #2b2424;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: #bebab0;
+        }
+
+        /* Toolbar */
+        #top-bar {
+            position: fixed; top: 0; left: 0; width: 100%; height: 50px;
+            background: #1a1616; border-bottom: 1px solid #423737;
+            display: flex; align-items: center; padding: 0 20px; gap: 10px; z-index: 10000;
+        }
+        .btn {
+            background: #3a3232; color: #bebab0; border: 1px solid #524646;
+            padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;
+            font-weight: 500; white-space: nowrap; transition: all 0.15s ease;
+        }
+        .btn:hover { background: #4a3f3f; border-color: #ff0000; color: #ffffff; }
+        .btn-primary { background: #ff0000; color: #ffffff; border-color: #ff0000; font-weight: 600; }
+        .btn-primary:hover { background: #cc0000; border-color: #cc0000; }
+        
+        .select-version {
+            background: #3a3232; color: #ffffff; border: 1px solid #524646;
+            padding: 5px; border-radius: 4px; font-size: 0.8rem; outline: none; min-width: 180px;
+        }
+        .divider { width: 1px; height: 20px; background: #423737; margin: 0 4px; }
+        .section-label { font-size: 0.7rem; color: #8c8282; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* Container Split */
+        #main-container { display: flex; width: 100vw; height: calc(100vh - 50px); margin-top: 50px; }
+
+        /* Sidebar Asset Browser */
+        #asset-sidebar { width: 280px; height: 100%; background: #1a1616; border-right: 1px solid #423737; display: flex; flex-direction: column; }
+        .sidebar-header { padding: 12px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; border-bottom: 1px solid #423737; color: #ffffff; }
+        .asset-grid { flex: 1; overflow-y: auto; padding: 10px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; align-content: start; }
+        
+        .asset-thumb { background: #231e1e; border: 1px solid #423737; padding: 4px; border-radius: 4px; cursor: grab; }
+        .asset-thumb:hover { border-color: #ff0000; }
+        .asset-thumb img { width: 100%; height: 75px; object-fit: cover; border-radius: 2px; pointer-events: none; }
+        .asset-thumb .thumb-title { font-size: 0.65rem; color: #bebab0; text-align: center; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* Canvas Workspace */
+        #viewport { flex: 1; height: 100%; overflow: auto; position: relative; }
+        #canvas {
+            width: 100%; min-height: 3000px; position: relative; transform-origin: top left; background-color: #2b2424;
+            background-image: 
+                linear-gradient(rgba(190, 186, 176, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(190, 186, 176, 0.04) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        #marquee { position: absolute; border: 1px dashed #ff0000; background: rgba(255, 0, 0, 0.08); display: none; pointer-events: none; z-index: 999; }
+        #zoom-badge { position: fixed; bottom: 20px; right: 20px; background: rgba(26, 22, 22, 0.85); border: 1px solid #423737; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; color: #ffffff; z-index: 10001; pointer-events: none; }
+
+        /* Cards Visuais */
+        .still-card { position: absolute; padding: 10px; background: #1a1616; border: 1px solid #423737; border-radius: 6px; box-shadow: 0 6px 20px rgba(0,0,0,0.4); display: flex; flex-direction: column; cursor: move; user-select: none; }
+        .still-card:hover { border-color: #5c4e4e; }
+        .still-card.selected { border-color: #ff0000; box-shadow: 0 0 0 1px #ff0000, 0 8px 25px rgba(0,0,0,0.6); }
+        .still-card.post-it-style { background: #231e1e; border: 1px dashed #bebab0; }
+        .still-card.post-it-style.selected { border: 1px solid #ff0000; }
+
+        .img-container { width: 100%; position: relative; background: #000; border-radius: 4px; margin-top: 6px; overflow: hidden; }
+        .still-card img { width: 100%; height: auto; display: block; }
+        
+        .gallery-controls { position: absolute; top: 6px; right: 6px; background: rgba(26, 22, 22, 0.9); border: 1px solid #423737; border-radius: 4px; display: none; align-items: center; gap: 5px; padding: 2px 6px; z-index: 10; }
+        .gallery-counter { font-size: 0.75rem; color: #ffffff; font-weight: 600; }
+        .gallery-btn { background: none; border: none; color: #bebab0; cursor: pointer; font-size: 0.75rem; padding: 0 2px; }
+        .gallery-btn:hover { color: #ff0000; }
+
+        .editable-text { width: 100%; text-align: left; color: #ffffff; font-size: 0.85rem; word-break: break-word; outline: none; min-height: 1.2em; padding: 4px; border: 1px solid transparent; border-radius: 4px; }
+        .editable-text[contenteditable="true"] { background: #2b2424; border-color: #524646; user-select: text; }
+        .still-label { font-weight: 600; color: #bebab0; }
+        .still-caption { margin-top: 6px; display: none; color: #8c8282; font-size: 0.8rem; }
+        .resize-handle { position: absolute; width: 12px; height: 12px; background: #423737; bottom: 3px; right: 3px; cursor: se-resize; border-radius: 2px; }
+        .still-card:hover .resize-handle { background: #ff0000; }
+
+        /* Menu de Contexto */
+        #context-menu { position: fixed; background: #1a1616; border: 1px solid #423737; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border-radius: 6px; padding: 5px 0; display: none; z-index: 20000; min-width: 160px; }
+        .menu-item { padding: 6px 14px; font-size: 0.8rem; color: #bebab0; cursor: pointer; }
+        .menu-item:hover { background: #ff0000; color: #ffffff; }
+        .menu-item.danger:hover { background: #cc0000; }
+    </style>
+</head>
+<body>
+
+    <div id="top-bar">
+        <span class="section-label">Versão:</span>
+        <select id="layout-select" class="select-version" onchange="switchLayoutVersion(this.value)">
+            <option value="">Carregando Versões...</option>
+        </select>
+        <button class="btn btn-primary" onclick="exportLayoutJson()">↓ Baixar Layout JSON</button>
+        
+        <div class="divider"></div>
+        <button class="btn" onclick="executeUndo()">⟲ Voltar</button>
+        <button class="btn" onclick="executeRedo()">⟳ Avançar</button>
+
+        <div class="divider"></div>
+        <span class="section-label">Alinhar:</span>
+        <button class="btn" onclick="alignGroup('left')">左 Esq</button>
+        <button class="btn" onclick="alignGroup('centerH')">⌗ C. Hor</button>
+        <button class="btn" onclick="alignGroup('right')">右 Dir</button>
+        <button class="btn" onclick="alignGroup('top')">↑ Topo</button>
+        <button class="btn" onclick="alignGroup('centerV')">⌗ C. Ver</button>
+        <button class="btn" onclick="alignGroup('bottom')">↓ Base</button>
+
+        <div class="divider"></div>
+        <button class="btn" onclick="distributeGroup('horizontal')">↔ Lado a Lado</button>
+        <button class="btn" onclick="distributeGroup('vertical')">↕ Empilhar</button>
+    </div>
+
+    <div id="main-container">
+        <div id="asset-sidebar">
+            <div class="sidebar-header">Galeria (/img)</div>
+            <div class="asset-grid" id="sidebar-asset-grid"></div>
+        </div>
+
+        <div id="viewport">
+            <div id="canvas">
+                <div id="marquee"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="zoom-badge">100%</div>
+
+    <div id="context-menu">
+        <div class="menu-item" onclick="alignGroup('left')">Alinhar à Esquerda</div>
+        <div class="menu-item" onclick="alignGroup('top')">Alinhar ao Topo</div>
+        <div class="menu-item" onclick="distributeGroup('horizontal')">Distribuir Lado a Lado</div>
+        <div class="menu-item" onclick="distributeGroup('vertical')">Distribuir Empilhado</div>
+        <div class="divider" style="width:100%; height:1px; margin:4px 0;"></div>
+        <div class="menu-item" onclick="breakActiveGallery()">Desfazer Galeria/Grupo</div>
+        <div class="menu-item danger" onclick="deleteActiveSelection()">Excluir Selecionados</div>
+    </div>
+
+    <script>
+        const viewport = document.getElementById('viewport');
+        const canvas = document.getElementById('canvas');
+        const assetGrid = document.getElementById('sidebar-asset-grid');
+        const layoutSelect = document.getElementById('layout-select');
+        const marquee = document.getElementById('marquee');
+        const zoomBadge = document.getElementById('zoom-badge');
+        const contextMenu = document.getElementById('context-menu');
+
+        let zoom = 1;
+        const GRID_SIZE = 30;
+        const BASE_WIDTH = 240; 
+        
+        let undoStack = []; let redoStack = [];
+
+        class SelectionManager {
+            constructor() { this.items = new Set(); }
+            select(card) { card.classList.add('selected'); this.items.add(card); }
+            unselect(card) { card.classList.remove('selected'); this.items.delete(card); }
+            clear() { this.items.forEach(c => c.classList.remove('selected')); this.items.clear(); }
+            has(card) { return this.items.has(card); }
+            get count() { return this.items.size; }
+            get list() { return Array.from(this.items); }
+        }
+        const selection = new SelectionManager();
+
+        // ---- CARREGAMENTO VIA INGESTÃO DE MANIFESTOS ESTÁTICOS ----
+        window.addEventListener('load', () => {
+            // 1. Carrega o Manifesto de Imagens gerado pela Action
+            fetch('data/manifesto.json?t=' + Date.now())
+                .then(res => res.json())
+                .then(imagens => buildAssetSidebar(imagens))
+                .catch(() => console.log("Ainda não há manifesto de imagens criado."));
+
+            // 2. Carrega a lista de layouts disponíveis
+            fetch('data/versoes.json?t=' + Date.now())
+                .then(res => res.json())
+                .then(versoes => {
+                    buildVersionDropdown(versoes);
+                    if (versoes.length > 0) {
+                        layoutSelect.value = versoes[0];
+                        switchLayoutVersion(versoes[0]);
+                    }
+                })
+                .catch(() => {
+                    layoutSelect.innerHTML = '<option value="">Nenhum layout salvo</option>';
+                });
+        });
+
+        function buildAssetSidebar(listaImagens) {
+            assetGrid.innerHTML = "";
+            listaImagens.forEach(nome => {
+                const thumb = document.createElement('div');
+                thumb.className = 'asset-thumb';
+                thumb.setAttribute('draggable', 'true');
+                thumb.innerHTML = `
+                    <img src="img/${nome}" loading="lazy">
+                    <div class="thumb-title">${nome}</div>
+                `;
+                thumb.addEventListener('dragstart', e => {
+                    e.dataTransfer.setData('text/plain', nome);
+                });
+                assetGrid.appendChild(thumb);
+            });
+        }
+
+        function buildVersionDropdown(versoes) {
+            layoutSelect.innerHTML = '<option value="">-- Escolha uma Versão --</option>';
+            versoes.forEach(v => {
+                const opt = document.createElement('option');
+                opt.value = v; opt.textContent = v.replace('.json', '');
+                layoutSelect.appendChild(opt);
+            });
+        }
+
+        function switchLayoutVersion(nomeVersao) {
+            if (!nomeVersao) {
+                document.querySelectorAll('.still-card').forEach(c => c.remove());
+                selection.clear();
+                return;
+            }
+            fetch('data/' + nomeVersao + '?t=' + Date.now())
+                .then(res => res.json())
+                .then(structuralData => {
+                    document.querySelectorAll('.still-card').forEach(c => c.remove());
+                    selection.clear();
+                    structuralData.forEach(data => {
+                        const card = createCardRaw(data.items, data.left, data.top, data.width, data.activeIndex, data.isPostIt);
+                        canvas.appendChild(card);
+                    });
+                    updateCanvasBounds();
+                });
+        }
+
+        // ---- EXPORTAÇÃO COMPACTA DO LAYOUT ----
+        function exportLayoutJson() {
+            const state = [];
+            document.querySelectorAll('.still-card').forEach(card => {
+                state.push({
+                    left: card.style.left, top: card.style.top, width: card.style.width,
+                    activeIndex: card._activeIndex || 0, isPostIt: card._isPostIt || false,
+                    items: card._itemData
+                });
+            });
+
+            const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            
+            // Sugere um nome baseado em timestamp legível
+            const dataHora = new Date().toISOString().slice(0,10) + '_' + new Date().toTimeString().slice(0,5).replace(':','h');
+            a.download = `storyboard_${dataHora}.json`;
+            a.href = url; a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // ---- GESTÃO DE ARRASTO SIDEBAR -> CANVAS ----
+        canvas.addEventListener('dragover', e => e.preventDefault());
+        canvas.addEventListener('drop', e => {
+            e.preventDefault();
+            const fileName = e.dataTransfer.getData('text/plain');
+            if (!fileName || fileName.includes('{')) return; // Filtra se não for string de nome simples
+
+            pushHistory();
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / zoom;
+            const y = (e.clientY - rect.top) / zoom;
+
+            const steppedX = Math.round(x / 30) * 30;
+            const steppedY = Math.round(y / 30) * 30;
+            const cleanName = fileName.replace(/\.[^/.]+$/, "");
+
+            const card = createCardRaw([{ fileName: fileName, labelText: cleanName, captionText: "" }], steppedX + 'px', steppedY + 'px', BASE_WIDTH + 'px', 0, false);
+            canvas.appendChild(card);
+            updateCanvasBounds();
+        });
+
+        // ---- HISTÓRICO (UNDO/REDO) ----
+        function pushHistory() {
+            const state = [];
+            document.querySelectorAll('.still-card').forEach(card => { state.push({ left: card.style.left, top: card.style.top, width: card.style.width, activeIndex: card._activeIndex || 0, isPostIt: card._isPostIt || false, items: JSON.parse(JSON.stringify(card._itemData)) }); });
+            undoStack.push(JSON.stringify(state)); redoStack = [];
+            if (undoStack.length > 40) undoStack.shift();
+        }
+
+        function executeUndo() {
+            if (undoStack.length === 0) return;
+            const current = []; document.querySelectorAll('.still-card').forEach(card => { current.push({ left: card.style.left, top: card.style.top, width: card.style.width, activeIndex: card._activeIndex || 0, isPostIt: card._isPostIt || false, items: JSON.parse(JSON.stringify(card._itemData)) }); });
+            redoStack.push(JSON.stringify(current)); restoreStateSnapshot(JSON.parse(undoStack.pop()));
+        }
+
+        function executeRedo() {
+            if (redoStack.length === 0) return;
+            const current = []; document.querySelectorAll('.still-card').forEach(card => { current.push({ left: card.style.left, top: card.style.top, width: card.style.width, activeIndex: card._activeIndex || 0, isPostIt: card._isPostIt || false, items: JSON.parse(JSON.stringify(card._itemData)) }); });
+            undoStack.push(JSON.stringify(current)); restoreStateSnapshot(JSON.parse(redoStack.pop()));
+        }
+
+        function restoreStateSnapshot(stateData) {
+            document.querySelectorAll('.still-card').forEach(c => c.remove()); selection.clear();
+            stateData.forEach(data => { const card = createCardRaw(data.items, data.left, data.top, data.width, data.activeIndex, data.isPostIt); canvas.appendChild(card); });
+            updateCanvasBounds();
+        }
+
+        function getCardAtPos(x, y) {
+            let match = null;
+            document.querySelectorAll('.still-card').forEach(card => {
+                if (selection.has(card)) return;
+                const left = parseFloat(card.style.left), top = parseFloat(card.style.top);
+                if (x >= left && x <= left + card.offsetWidth && y >= top && y <= top + card.offsetHeight) match = card;
+            });
+            return match;
+        }
+
+        // ---- DOUBLE CLICK -> POST-IT ----
+        canvas.addEventListener('dblclick', e => {
+            if (e.target === canvas) {
+                pushHistory();
+                const rect = canvas.getBoundingClientRect();
+                const x = (e.clientX - rect.left) / zoom; const y = (e.clientY - rect.top) / zoom;
+                const steppedX = Math.round(x / 30) * 30; const steppedY = Math.round(y / 30) * 30;
+
+                const card = createCardRaw([{ labelText: "Anotação...", captionText: "" }], steppedX + 'px', steppedY + 'px', '192px', 0, true);
+                canvas.appendChild(card); updateCanvasBounds();
+
+                const label = card.querySelector('.still-label');
+                label.setAttribute('contenteditable', 'true'); label.focus();
+            }
+        });
+
+        // ---- CARDS CONSTRUCTOR ----
+        function createCardRaw(itemsArray, leftStr, topStr, widthStr, activeIndex = 0, isPostIt = false) {
+            const card = document.createElement('div');
+            card.className = 'still-card';
+            if (isPostIt) card.classList.add('post-it-style');
+            card.style.left = leftStr; card.style.top = topStr; card.style.width = widthStr;
+            card._itemData = itemsArray; card._activeIndex = activeIndex; card._isPostIt = isPostIt;
+
+            card.innerHTML = `
+                <div class="editable-text still-label" contenteditable="false"></div>
+                <div class="img-container" style="${isPostIt ? 'display:none;' : ''}">
+                    <div class="gallery-controls">
+                        <button class="gallery-btn prev-btn">◀</button>
+                        <span class="gallery-counter">1/1</span>
+                        <button class="gallery-btn next-btn">▶</button>
+                    </div>
+                    <img>
+                </div>
+                <div class="editable-text still-caption" contenteditable="false"></div>
+                <div class="resize-handle"></div>
+            `;
+
+            bindCardEvents(card);
+            renderCard(card);
+            return card;
+        }
+
+        function renderCard(card) {
+            const item = card._itemData[card._activeIndex];
+            const label = card.querySelector('.still-label');
+            const caption = card.querySelector('.still-caption');
+            
+            label.innerHTML = item.labelText;
+            caption.innerHTML = item.captionText;
+            caption.style.display = item.captionText ? 'block' : 'none';
+
+            if (!card._isPostIt) {
+                const img = card.querySelector('img');
+                const controls = card.querySelector('.gallery-controls');
+                const counter = card.querySelector('.gallery-counter');
+
+                img.src = `img/${item.fileName}`;
+
+                if (card._itemData.length > 1) {
+                    controls.style.display = 'flex'; counter.textContent = `${card._activeIndex + 1}/${card._itemData.length}`;
+                } else { controls.style.display = 'none'; }
+            }
+        }
+
+        function bindCardEvents(card) {
+            const label = card.querySelector('.still-label');
+            const caption = card.querySelector('.still-caption');
+            const resizeHandle = card.querySelector('.resize-handle');
+
+            function wireText(elem, key) {
+                elem.addEventListener('dblclick', e => { e.stopPropagation(); elem.setAttribute('contenteditable', 'true'); elem.focus(); });
+                elem.addEventListener('blur', () => {
+                    elem.setAttribute('contenteditable', 'false');
+                    if(card._itemData[card._activeIndex][key] !== elem.innerHTML) {
+                        pushHistory(); card._itemData[card._activeIndex][key] = elem.innerHTML;
+                    }
+                });
+                elem.addEventListener('keydown', e => { if(e.key === 'Enter') e.stopPropagation(); });
+                elem.addEventListener('mousedown', e => { if(elem.getAttribute('contenteditable') === 'true') e.stopPropagation(); });
+            }
+            wireText(label, 'labelText'); wireText(caption, 'captionText');
+
+            if (!card._isPostIt) {
+                const img = card.querySelector('img');
+                img.addEventListener('dblclick', e => { e.stopPropagation(); caption.style.display = 'block'; setTimeout(() => { caption.setAttribute('contenteditable', 'true'); caption.focus(); }, 20); });
+                card.querySelector('.prev-btn').addEventListener('click', e => { e.stopPropagation(); navigateGallery(card, -1); });
+                card.querySelector('.next-btn').addEventListener('click', e => { e.stopPropagation(); navigateGallery(card, 1); });
+            }
+
+            card.addEventListener('wheel', e => {
+                if (!card._isPostIt && card._itemData.length > 1 && Math.abs(e.deltaX) > 4) {
+                    e.preventDefault(); e.stopPropagation(); navigateGallery(card, e.deltaX > 0 ? 1 : -1);
+                }
+            });
+
+            // DRAG & ACCUMULATION
+            card.addEventListener('mousedown', e => {
+                if (e.button !== 0 || label.getAttribute('contenteditable') === 'true' || caption.getAttribute('contenteditable') === 'true') return;
+                e.stopPropagation(); e.preventDefault();
+
+                if (!selection.has(card)) { if (!e.ctrlKey && !e.metaKey) selection.clear(); selection.select(card); }
+                const startX = e.clientX; const startY = e.clientY;
+                const initialPositions = selection.list.map(c => ({ card: c, left: parseFloat(c.style.left), top: parseFloat(c.style.top) }));
+
+                function onMove(mEvent) {
+                    const dx = (mEvent.clientX - startX) / zoom; const dy = (mEvent.clientY - startY) / zoom;
+                    initialPositions.forEach(pos => {
+                        let targetLeft = pos.left + dx; let targetTop = pos.top + dy;
+                        if (pos.card === card) {
+                            let snapX = Math.round(targetLeft / 30) * 30; let snapY = Math.round(targetTop / 30) * 30;
+                            const sdx = snapX - pos.left; const sdy = snapY - pos.top;
+                            initialPositions.forEach(p => { p.card.style.left = (p.left + sdx) + 'px'; p.card.style.top = (p.top + sdy) + 'px'; });
+                        }
+                    });
+                }
+
+                function onRelease() {
+                    document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onRelease);
+                    if (selection.count === 1 && !card._isPostIt) {
+                        const finalX = parseFloat(card.style.left) + card.offsetWidth/2;
+                        const finalY = parseFloat(card.style.top) + card.offsetHeight/2;
+                        const targetCard = getCardAtPos(finalX, finalY);
+
+                        if (targetCard && targetCard !== card && !targetCard._isPostIt) {
+                            pushHistory(); targetCard._itemData.push(...card._itemData);
+                            targetCard._activeIndex = targetCard._itemData.length - card._itemData.length;
+                            card.remove(); selection.clear(); renderCard(targetCard);
+                        }
+                    }
+                    updateCanvasBounds();
+                }
+                document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onRelease);
+            });
+
+            // RESIZE 20% STEPS
+            resizeHandle.addEventListener('mousedown', e => {
+                e.stopPropagation(); e.preventDefault(); pushHistory();
+                const startX = e.clientX;
+                const targets = selection.list.map(c => ({ card: c, startW: c.offsetWidth, baseW: c._isPostIt ? 192 : BASE_WIDTH }));
+                if(!selection.has(card)) targets.push({ card, startW: card.offsetWidth, baseW: card._isPostIt ? 192 : BASE_WIDTH });
+
+                function onResizeMove(mEvent) {
+                    const totalDeltaX = (mEvent.clientX - startX) / zoom;
+                    targets.forEach(t => {
+                        const rawWidth = t.startW + totalDeltaX; const step = t.baseW * 0.20; 
+                        let snappedW = Math.round(rawWidth / step) * step;
+                        if (snappedW < step * 2) snappedW = step * 2; t.card.style.width = snappedW + 'px';
+                    });
+                }
+                function onResizeRelease() { document.removeEventListener('mousemove', onResizeMove); document.removeEventListener('mouseup', onResizeRelease); updateCanvasBounds(); }
+                document.addEventListener('mousemove', onResizeMove); document.addEventListener('mouseup', onResizeRelease);
+            });
+        }
+
+        function navigateGallery(card, direction) {
+            let nextIndex = card._activeIndex + direction;
+            if (nextIndex >= 0 && nextIndex < card._itemData.length) { card._activeIndex = nextIndex; renderCard(card); }
+        }
+
+        // ZOOM MOUSE/TRACKPAD
+        viewport.addEventListener('wheel', e => { if (e.ctrlKey || e.metaKey) { e.preventDefault(); applyZoom(zoom + (e.deltaY < 0 ? 0.08 : -0.08)); } });
+        function applyZoom(val) { zoom = Math.max(0.15, Math.min(2.5, val)); canvas.style.transform = `scale(${zoom})`; zoomBadge.textContent = `${Math.round(zoom * 100)}%`; updateCanvasBounds(); }
+
+        // ALINHAMENTOS INDESIGN
+        function alignGroup(mode) {
+            if (selection.count <= 1) return; pushHistory();
+            let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+            const bounds = selection.list.map(c => {
+                const l = parseFloat(c.style.left), t = parseFloat(c.style.top); const w = c.offsetWidth, h = c.offsetHeight;
+                if (l < minX) minX = l; if (l + w > maxX) maxX = l + w; if (t < minY) minY = t; if (t + h > maxY) maxY = t + h;
+                return { card: c, l, t, w, h };
+            });
+            const midX = (minX + maxX) / 2; const midY = (minY + maxY) / 2;
+            bounds.forEach(b => {
+                if (mode === 'left') b.card.style.left = minX + 'px'; if (mode === 'centerH') b.card.style.left = (midX - b.w / 2) + 'px'; if (mode === 'right') b.card.style.left = (maxX - b.w) + 'px';
+                if (mode === 'top') b.card.style.top = minY + 'px'; if (mode === 'centerV') b.card.style.top = (midY - b.h / 2) + 'px'; if (mode === 'bottom') b.card.style.top = (maxY - b.h) + 'px';
+            });
+            updateCanvasBounds();
+        }
+
+        function distributeGroup(orientation) {
+            if (selection.count <= 2) return; pushHistory();
+            const list = selection.list.map(c => ({ card: c, l: parseFloat(c.style.left), t: parseFloat(c.style.top), w: c.offsetWidth, h: c.offsetHeight }));
+            if (orientation === 'horizontal') {
+                list.sort((a, b) => a.l - b.l); const first = list[0], last = list[list.length - 1];
+                const totalWidths = list.reduce((acc, cur) => acc + cur.w, 0) - first.w - last.w;
+                const gap = (last.l - (first.l + first.w) - totalWidths) / (list.length - 1);
+                let currentLeft = first.l + first.w + gap;
+                for(let i = 1; i < list.length - 1; i++) { list[i].card.style.left = currentLeft + 'px'; currentLeft += list[i].w + gap; }
+            } else {
+                list.sort((a, b) => a.t - b.t); const first = list[0], last = list[list.length - 1];
+                const totalHeights = list.reduce((acc, cur) => acc + cur.h, 0) - first.h - last.h;
+                const gap = (last.t - (first.t + first.h) - totalHeights) / (list.length - 1);
+                let currentTop = first.t + first.h + gap;
+                for(let i = 1; i < list.length - 1; i++) { list[i].card.style.top = currentTop + 'px'; currentTop += list[i].h + gap; }
+            }
+            updateCanvasBounds();
+        }
+
+        // MARQUEE
+        let isMarquee = false, mStartX, mStartY;
+        canvas.addEventListener('mousedown', e => {
+            if (e.target === canvas && e.button === 0) {
+                selection.clear(); contextMenu.style.display = 'none'; isMarquee = true;
+                const rect = canvas.getBoundingClientRect(); mStartX = (e.clientX - rect.left) / zoom; mStartY = (e.clientY - rect.top) / zoom;
+                marquee.style.left = mStartX + 'px'; marquee.style.top = mStartY + 'px'; marquee.style.width = '0px'; marquee.style.height = '0px'; marquee.style.display = 'block';
+            }
+        });
+        canvas.addEventListener('mousemove', e => {
+            if (!isMarquee) return;
+            const rect = canvas.getBoundingClientRect(); const curX = (e.clientX - rect.left) / zoom; const curY = (e.clientY - rect.top) / zoom;
+            const w = Math.abs(curX - mStartX), h = Math.abs(curY - mStartY); const l = Math.min(curX, mStartX), t = Math.min(curY, mStartY);
+            marquee.style.left = l + 'px'; marquee.style.top = t + 'px'; marquee.style.width = w + 'px'; marquee.style.height = h + 'px';
+            document.querySelectorAll('.still-card').forEach(card => {
+                const cl = parseFloat(card.style.left), ct = parseFloat(card.style.top);
+                const overlaps = l < (cl + card.offsetWidth) && (l + w) > cl && t < (ct + card.offsetHeight) && (t + h) > ct;
+                if (overlaps) selection.select(card); else selection.unselect(card);
+            });
+        });
+        document.addEventListener('mouseup', () => { isMarquee = false; marquee.style.display = 'none'; });
+
+        // CONTEXT MENU & DELETES
+        canvas.addEventListener('contextmenu', e => { e.preventDefault(); const targetCard = e.target.closest('.still-card'); if (targetCard && !selection.has(targetCard)) { selection.clear(); selection.select(targetCard); } contextMenu.style.left = e.clientX + 'px'; contextMenu.style.top = e.clientY + 'px'; contextMenu.style.display = 'block'; });
+        document.addEventListener('click', e => { if(!e.target.closest('#context-menu')) contextMenu.style.display = 'none'; });
+
+        function breakActiveGallery() {
+            if (selection.count !== 1) return; const card = selection.list[0]; if (card._isPostIt || card._itemData.length <= 1) return;
+            pushHistory(); const items = [...card._itemData]; const baseLeft = parseFloat(card.style.left), baseTop = parseFloat(card.style.top);
+            card._itemData = [items[0]]; card._activeIndex = 0; renderCard(card);
+            items.slice(1).forEach((item, index) => { const spawned = createCardRaw([item], (baseLeft + (index + 1) * 40) + 'px', (baseTop + (index + 1) * 40) + 'px', card.style.width, 0, false); canvas.appendChild(spawned); });
+            selection.clear(); updateCanvasBounds();
+        }
+
+        function deleteActiveSelection() { if(selection.count === 0) return; pushHistory(); selection.deleteSelected(); updateCanvasBounds(); }
+        function updateCanvasBounds() {
+            let maxBottom = 0; document.querySelectorAll('.still-card').forEach(c => { const b = parseFloat(c.style.top) + c.offsetHeight; if (b > maxBottom) maxBottom = b; });
+            canvas.style.height = Math.max(3000, maxBottom + 300) + 'px';
+        }
+
+        document.addEventListener('keydown', e => {
+            const isEditing = e.target.getAttribute('contenteditable') === 'true';
+            if (!isEditing && selection.count === 1 && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) { e.preventDefault(); navigateGallery(selection.list[0], e.key === 'ArrowRight' ? 1 : -1); }
+            if (isEditing) return;
+            if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); deleteActiveSelection(); }
+            if (e.key === '+' || e.key === '=') { e.preventDefault(); applyZoom(zoom + 0.1); }
+            if (e.key === '-') { e.preventDefault(); applyZoom(zoom - 0.1); }
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); executeUndo(); }
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') { e.preventDefault(); executeRedo(); }
+        });
+    </script>
+</body>
+</html>
