@@ -5,6 +5,7 @@ on:
     paths:
       - 'img/**'
       - 'data/**'
+  workflow_dispatch:
 
 jobs:
   build:
