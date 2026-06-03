@@ -1,0 +1,48 @@
+[
+  {
+    "left": "285px",
+    "top": "176.75px",
+    "width": "432px",
+    "activeIndex": 0,
+    "isPostIt": false,
+    "items": [
+      {
+        "fileName": "CIRCULO LUZES 01.jpg",
+        "labelText": "CIRCULO LUZES 01",
+        "captionText": ""
+      },
+      {
+        "fileName": "CIRCULO LUZES 05.jpg",
+        "labelText": "CIRCULO LUZES 05",
+        "captionText": ""
+      }
+    ]
+  },
+  {
+    "left": "300px",
+    "top": "540px",
+    "width": "384px",
+    "activeIndex": 0,
+    "isPostIt": true,
+    "items": [
+      {
+        "labelText": "Lembre-se: a bola<div>ainda vai estar aqui</div>",
+        "captionText": ""
+      }
+    ]
+  },
+  {
+    "left": "900px",
+    "top": "176.75px",
+    "width": "432px",
+    "activeIndex": 0,
+    "isPostIt": false,
+    "items": [
+      {
+        "fileName": "CIRCULO LUZES 09.jpg",
+        "labelText": "CIRCULO LUZES 09",
+        "captionText": ""
+      }
+    ]
+  }
+]
