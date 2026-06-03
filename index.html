@@ -19,7 +19,7 @@
             color: #bebab0;
         }
 
-        /* BARRA DE FERRAMENTAS SUPERIOR (Ícones Limpos e Setas Padronizadas) */
+        /* BARRA DE FERRAMENTAS SUPERIOR */
         #top-bar {
             position: fixed;
             top: 0;
@@ -131,7 +131,6 @@
             stroke-width: 2;
             stroke-dasharray: 6, 4;
             fill: none;
-            transition: all 0.1s ease;
         }
 
         /* COMPONENTES DA MESA DE TRABALHO (CARDS) */
@@ -155,13 +154,11 @@
             box-shadow: 0 0 0 1px #ff0000, 0 8px 25px rgba(0,0,0,0.6);
         }
 
-        /* CARD ESTILO POST-IT */
         .still-card.post-it-style {
             background: #231e1e;
             border: 1px dashed #bebab0;
         }
 
-        /* CARD ESTILO CONTÊINER DE CENA */
         .still-card.scene-group-style {
             background: rgba(26, 22, 22, 0.35);
             border: 2px solid #524646;
@@ -179,7 +176,6 @@
             margin-bottom: 6px;
         }
 
-        /* CABEÇALHO DO CARD (Título e Controles Alinhados na mesma linha) */
         .card-header-row {
             display: flex;
             justify-content: space-between;
@@ -213,7 +209,7 @@
         }
         .gallery-btn:hover { color: #ff0000; }
 
-        /* INTERCEPTADORES VISUAIS DE SOLTURA (DRAG INTERCEPT BACKDROP) */
+        /* INTERCEPTADORES VISUAIS DE SOLTURA */
         .img-container {
             width: 100%;
             position: relative;
@@ -223,10 +219,10 @@
             overflow: hidden;
         }
         .img-container.drag-hover-intercept::after {
-            content: "Criar Galeria / Stack";
+            content: "Agrupar Take / Galeria";
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 0, 0, 0.3);
+            background: rgba(255, 0, 0, 0.45);
             color: #ffffff;
             display: flex;
             align-items: center;
@@ -266,7 +262,6 @@
         }
         .still-card:hover .resize-handle { background: #ff0000; }
 
-        /* CONTROLADORES DE RELACIONAMENTO (VISIBILIDADE) */
         .link-toggle-btn {
             position: absolute;
             top: -10px;
@@ -331,23 +326,12 @@
             display: flex; justify-content: flex-end; gap: 10px;
         }
 
-        /* POP-UP CONFIGURADOR DE CENA */
-        #scene-modal {
-            width: 320px; height: auto; padding: 20px; gap: 15px;
-        }
-        .color-picker-grid {
-            display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 10px 0;
-        }
-        .color-option {
-            height: 24px; border-radius: 4px; cursor: pointer; border: 1px solid #1a1616;
-        }
+        #scene-modal { width: 320px; height: auto; padding: 20px; gap: 15px; }
+        .color-picker-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 10px 0; }
+        .color-option { height: 24px; border-radius: 4px; cursor: pointer; border: 1px solid #1a1616; }
         .color-option.selected { border: 2px solid #ffffff; }
-        .input-text-field {
-            width: 100%; background: #2b2424; border: 1px solid #524646;
-            padding: 6px; border-radius: 4px; color: #ffffff; outline: none; font-size: 0.85rem;
-        }
+        .input-text-field { width: 100%; background: #2b2424; border: 1px solid #524646; padding: 6px; border-radius: 4px; color: #ffffff; outline: none; font-size: 0.85rem; }
 
-        /* CONTEXT MENUS E INDICADORES DE INTERFACE */
         #marquee { position: absolute; border: 1px dashed #ff0000; background: rgba(255, 0, 0, 0.08); display: none; pointer-events: none; z-index: 999; }
         
         #zoom-badge {
@@ -361,7 +345,7 @@
             position: fixed; background: #1a1616; border: 1px solid #423737;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5); border-radius: 6px; padding: 5px 0; display: none; z-index: 20000; min-width: 180px;
         }
-        .menu-item { padding: 8px 14px; font-size: 0.8rem; color: #bebab0; cursor: pointer; }
+        .menu-item { padding: 8px 14px; font-size: 0.8rem; color: #bebab0; cursor: pointer; user-select: none; }
         .menu-item:hover { background: #ff0000; color: #ffffff; }
         .menu-item.danger:hover { background: #cc0000; }
     </style>
@@ -383,11 +367,11 @@
 
         <div class="divider"></div>
         <span class="section-label">Alinhar:</span>
-        <button class="btn" onclick="alignGroup('left')" title="Alinhar à Esquerda">|←</button>
-        <button class="btn" onclick="alignGroup('centerH')" title="Alinhar ao Centro Horizontal">•|•</button>
-        <button class="btn" onclick="alignGroup('right')" title="Alinhar à Direita">→|</button>
+        <button class="btn" onclick="alignGroup('left')" title="Alinhar à Esquerda">←|</button>
+        <button class="btn" onclick="alignGroup('centerH')" title="Alinhar ao Centro Horizontal">→|←</button>
+        <button class="btn" onclick="alignGroup('right')" title="Alinhar à Direita">|→</button>
         <button class="btn" onclick="alignGroup('top')" title="Alinhar ao Topo">↑</button>
-        <button class="btn" onclick="alignGroup('centerV')" title="Alinhar ao Centro Vertical">⁜</button>
+        <button class="btn" onclick="alignGroup('centerV')" title="Alinhar ao Centro Vertical">↕</button>
         <button class="btn" onclick="alignGroup('bottom')" title="Alinhar à Base">↓</button>
 
         <div class="divider"></div>
@@ -414,8 +398,7 @@
                 <div class="modal-title">Banco de Stills da Galeria Mestra (/img)</div>
                 <button class="modal-close" onclick="closeModal('gallery-modal')">✕</button>
             </div>
-            <div class="modal-content-grid" id="modal-asset-grid">
-                </div>
+            <div class="modal-content-grid" id="modal-asset-grid"></div>
             <div class="modal-footer">
                 <span style="font-size:0.75rem; color:#8c8282; margin-right:auto; align-self:center;">Dica: Arraste os itens, use Ctrl/Shift ou faça seleção por área.</span>
                 <button class="btn" onclick="closeModal('gallery-modal')">Cancelar</button>
@@ -427,7 +410,7 @@
     <div id="scene-config-modal" class="modal-overlay">
         <div class="modal-window" id="scene-modal">
             <div class="modal-title">Configurar Nova Cena</div>
-            <input type="text" id="scene-name-input" class="input-text-field" placeholder="Nome da Cena (Ex: CENA 01 - QUARTO)">
+            <input type="text" id="scene-name-input" class="input-text-field" placeholder="Nome da Cena (Ex: CENA 01)">
             <div class="section-label" style="margin-top:10px;">Cor da Borda Estrutural:</div>
             <div class="color-picker-grid" id="scene-color-picker"></div>
             <div class="modal-footer" style="padding:0; border:none; margin-top:10px;">
@@ -461,7 +444,7 @@
     </div>
 
     <div id="context-menu">
-        <div class="menu-item" onclick="alignGroup('left')">Alinhar à Esquerda (|←)</div>
+        <div class="menu-item" onclick="alignGroup('left')">Alinhar à Esquerda (←|)</div>
         <div class="menu-item" onclick="alignGroup('top')">Alinhar ao Topo (↑)</div>
         <div class="menu-item" onclick="distributeGroup('horizontal')">Distribuir Lado a Lado</div>
         <div class="menu-item" onclick="triggerSceneCreation()">Criar Bloco de Cena</div>
@@ -501,6 +484,7 @@
         const sceneColors = ["#ff0000", "#cc0000", "#3a3232", "#524646", "#8c8282", "#bebab0", "#1a1616", "#a62424", "#631212", "#473b21", "#21473b", "#213647"];
         let selectedSceneColor = sceneColors[0];
 
+        // CORREÇÃO MESTRE: Classe interna gerenciadora de seleções e deleções unificada
         class SelectionManager {
             constructor() { this.items = new Set(); }
             select(card) { card.classList.add('selected'); this.items.add(card); triggerTopGroupButtonVisibility(); }
@@ -509,14 +493,18 @@
             has(card) { return this.items.has(card); }
             get count() { return this.items.size; }
             get list() { return Array.from(this.items); }
+            deleteSelected() {
+                this.items.forEach(card => card.remove());
+                this.clear();
+            }
         }
         const selection = new SelectionManager();
 
         function triggerTopGroupButtonVisibility() {
-            document.getElementById('top-btn-group').style.display = selection.count > 1 ? 'inline-flex' : 'none';
+            document.getElementById('top-btn-group').style.display = selection.count > 0 ? 'inline-flex' : 'none';
         }
 
-        // ---- CARREGAMENTO CORE DOS MANIFESTOS DO GITHUB ----
+        // ---- CARREGAMENTO CORE DOS MANIFESTOS ----
         window.addEventListener('load', () => {
             fetch('data/manifesto.json?t=' + Date.now())
                 .then(res => res.json())
@@ -574,16 +562,14 @@
                     const target = document.getElementById(card._linkedToId);
                     if (target) {
                         card._linkedTarget = target;
-                        if (card._branchHidden) {
-                            card.classList.add('hidden-branch');
-                        }
+                        if (card._branchHidden) card.classList.add('hidden-branch');
                     }
                 }
             });
             drawConnectionLines();
         }
 
-        // ---- MODAL DA GALERIA (POP-UP OPERACIONAL SELEÇÃO MÚLTIPLA) ----
+        // ---- MODAL DA GALERIA (POP-UP) ----
         function openGalleryModal() {
             document.getElementById('gallery-modal').style.display = 'flex';
             modalSelection.clear();
@@ -600,12 +586,18 @@
                 const itemCard = document.createElement('div');
                 itemCard.className = 'gallery-item-card';
                 itemCard.dataset.index = index;
+                // CORREÇÃO: Força explicitamente a propriedade nativa drag-and-drop
+                itemCard.setAttribute('draggable', 'true');
                 itemCard.innerHTML = `
                     <img src="img/${nome}" loading="lazy">
                     <div class="gallery-item-title">${nome}</div>
                 `;
                 
                 itemCard.addEventListener('click', e => handleModalClick(e, index));
+                itemCard.addEventListener('dragstart', e => {
+                    e.dataTransfer.setData('text/plain', nome);
+                });
+
                 assetGrid.appendChild(itemCard);
             });
             setupModalMarquee();
@@ -637,7 +629,6 @@
             });
         }
 
-        // SELEÇÃO POR ÁREA INTERNA NO POP-UP (MARQUEE BOX)
         function setupModalMarquee() {
             let isM = false, sx, sy;
             const mBox = document.createElement('div');
@@ -674,7 +665,7 @@
             document.addEventListener('mouseup', () => { isM = false; mBox.style.display='none'; });
         }
 
-        // ---- INGESTÃO INTELIGENTE LADO A LADO (MÁXIMO 6 POR LINHA) ----
+        // ---- INGESTÃO INTELIGENTE LADO A LADO ----
         function insertSelectedAssetsFromModal() {
             if (modalSelection.size === 0) return;
             pushHistory();
@@ -684,7 +675,6 @@
             const spacingX = 260;
             const spacingY = 240;
 
-            // Encontra ponto de inserção com base na janela visível atual do usuário
             let startLeft = Math.round((viewport.scrollLeft + 60) / 30) * 30;
             let startTop = Math.round((viewport.scrollTop + 60) / 30) * 30;
 
@@ -728,7 +718,6 @@
             card.style.top = topStr;
             card.style.width = widthStr;
 
-            // Estrutura de layout otimizada conforme Requisito 1
             card.innerHTML = `
                 <button class="link-toggle-btn" title="Expandir/Recolher Conexões">👁</button>
                 ${isScene ? `<div class="scene-title-badge" style="background:${sceneColor}">Cena</div>` : ''}
@@ -780,12 +769,11 @@
             }
         }
 
-        // ---- COMPORTAMENTOS, INTERCEPTADORES VISUAIS E ALTAMENTE RESPONSIVOS ----
+        // ---- COMPORTAMENTOS E EVENTOS DE MOVIMENTO ----
         function bindCardEvents(card) {
             const label = card.querySelector('.still-label');
             const caption = card.querySelector('.still-caption');
             const resizeHandle = card.querySelector('.resize-handle');
-            const imgContainer = card.querySelector('.img-container');
             const toggleBtn = card.querySelector('.link-toggle-btn');
 
             function wireText(elem, key) {
@@ -807,11 +795,6 @@
                 img.addEventListener('dblclick', e => { e.stopPropagation(); caption.style.display = 'block'; setTimeout(() => { caption.setAttribute('contenteditable', 'true'); caption.focus(); }, 20); });
                 card.querySelector('.prev-btn').addEventListener('click', e => { e.stopPropagation(); navigateGallery(card, -1); });
                 card.querySelector('.next-btn').addEventListener('click', e => { e.stopPropagation(); navigateGallery(card, 1); });
-
-                // INDICAÇÕES VISUAIS DE DROP INTERCEPT (REQUISITO 9)
-                card.addEventListener('dragenter', e => { if(!selection.has(card)) imgContainer.classList.add('drag-hover-intercept'); });
-                card.addEventListener('dragleave', e => { imgContainer.classList.remove('drag-hover-intercept'); });
-                card.addEventListener('dragover', e => e.preventDefault());
             }
 
             toggleBtn.addEventListener('click', e => {
@@ -829,11 +812,10 @@
                 }
             });
 
-            // DRAG COM ARRASTO DE FILHOS EM CENA E LINHAS DINÂMICAS
+            // ARRASTO, AGNT-STACKING E INTERCEPÇÃO VISUAL EM TEMPO REAL (REQUISITO 2 E 9)
             card.addEventListener('mousedown', e => {
                 if (e.button !== 0 || label.getAttribute('contenteditable') === 'true' || caption.getAttribute('contenteditable') === 'true') return;
                 
-                // Modo Relacionamento Ativo (Clique no Alvo)
                 if (activeLinkingOriginCard) {
                     e.stopPropagation(); e.preventDefault();
                     if (activeLinkingOriginCard !== card) {
@@ -875,7 +857,6 @@
                                 p.card.style.left = (p.left + sdx) + 'px';
                                 p.card.style.top = (p.top + sdy) + 'px';
                                 
-                                // Arrasta em bloco os elementos contidos na Cena
                                 p.childrenInScene.forEach(child => {
                                     child.card.style.left = (child.left + sdx) + 'px';
                                     child.card.style.top = (child.top + sdy) + 'px';
@@ -883,6 +864,20 @@
                             });
                         }
                     });
+
+                    // FEEDBACK EM TEMPO REAL: Detecta se o card mestre sobrepõe outro take para acender o overlay
+                    let currentTarget = null;
+                    if (selection.count === 1 && !card._isPostIt && !card._isScene) {
+                        const fx = parseFloat(card.style.left) + card.offsetWidth / 2;
+                        const fy = parseFloat(card.style.top) + card.offsetHeight / 2;
+                        currentTarget = getCardAtPos(fx, fy);
+                    }
+                    document.querySelectorAll('.img-container').forEach(ic => ic.classList.remove('drag-hover-intercept'));
+                    if (currentTarget && !currentTarget._isPostIt && !currentTarget._isScene) {
+                        const ic = currentTarget.querySelector('.img-container');
+                        if (ic) ic.classList.add('drag-hover-intercept');
+                    }
+
                     drawConnectionLines();
                 }
 
@@ -902,7 +897,7 @@
                             card.remove(); selection.clear(); renderCard(targetCard);
                         }
                     }
-                    if(card.querySelector('.img-container')) card.querySelector('.img-container').classList.remove('drag-hover-intercept');
+                    document.querySelectorAll('.img-container').forEach(ic => ic.classList.remove('drag-hover-intercept'));
                     updateCanvasBounds();
                 }
                 document.addEventListener('mousemove', onMove);
@@ -940,12 +935,11 @@
                 if (c._linkedToId === originCard.id) {
                     if (hide) c.classList.add('hidden-branch');
                     else c.classList.remove('hidden-branch');
-                    toggleBranchVisibility(c, hide); // Propagação recursiva em árvore
+                    toggleBranchVisibility(c, hide);
                 }
             });
         }
 
-        // ---- RECURSO ENGENHARIA DE LINHAS SVG (REQUISITO 7) ----
         function drawConnectionLines() {
             svgLayer.innerHTML = "";
             document.querySelectorAll('.still-card').forEach(card => {
@@ -974,7 +968,6 @@
             contextMenu.style.display = 'none';
         }
 
-        // ---- MOTOR DE BUSCA EM REDOR DE COMPONENTES DE CENA ----
         function findCardsInsideSceneFrame(sceneCard) {
             const list = [];
             const sl = parseFloat(sceneCard.style.left), st = parseFloat(sceneCard.style.top);
@@ -989,7 +982,6 @@
             return list;
         }
 
-        // ---- MOTOR DE CRIAÇÃO DE CENAS E CORES (REQUISITO 6) ----
         function buildColorPicker() {
             const grid = document.getElementById('scene-color-picker');
             grid.innerHTML = "";
@@ -1018,7 +1010,6 @@
             pushHistory();
             let nomeCena = document.getElementById('scene-name-input').value || "NOVA CENA";
             
-            // Encontra bounding box dos elementos selecionados
             let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
             selection.list.forEach(c => {
                 const l = parseFloat(c.style.left), t = parseFloat(c.style.top);
@@ -1026,7 +1017,6 @@
                 if(t < minY) minY = t; if(t + c.offsetHeight > maxY) maxY = t + c.offsetHeight;
             });
 
-            // Cria moldura inflada em 30px nas bordas
             minX -= 30; minY -= 30; maxX += 30; maxY += 30;
             minX = Math.round(minX / 30) * 30; minY = Math.round(minY / 30) * 30;
 
@@ -1040,7 +1030,6 @@
             updateCanvasBounds();
         }
 
-        // ---- EXPORTAÇÃO SEPARADA (REQUISITO 8) ----
         function getLayoutStateData() {
             const state = [];
             document.querySelectorAll('.still-card').forEach(card => {
@@ -1060,7 +1049,8 @@
             const blob = new Blob([data], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
-            a.download = `storyboard_v1_${Date.now()}.json`;
+            const dataHora = new Date().toISOString().slice(0,10);
+            a.download = `storyboard_${dataHora}.json`;
             a.href = url; a.click();
             URL.revokeObjectURL(url);
         }
@@ -1074,20 +1064,19 @@
             });
         }
 
-        // ---- AMORTECIMENTO DO PINCH DE ZOOM (REQUISITO 5) ----
+        // AMORTECIMENTO DO TRACKPAD / PINCH (REQUISITO 5)
         viewport.addEventListener('wheel', e => {
             if (e.ctrlKey || e.metaKey) {
                 e.preventDefault();
-                // Fator de escala suavizado em 0.015 (Quatro vezes mais lento para controle preciso)
-                let nextZoom = zoom + (e.deltaY < 0 ? 0.015 : -0.015);
+                let nextZoom = zoom + (e.deltaY < 0 ? 0.012 : -0.012);
                 applyZoom(nextZoom);
             }
         });
 
         function openZoomMenu(e) {
             e.stopPropagation();
-            zoomMenu.style.left = (e.clientX - 100) + 'px';
-            zoomMenu.style.top = (e.clientY - 120) + 'px';
+            zoomMenu.style.left = e.clientX + 'px';
+            zoomMenu.style.top = e.clientY + 'px';
             zoomMenu.style.display = 'block';
         }
 
@@ -1108,11 +1097,27 @@
             zoomMenu.style.display = 'none';
         }
 
-        // ---- ALINHAMENTOS E UTILS ----
-        function openHelpModal() { document.getElementById('help-modal').style.display='flex'; }
-        
+        // ---- CORREÇÃO HISTÓRICO COMPACTO COMPLETO ----
+        function pushHistory() {
+            const state = [];
+            document.querySelectorAll('.still-card').forEach(card => {
+                state.push({
+                    id: card.id, left: card.style.left, top: card.style.top, width: card.style.width,
+                    activeIndex: card._activeIndex || 0, isPostIt: card._isPostIt || false,
+                    isScene: card._isScene || false, sceneColor: card._sceneColor || "",
+                    linkedToId: card._linkedToId || null, branchHidden: card._branchHidden || false,
+                    items: JSON.parse(JSON.stringify(card._itemData))
+                });
+            });
+            undoStack.push(JSON.stringify(state)); redoStack = [];
+            if (undoStack.length > 40) undoStack.shift();
+        }
+
+        // ---- BOTÕES DE ALINHAMENTO DO INDESIGN CORRIGIDOS ----
         function alignGroup(mode) {
-            if (selection.count <= 1) return; pushHistory();
+            if (selection.count === 0) return;
+            pushHistory();
+            
             let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
             const bounds = selection.list.map(c => {
                 const l = parseFloat(c.style.left), t = parseFloat(c.style.top); const w = c.offsetWidth, h = c.offsetHeight;
@@ -1121,8 +1126,12 @@
             });
             const midX = (minX + maxX) / 2; const midY = (minY + maxY) / 2;
             bounds.forEach(b => {
-                if (mode === 'left') b.card.style.left = minX + 'px'; if (mode === 'centerH') b.card.style.left = (midX - b.w / 2) + 'px'; if (mode === 'right') b.card.style.left = (maxX - b.w) + 'px';
-                if (mode === 'top') b.card.style.top = minY + 'px'; if (mode === 'centerV') b.card.style.top = (midY - b.h / 2) + 'px'; if (mode === 'bottom') b.card.style.top = (maxY - b.h) + 'px';
+                if (mode === 'left') b.card.style.left = minX + 'px'; 
+                if (mode === 'centerH') b.card.style.left = (midX - b.w / 2) + 'px'; 
+                if (mode === 'right') b.card.style.left = (maxX - b.w) + 'px';
+                if (mode === 'top') b.card.style.top = minY + 'px'; 
+                if (mode === 'centerV') b.card.style.top = (midY - b.h / 2) + 'px'; 
+                if (mode === 'bottom') b.card.style.top = (maxY - b.h) + 'px';
             });
             drawConnectionLines(); updateCanvasBounds();
         }
@@ -1146,7 +1155,27 @@
             drawConnectionLines(); updateCanvasBounds();
         }
 
-        // MARQUEE WORKSPACE
+        function openHelpModal() { document.getElementById('help-modal').style.display='flex'; }
+
+        // ---- DRAG AND DROP DA SIDEBAR DO COMPUTADOR ----
+        canvas.addEventListener('dragover', e => e.preventDefault());
+        canvas.addEventListener('drop', e => {
+            e.preventDefault();
+            const fileName = e.dataTransfer.getData('text/plain');
+            if (!fileName || fileName.includes('{')) return; 
+
+            pushHistory();
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / zoom; const y = (e.clientY - rect.top) / zoom;
+            const steppedX = Math.round(x / 30) * 30; const steppedY = Math.round(y / 30) * 30;
+            const cleanName = fileName.replace(/\.[^/.]+$/, "");
+
+            const card = createCardRaw([{ fileName: fileName, labelText: cleanName, captionText: "" }], steppedX + 'px', steppedY + 'px', BASE_WIDTH + 'px', 0, false);
+            canvas.appendChild(card);
+            updateCanvasBounds();
+        });
+
+        // ---- SELEÇÃO WORKSPACE MARQUEE ----
         let isMarquee = false, mStartX, mStartY;
         canvas.addEventListener('mousedown', e => {
             if (e.target === canvas && e.button === 0) {
@@ -1168,13 +1197,12 @@
         });
         document.addEventListener('mouseup', () => { isMarquee = false; marquee.style.display = 'none'; });
 
-        // CONTEXT MENUS GLOBAL CLOSURES
+        // ---- MENUS CONTEXTUAIS ----
         canvas.addEventListener('contextmenu', e => {
             e.preventDefault();
             const targetCard = e.target.closest('.still-card');
             if (targetCard && !selection.has(targetCard)) { selection.clear(); selection.select(targetCard); }
             
-            // Requisito 5: Abre menu de zoom no botão direito caso clique na tela limpa
             if (!targetCard) {
                 openZoomMenu(e);
                 contextMenu.style.display = 'none';
@@ -1197,30 +1225,30 @@
         }
 
         function deleteActiveSelection() { if(selection.count === 0) return; pushHistory(); selection.deleteSelected(); drawConnectionLines(); updateCanvasBounds(); }
-        
         function updateCanvasBounds() {
             let maxBottom = 0; document.querySelectorAll('.still-card').forEach(c => { const b = parseFloat(c.style.top) + c.offsetHeight; if (b > maxBottom) maxBottom = b; });
             canvas.style.height = Math.max(3000, maxBottom + 300) + 'px';
         }
 
-        // ATALHOS GERAIS (ESC PARA FECHAR POP-UPS / ENTER NA GALERIA)
+        function getCardAtPos(x, y) {
+            let match = null;
+            document.querySelectorAll('.still-card').forEach(card => {
+                if (selection.has(card)) return;
+                const left = parseFloat(card.style.left), top = parseFloat(card.style.top);
+                if (x >= left && x <= left + card.offsetWidth && y >= top && y <= top + card.offsetHeight) match = card;
+            });
+            return match;
+        }
+
+        function executeUndo() { if (undoStack.length === 0) return; const current = []; document.querySelectorAll('.still-card').forEach(card => { current.push({ id: card.id, left: card.style.left, top: card.style.top, width: card.style.width, activeIndex: card._activeIndex || 0, isPostIt: card._isPostIt || false, isScene: card._isScene || false, sceneColor: card._sceneColor || "", linkedToId: card._linkedToId || null, branchHidden: card._branchHidden || false, items: JSON.parse(JSON.stringify(card._itemData)) }); }); redoStack.push(JSON.stringify(current)); restoreStateSnapshot(JSON.parse(undoStack.pop())); }
+        function executeRedo() { if (redoStack.length === 0) return; const current = []; document.querySelectorAll('.still-card').forEach(card => { current.push({ id: card.id, left: card.style.left, top: card.style.top, width: card.style.width, activeIndex: card._activeIndex || 0, isPostIt: card._isPostIt || false, isScene: card._isScene || false, sceneColor: card._sceneColor || "", linkedToId: card._linkedToId || null, branchHidden: card._branchHidden || false, items: JSON.parse(JSON.stringify(card._itemData)) }); }); undoStack.push(JSON.stringify(current)); restoreStateSnapshot(JSON.parse(redoStack.pop())); }
+        function restoreStateSnapshot(stateData) { document.querySelectorAll('.still-card').forEach(c => c.remove()); selection.clear(); stateData.forEach(data => { const card = createCardRaw(data.items, data.left, data.top, data.width, data.activeIndex, data.isPostIt, data.isScene, data.sceneColor, data.linkedToId, data.branchHidden); card.id = data.id; canvas.appendChild(card); }); resolvePostLoadLinks(); updateCanvasBounds(); }
+
+        // ---- GLOBAL KEYBOARD SHORTCUTS ----
         document.addEventListener('keydown', e => {
             const isEditing = e.target.getAttribute('contenteditable') === 'true';
-            
-            // Esc Fecha qualquer janela flutuante aberta
-            if (e.key === 'Escape') {
-                closeModal('gallery-modal');
-                closeModal('scene-config-modal');
-                closeModal('help-modal');
-                if (activeLinkingOriginCard) { activeLinkingOriginCard = null; document.body.style.cursor='default'; }
-            }
-
-            // Enter com o Pop-up de Galeria aberto dispara a importação
-            if (e.key === 'Enter' && document.getElementById('gallery-modal').style.display === 'flex') {
-                e.preventDefault();
-                insertSelectedAssetsFromModal();
-            }
-
+            if (e.key === 'Escape') { closeModal('gallery-modal'); closeModal('scene-config-modal'); closeModal('help-modal'); if (activeLinkingOriginCard) { activeLinkingOriginCard = null; document.body.style.cursor='default'; } }
+            if (e.key === 'Enter' && document.getElementById('gallery-modal').style.display === 'flex') { e.preventDefault(); insertSelectedAssetsFromModal(); }
             if (!isEditing && selection.count === 1 && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) { e.preventDefault(); navigateGallery(selection.list[0], e.key === 'ArrowRight' ? 1 : -1); }
             if (isEditing) return;
             if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); deleteActiveSelection(); }
