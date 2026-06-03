@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>SIS | Storyboard v4</title>
+    <title>SIS | Storyboard v4b</title>
     <style>
         * {
             box-sizing: border-box;
@@ -95,7 +95,7 @@
             letter-spacing: 0.5px;
         }
 
-        /* ÁREA DA MESA DE TRABALHO */
+        /* ÁREA DA MESA DE TRABALHO ROLÁVEL */
         #viewport {
             width: 100vw;
             height: calc(100vh - 50px);
@@ -105,6 +105,7 @@
             background-color: #2b2424;
         }
 
+        /* GRADE DA MESA INFINITA REAL (5000px X 5000px) */
         #canvas {
             width: 5000px;
             height: 5000px;
@@ -117,7 +118,7 @@
             background-size: 30px 30px;
         }
 
-        /* CAMADA SVG INTERNA NO CANVAS */
+        /* CAMADA SVG SUBTERRÂNEA (Abaixo dos cards para não tampar fotos) */
         #svg-connection-layer {
             position: absolute;
             top: 0;
@@ -161,7 +162,7 @@
             border: 1px dashed #bebab0;
         }
 
-        /* BLOCOS DE CENA FLEXÍVEIS */
+        /* ESTRUTURA E RECUO DAS CENAS PASTÉIS CLARAS */
         .still-card.scene-group-style {
             z-index: 5 !important;
             padding-top: 45px;
@@ -171,7 +172,7 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            color: #1a1616;
+            color: #1a1616; /* Texto escuro para contraste com o fundo pastel claro */
             padding: 4px 8px;
             border-radius: 4px;
             position: absolute;
@@ -216,7 +217,7 @@
         }
         .gallery-btn:hover { color: #ff0000; }
 
-        /* OVERLAY DE AGRUPAMENTO */
+        /* INTERCEPTADORES VISUAIS DO SLIDER */
         .img-container {
             width: 100%;
             position: relative;
@@ -241,7 +242,7 @@
 
         .still-card img { width: 100%; height: auto; display: block; }
 
-        /* TEXTOS EDITÁVEIS */
+        /* TEXTOS EDITÁVEIS ALINHADOS À ESQUERDA */
         .editable-text {
             width: 100%;
             text-align: left;
@@ -269,7 +270,7 @@
         }
         .still-card:hover .resize-handle { background: #ff0000; }
 
-        /* OLHO PERMANENTE NO ALVO */
+        /* BOTÃO DO OLHO DOMINANTE EXCLUSIVO DO ELEMENTO ALVO */
         .link-toggle-btn {
             position: absolute;
             top: -10px;
@@ -337,6 +338,7 @@
         .relationship-table th, .relationship-table td { border: 1px solid #423737; padding: 10px; text-align: left; font-size: 0.8rem; }
         .relationship-table th { background: #231e1e; color: #bebab0; }
 
+        /* POP-UP CONFIGURADOR DE CENA COMPACTO CENTRADO */
         #scene-modal { width: 340px; height: auto; padding: 20px; gap: 12px; box-shadow: 0 15px 40px rgba(0,0,0,0.8); }
         .color-picker-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 10px 0; }
         .color-option { height: 26px; border-radius: 4px; cursor: pointer; border: 2px solid transparent; box-shadow: inset 0 0 4px rgba(0,0,0,0.5); }
@@ -353,7 +355,7 @@
         }
         #zoom-badge:hover { border-color: #ff0000; }
 
-        /* WIDGET ZOOM DIAGONAL-ESQUERDA-SUPERIOR */
+        /* WIDGET POP-UP DE ZOOM DIAGONAL SUPERIOR ESQUERDA */
         #zoom-menu {
             position: fixed; bottom: 65px; right: 20px; background: #1a1616;
             border: 1px solid #423737; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
@@ -460,18 +462,18 @@
 
     <div id="help-modal" class="modal-overlay" onclick="closeModalOnOverlay(event, 'help-modal')">
         <div class="modal-window" style="width:50vw; height:70vh;">
-            <div class="modal-header"><div class="modal-title">Manual de Operação da Interface (SIS v3)</div><button class="modal-close" onclick="closeModal('help-modal')">✕</button></div>
-            <div style="flex:1; overflow-y:auto; padding:25px; font-size:0.85rem; line-height:1.6; color:#ffffff;">
+            <div class="modal-header"><div class="modal-title">Manual de Operação da Interface (SIS v4)</div><button class="modal-close" onclick="closeModal('help-modal')">✕</button></div>
+            <div style="flex:1; overflow-y:auto; padding:25px; font-size:0.85rem; line-height:1.6; color:#ffffff; background:#1a1616;">
                 <h3 style="color:#ffffff; border-bottom:1px solid #423737; padding-bottom:4px; margin-bottom:10px;">📌 Comandos Gerais & Seleções</h3>
-                <p>• <b>Duplo Clique no Fundo:</b> Instancia uma Nota de Texto Livre (Post-it).</p>
-                <p>• <b>Shift + Clique / Drag Marquee:</b> Seleciona múltiplos blocos simultaneamente.</p>
-                <p>• <b>Delete / Backspace:</b> Remove de forma definitiva os elementos e fotos selecionadas da mesa.</p>
+                <p style="color:#bebab0;">• <b>Duplo Clique no Fundo:</b> Instancia uma Nota de Texto Livre (Post-it).</p>
+                <p style="color:#bebab0;">• <b>Shift + Clique / Drag Marquee:</b> Seleciona múltiplos blocos simultaneamente (Segure Shift para acumular).</p>
+                <p style="color:#bebab0;">• <b>Delete / Backspace:</b> Remove de forma definitiva os elementos e fotos selecionadas da mesa.</p>
                 <br>
                 <h3 style="color:#ffffff; border-bottom:1px solid #423737; padding-bottom:4px; margin-bottom:10px;">🎬 Estruturas de Cena Dinâmicas</h3>
-                <p>• Selecione elementos e clique em <b>Agrupar Cena</b>. O bloco gerado é pastel e redimensionável. Arraste imagens para dentro de seus limites para incluí-las na cena; mova-as para fora para removê-las.</p>
+                <p style="color:#bebab0;">• Selecione elementos e clique em <b>Agrupar Cena</b>. O bloco gerado é pastel e redimensionável. Arraste imagens para dentro de seus limites para incluí-las na cena; mova-as para fora para removê-las.</p>
                 <br>
                 <h3 style="color:#ffffff; border-bottom:1px solid #423737; padding-bottom:4px; margin-bottom:10px;">🔗 Rastreamento de Notas</h3>
-                <p>• Use o botão direito para ligar notas a elementos através de linhas guia. O menu superior <b>Elementos Vinculados</b> abre um painel para quebrar ou gerenciar esses vínculos de forma direta.</p>
+                <p style="color:#bebab0;">• Use o botão direito para ligar notas a elementos através de linhas guia. O elemento alvo sustentará um olho (👁) permanente na UI para ocultar/exibir as anotações associadas.</p>
             </div>
         </div>
     </div>
@@ -524,6 +526,7 @@
         let lastModalSelectedIndex = -1;
         let activeLinkingOriginCard = null;
 
+        // Paleta de Cenas Estabilizada (Requisito 9)
         const sceneColors = ["#9ecae1", "#2171b5", "#a1d99b", "#238b45", "#fcae91", "#cb181d", "#fdd0a2", "#f16913", "#d7b5d8", "#807dba", "#ffffcc", "#a6611a"];
         let selectedSceneColor = sceneColors[0];
 
@@ -543,7 +546,7 @@
             document.getElementById('top-btn-group').style.display = selection.count > 0 ? 'inline-flex' : 'none';
         }
 
-        // ---- CARREGAMENTO DOS MANIFESTOS ----
+        // ---- CONEXÃO CORE PAGES ----
         window.addEventListener('load', () => {
             fetch('data/manifesto.json?t=' + Date.now())
                 .then(res => res.json())
@@ -604,19 +607,18 @@
                     if (target) {
                         card._linkedTarget = target;
                         target.classList.add('is-link-target');
-                        if (card._branchHidden) card.classList.add('hidden-branch');
+                        if (target._branchHidden) card.classList.add('hidden-branch');
+                        else card.classList.remove('hidden-branch');
                     }
                 }
             });
             drawConnectionLines();
         }
 
-        // ---- GALERIA POP-UP ----
+        // ---- BANCO DE MÍDIAS POP-UP ----
         function openGalleryModal() {
             document.getElementById('gallery-modal').style.display = 'flex';
-            modalSelection.clear();
-            lastModalSelectedIndex = -1;
-            renderModalGrid();
+            modalSelection.clear(); lastModalSelectedIndex = -1; renderModalGrid();
         }
 
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
@@ -629,10 +631,7 @@
                 itemCard.className = 'gallery-item-card';
                 itemCard.dataset.index = index;
                 itemCard.setAttribute('draggable', 'true');
-                itemCard.innerHTML = `
-                    <img src="img/${nome}" loading="lazy">
-                    <div class="gallery-item-title">${nome}</div>
-                `;
+                itemCard.innerHTML = `<img src="img/${nome}" loading="lazy"><div class="gallery-item-title">${nome}</div>`;
                 itemCard.addEventListener('click', e => handleModalClick(e, index));
                 itemCard.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', nome); });
                 assetGrid.appendChild(itemCard);
@@ -686,7 +685,7 @@
             document.addEventListener('mouseup', () => { isM = false; mBox.style.display='none'; });
         }
 
-        // ---- INGESTÃO EM ÁREA LIVRE ----
+        // ---- INGESTÃO TOTALMENTE INTEGRADA ABAIXO SEM COLISÕES (REQUISITO 5) ----
         function insertSelectedAssetsFromModal() {
             if (modalSelection.size === 0) return;
             pushHistory();
@@ -716,23 +715,19 @@
             closeModal('gallery-modal');
         }
 
-        // ---- CONSTRUTOR DE NOTAS COMPATIVEL ----
         function createNewPostItAtCenter() {
             pushHistory();
-            let x = Math.round((viewport.scrollLeft + viewport.offsetWidth / 2 - 96) / 30) * 30;
-            let y = Math.round((viewport.scrollTop + viewport.offsetHeight / 2 - 40) / 30) * 30;
+            let x = Math.round((viewport.scrollLeft + 120) / 30) * 30;
+            let y = Math.round((viewport.scrollTop + 120) / 30) * 30;
             const card = createCardRaw([{ labelText: "Anotação...", captionText: "" }], x + 'px', y + 'px', '192px', 0, true);
             canvas.appendChild(card);
-            const label = card.querySelector('.still-label');
-            label.setAttribute('contenteditable', 'true');
-            label.focus();
+            const label = card.querySelector('.still-label'); label.setAttribute('contenteditable', 'true'); label.focus();
         }
 
-        // ---- CONSTRUTOR DE CARDS ----
+        // ---- CARDS FACTORY ----
         function createCardRaw(itemsArray, leftStr, topStr, widthStr, activeIndex = 0, isPostIt = false, isScene = false, sceneColor = "", linkedToId = null, branchHidden = false) {
             const card = document.createElement('div');
-            card.className = 'still-card';
-            card.id = 'card_' + Math.random().toString(36).substr(2, 9);
+            card.className = 'still-card'; card.id = 'card_' + Math.random().toString(36).substr(2, 9);
             
             card._itemData = itemsArray; card._activeIndex = activeIndex;
             card._isPostIt = isPostIt; card._isScene = isScene; card._sceneColor = sceneColor;
@@ -741,14 +736,13 @@
             if (isPostIt) card.classList.add('post-it-style');
             if (isScene) {
                 card.classList.add('scene-group-style');
-                card.style.backgroundColor = sceneColor + "26";
-                card.style.borderColor = sceneColor;
+                card.style.backgroundColor = sceneColor + "26"; card.style.borderColor = sceneColor;
             }
 
             card.style.left = leftStr; card.style.top = topStr; card.style.width = widthStr;
 
             card.innerHTML = `
-                <button class="link-toggle-btn" title="Ocultar/Exibir Ramificações">👁</button>
+                <button class="link-toggle-btn" title="Expandir/Recolher Ramificações">👁</button>
                 ${isScene ? `<div class="scene-title-badge" style="background:${sceneColor}">${itemsArray[0].labelText}</div>` : ''}
                 <div class="card-header-row" style="${isScene ? 'display:none;' : ''}">
                     <div class="editable-text still-label" contenteditable="false"></div>
@@ -792,7 +786,6 @@
             }
         }
 
-        // ---- COMPORTAMENTOS MESTRES REPARADOS ----
         function bindCardEvents(card) {
             const label = card.querySelector('.still-label');
             const caption = card.querySelector('.still-caption');
@@ -825,10 +818,15 @@
                 card.addEventListener('dragover', e => e.preventDefault());
             }
 
+            // CONTROLE DO OLHO REVERTIDO AO ALVO PROJETOR (REQUISITO 7)
             toggleBtn.addEventListener('click', e => {
-                e.stopPropagation();
-                card._branchHidden = !card._branchHidden;
-                document.querySelectorAll('.still-card').forEach(c => { if (c._linkedToId === card.id) { if (card._branchHidden) c.classList.add('hidden-branch'); else c.classList.remove('hidden-branch'); } });
+                e.stopPropagation(); card._branchHidden = !card._branchHidden;
+                document.querySelectorAll('.still-card').forEach(c => {
+                    if (c._linkedToId === card.id) {
+                        if (card._branchHidden) c.classList.add('hidden-branch');
+                        else c.classList.remove('hidden-branch');
+                    }
+                });
                 pushHistory(); toggleBtn.textContent = card._branchHidden ? "✕" : "👁"; drawConnectionLines();
             });
 
@@ -995,53 +993,38 @@
 
         function breakLinkViaManager(cardId) { pushHistory(); const card = document.getElementById(cardId); if(card) { card._linkedToId = null; card._linkedTarget = null; } resolvePostLoadLinks(); openRelationshipsModal(); }
 
-        // ---- MOTOR DE ZOOM INTEGRADO COM CONTROLES DIAGONAIS CORRIGIDOS ----
+        // ---- WIDGET DE ZOOM DIAGONA-SUPERIOR-ESQUERDA ----
         function setupZoomBadgeInteractions() {
             zoomBadge.addEventListener('click', e => {
                 e.stopPropagation(); contextMenu.style.display = 'none';
                 zoomMenu.style.display = zoomMenu.style.display === 'block' ? 'none' : 'block';
-                zoomSlider.value = Math.round(zoom * 100);
-                zoomSliderText.textContent = zoomSlider.value + '%';
+                zoomSlider.value = Math.round(zoom * 100); zoomSliderText.textContent = zoomSlider.value + '%';
             });
 
-            zoomSlider.addEventListener('input', e => {
-                const val = parseInt(e.target.value);
-                zoomSliderText.textContent = val + '%';
-                applyZoom(val / 100);
-            });
+            zoomSlider.addEventListener('input', e => { const val = parseInt(e.target.value); zoomSliderText.textContent = val + '%'; applyZoom(val / 100); });
 
-            // Entrada Manual por Duplo Clique
             zoomBadge.addEventListener('dblclick', e => {
                 e.stopPropagation(); zoomMenu.style.display = 'none';
                 const currentPct = Math.round(zoom * 100);
                 zoomBadge.innerHTML = `<input type="text" id="zoom-direct-input" value="${currentPct}" style="width:50px; background:#1a1616; border:1px solid #ff0000; color:#ffffff; text-align:center; font-size:0.8rem; font-weight:600; outline:none; border-radius:12px;">`;
-                const input = document.getElementById('zoom-direct-input');
-                input.focus(); input.select();
+                const input = document.getElementById('zoom-direct-input'); input.focus(); input.select();
 
-                // CORREÇÃO: Impede propagação nos listeners internos para não fechar ou re-acionar o badge
                 input.addEventListener('click', ev => ev.stopPropagation());
                 input.addEventListener('mousedown', ev => ev.stopPropagation());
 
-                function validateManualZoom() {
-                    let parsed = parseInt(input.value.replace('%','').trim());
-                    if (!isNaN(parsed)) applyZoom(parsed / 100);
-                    else applyZoom(zoom);
-                }
+                function validateManualZoom() { let parsed = parseInt(input.value.replace('%','').trim()); if (!isNaN(parsed)) applyZoom(parsed / 100); else applyZoom(zoom); }
                 input.addEventListener('keydown', ev => { if (ev.key === 'Enter') { ev.preventDefault(); validateManualZoom(); } if (ev.key === 'Escape') applyZoom(zoom); });
                 input.addEventListener('blur', validateManualZoom);
             });
         }
 
         function applyZoom(val) {
-            zoom = Math.max(0.10, Math.min(10.0, val)); // Limites de 10% a 1000%
-            canvas.style.transform = `scale(${zoom})`;
-            zoomBadge.textContent = `${Math.round(zoom * 100)}%`;
-            drawConnectionLines();
+            zoom = Math.max(0.10, Math.min(10.0, val)); canvas.style.transform = `scale(${zoom})`;
+            zoomBadge.textContent = `${Math.round(zoom * 100)}%`; drawConnectionLines();
         }
 
         function closeZoomMenu() { zoomMenu.style.display = 'none'; }
 
-        // ---- EXPORTADORES ----
         function getLayoutStateData() {
             const state = [];
             document.querySelectorAll('.still-card').forEach(card => {
@@ -1056,7 +1039,6 @@
             return JSON.stringify(state, null, 2);
         }
 
-        // ---- ALINHAMENTOS ----
         function alignGroup(mode) {
             if (selection.count === 0) return; pushHistory();
             let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
@@ -1092,7 +1074,7 @@
             drawConnectionLines();
         }
 
-        // MARQUEE
+        // MARQUEE SELECTION
         let isMarquee = false, mStartX, mStartY;
         canvas.addEventListener('mousedown', e => {
             if (e.target === canvas && e.button === 0) {
@@ -1114,7 +1096,7 @@
         });
         document.addEventListener('mouseup', () => { isMarquee = false; marquee.style.display = 'none'; });
 
-        // CONTEXT MENU BOUNDARY CHECK
+        // BOUNDS DO BOTÃO DIREITO MANTIDOS EM TELA
         canvas.addEventListener('contextmenu', e => {
             e.preventDefault(); const targetCard = e.target.closest('.still-card');
             if (targetCard && !selection.has(targetCard)) { selection.clear(); selection.select(targetCard); }
@@ -1171,7 +1153,7 @@
             if (e.key === '+' || e.key === '=') { e.preventDefault(); applyZoom(zoom + 0.1); }
             if (e.key === '-') { e.preventDefault(); applyZoom(zoom - 0.1); }
             
-            // Reajuste Fiel de atalhos em lote solicitados
+            // Tratamento preciso de Ctrl+Z e Ctrl+Shift+Z
             if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 'z') { e.preventDefault(); executeUndo(); }
             if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'z') { e.preventDefault(); executeRedo(); }
         });
