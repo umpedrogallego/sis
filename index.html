@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>SIS | Storyboard v1</title>
+    <title>SIS | Storyboard v1c</title>
     <style>
         * {
             box-sizing: border-box;
@@ -49,6 +49,7 @@
             align-items: center;
             gap: 6px;
             transition: all 0.15s ease;
+            user-select: none;
         }
 
         .btn:hover {
@@ -94,7 +95,7 @@
             letter-spacing: 0.5px;
         }
 
-        /* ÁREA PRINCIPAL DA MESA DE TRABALHO */
+        /* ÁREA DA MESA DE TRABALHO ROLÁVEL */
         #viewport {
             width: 100vw;
             height: calc(100vh - 50px);
@@ -104,8 +105,8 @@
         }
 
         #canvas {
-            width: 100%;
-            min-height: 3000px;
+            width: 5000px;
+            height: 5000px;
             position: relative;
             transform-origin: top left;
             background-color: #2b2424;
@@ -115,7 +116,7 @@
             background-size: 30px 30px;
         }
 
-        /* CAMADA SVG DE LINHAS DE CONEXÃO */
+        /* CAMADA SVG INTERNA AO CANVAS (Garante precisão milimétrica no Zoom) */
         #svg-connection-layer {
             position: absolute;
             top: 0;
@@ -133,7 +134,7 @@
             fill: none;
         }
 
-        /* COMPONENTES DA MESA DE TRABALHO (CARDS) */
+        /* CARDS DA MESA */
         .still-card {
             position: absolute;
             padding: 12px;
@@ -157,23 +158,6 @@
         .still-card.post-it-style {
             background: #231e1e;
             border: 1px dashed #bebab0;
-        }
-
-        .still-card.scene-group-style {
-            background: rgba(26, 22, 22, 0.35);
-            border: 2px solid #524646;
-            z-index: 5 !important;
-        }
-        .scene-title-badge {
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #ffffff;
-            padding: 2px 6px;
-            border-radius: 3px;
-            display: inline-block;
-            margin-bottom: 6px;
         }
 
         .card-header-row {
@@ -209,7 +193,6 @@
         }
         .gallery-btn:hover { color: #ff0000; }
 
-        /* INTERCEPTADORES VISUAIS DE SOLTURA */
         .img-container {
             width: 100%;
             position: relative;
@@ -282,7 +265,7 @@
         .still-card:hover .link-toggle-btn { display: flex; }
         .hidden-branch { display: none !important; }
 
-        /* MODAL POP-UP DA GALERIA MESTRA */
+        /* MODAIS POP-UP */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: rgba(43, 36, 36, 0.85); display: none;
@@ -326,12 +309,6 @@
             display: flex; justify-content: flex-end; gap: 10px;
         }
 
-        #scene-modal { width: 320px; height: auto; padding: 20px; gap: 15px; }
-        .color-picker-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 10px 0; }
-        .color-option { height: 24px; border-radius: 4px; cursor: pointer; border: 1px solid #1a1616; }
-        .color-option.selected { border: 2px solid #ffffff; }
-        .input-text-field { width: 100%; background: #2b2424; border: 1px solid #524646; padding: 6px; border-radius: 4px; color: #ffffff; outline: none; font-size: 0.85rem; }
-
         #marquee { position: absolute; border: 1px dashed #ff0000; background: rgba(255, 0, 0, 0.08); display: none; pointer-events: none; z-index: 999; }
         
         #zoom-badge {
@@ -358,6 +335,7 @@
             <option value="">Carregando Versões...</option>
         </select>
         <button class="btn btn-primary" onclick="openGalleryModal()">📁 Abrir Galeria</button>
+        <button class="btn" onclick="createNewPostItAtCenter()">📝 Nova Nota</button>
         <button class="btn" onclick="exportLayoutJson()">↓ Baixar Versão</button>
         <button class="btn" onclick="copyLayoutToClipboard()">📋 Copiar Versão</button>
         
@@ -377,15 +355,14 @@
         <div class="divider"></div>
         <button class="btn" onclick="distributeGroup('horizontal')">↔ Distribuir</button>
         <button class="btn" onclick="distributeGroup('vertical')">↕ Empilhar</button>
-        <button class="btn" id="top-btn-group" onclick="triggerSceneCreation()" style="display:none; border-color:#ff0000;">🎬 Agrupar Cena</button>
         
         <div class="divider" style="margin-left:auto;"></div>
-        <button class="btn" onclick="openHelpModal()" style="border-color:#bebab0;">Manual (Como Usar)</button>
+        <button class="btn" onclick="openHelpModal()" style="border-color:#bebab0;">Manual</button>
     </div>
 
     <div id="viewport">
-        <svg id="svg-connection-layer"></svg>
         <div id="canvas">
+            <svg id="svg-connection-layer"></svg>
             <div id="marquee"></div>
         </div>
     </div>
@@ -400,45 +377,28 @@
             </div>
             <div class="modal-content-grid" id="modal-asset-grid"></div>
             <div class="modal-footer">
-                <span style="font-size:0.75rem; color:#8c8282; margin-right:auto; align-self:center;">Dica: Arraste os itens, use Ctrl/Shift ou faça seleção por área.</span>
+                <span style="font-size:0.75rem; color:#8c8282; margin-right:auto; align-self:center;">Dica: Arraste os itens ou use Ctrl/Shift.</span>
                 <button class="btn" onclick="closeModal('gallery-modal')">Cancelar</button>
                 <button class="btn btn-primary" onclick="insertSelectedAssetsFromModal()">Adicionar à Mesa (Enter)</button>
             </div>
         </div>
     </div>
 
-    <div id="scene-config-modal" class="modal-overlay">
-        <div class="modal-window" id="scene-modal">
-            <div class="modal-title">Configurar Nova Cena</div>
-            <input type="text" id="scene-name-input" class="input-text-field" placeholder="Nome da Cena (Ex: CENA 01)">
-            <div class="section-label" style="margin-top:10px;">Cor da Borda Estrutural:</div>
-            <div class="color-picker-grid" id="scene-color-picker"></div>
-            <div class="modal-footer" style="padding:0; border:none; margin-top:10px;">
-                <button class="btn" onclick="closeModal('scene-config-modal')">Cancelar</button>
-                <button class="btn btn-primary" onclick="confirmSceneCreation()">Criar Estrutura</button>
-            </div>
-        </div>
-    </div>
-
     <div id="help-modal" class="modal-overlay" onclick="closeModalOnOverlay(event, 'help-modal')">
-        <div class="modal-window" style="width:50vw; height:70vh;">
-            <div class="modal-header"><div class="modal-title">Manual de Operação da Interface (SIS v1)</div><button class="modal-close" onclick="closeModal('help-modal')">✕</button></div>
+        <div class="modal-window" style="width:50vw; height:60vh;">
+            <div class="modal-header"><div class="modal-title">Manual de Operação da Interface (SIS v3)</div><button class="modal-close" onclick="closeModal('help-modal')">✕</button></div>
             <div style="flex:1; overflow-y:auto; padding:25px; font-size:0.85rem; line-height:1.6; color:#ffffff;">
-                <h3 style="color:#ff0000; margin-bottom:10px;">📌 Comandos Gerais & Atalhos</h3>
+                <h3 style="color:#ffffff; margin-bottom:10px;">📌 Comandos Gerais & Atalhos</h3>
                 <p>• <b>Duplo Clique no Fundo:</b> Instancia uma Nota de Texto Livre (Post-it).</p>
                 <p>• <b>Duplo Clique na Nota / Título:</b> Ativa modo edição de texto (Suporta Enter para quebras e Ctrl+B para negrito).</p>
-                <p>• <b>Duplo Clique na Imagem:</b> Revela/Foca o campo de legenda inferior do Still.</p>
                 <p>• <b>Delete / Backspace:</b> Remove definitivamente os elementos atualmente selecionados.</p>
+                <p>• <b>Ctrl + Z e Ctrl + Shift + Z:</b> Histórico mestre de Desfazer e Refazer ações.</p>
                 <br>
-                <h3 style="color:#ff0000; margin-bottom:10px;">🎬 Agrupamento de Takes (Galerias Integradas)</h3>
-                <p>• Arraste um card ou uma imagem da galeria diretamente <b>sobre o centro</b> de outra imagem na mesa de luz. O elemento alvo absorverá a nova imagem criando uma mini-galeria/slider com navegação lateral (Scroll Horizontal ou Setas do Teclado).</p>
+                <h3 style="color:#ffffff; margin-bottom:10px;">🎬 Agrupamento de Takes</h3>
+                <p>• Arraste um card diretamente <b>sobre o centro</b> de outro. O elemento alvo absorverá o Still criando uma galeria integrada com navegação lateral pelas setas do teclado.</p>
                 <br>
-                <h3 style="color:#ff0000; margin-bottom:10px;">🔗 Relacionamento de Conteúdo & Notas</h3>
-                <p>• Clique com o <b>botão direito em uma Nota de Texto</b> e depois no elemento alvo para criar um vínculo. Uma linha tracejada unirá os blocos. Use o botão <b>👁</b> no canto para ocultar/exibir a ramificação de notas vinculadas.</p>
-                <br>
-                <h3 style="color:#ff0000; margin-bottom:10px;">🔍 Controle de Zoom Fluido</h3>
-                <p>• <b>Pinch no Trackpad / Ctrl + Roda do Mouse:</b> Executa aproximação/afastamento suave e amortecido.</p>
-                <p>• <b>Teclas + e -:</b> Zoom incremental clássico por teclado.</p>
+                <h3 style="color:#ffffff; margin-bottom:10px;">🔗 Relacionamento de Notas</h3>
+                <p>• Clique com o botão direito em um Post-it, selecione "Vincular Nota" e clique no Still alvo para travar uma linha tracejada entre eles.</p>
             </div>
         </div>
     </div>
@@ -447,7 +407,6 @@
         <div class="menu-item" onclick="alignGroup('left')">Alinhar à Esquerda (←|)</div>
         <div class="menu-item" onclick="alignGroup('top')">Alinhar ao Topo (↑)</div>
         <div class="menu-item" onclick="distributeGroup('horizontal')">Distribuir Lado a Lado</div>
-        <div class="menu-item" onclick="triggerSceneCreation()">Criar Bloco de Cena</div>
         <div class="menu-item" onclick="startAnnotationLinking()">Vincular Nota Flutuante</div>
         <div class="divider" style="width:100%; height:1px; margin:4px 0;"></div>
         <div class="menu-item" onclick="breakActiveGallery()">Desfazer Galeria/Grupo</div>
@@ -472,7 +431,6 @@
         const svgLayer = document.getElementById('svg-connection-layer');
 
         let zoom = 1;
-        const GRID_SIZE = 30;
         const BASE_WIDTH = 240;
         
         let undoStack = []; let redoStack = [];
@@ -481,35 +439,24 @@
         let lastModalSelectedIndex = -1;
         let activeLinkingOriginCard = null;
 
-        const sceneColors = ["#ff0000", "#cc0000", "#3a3232", "#524646", "#8c8282", "#bebab0", "#1a1616", "#a62424", "#631212", "#473b21", "#21473b", "#213647"];
-        let selectedSceneColor = sceneColors[0];
-
-        // CORREÇÃO MESTRE: Classe interna gerenciadora de seleções e deleções unificada
         class SelectionManager {
             constructor() { this.items = new Set(); }
-            select(card) { card.classList.add('selected'); this.items.add(card); triggerTopGroupButtonVisibility(); }
-            unselect(card) { card.classList.remove('selected'); this.items.delete(card); triggerTopGroupButtonVisibility(); }
-            clear() { this.items.forEach(c => c.classList.remove('selected')); this.items.clear(); triggerTopGroupButtonVisibility(); }
+            select(card) { card.classList.add('selected'); this.items.add(card); }
+            unselect(card) { card.classList.remove('selected'); this.items.delete(card); }
+            clear() { this.items.forEach(c => c.classList.remove('selected')); this.items.clear(); }
             has(card) { return this.items.has(card); }
             get count() { return this.items.size; }
             get list() { return Array.from(this.items); }
-            deleteSelected() {
-                this.items.forEach(card => card.remove());
-                this.clear();
-            }
+            deleteSelected() { this.items.forEach(card => card.remove()); this.clear(); }
         }
         const selection = new SelectionManager();
 
-        function triggerTopGroupButtonVisibility() {
-            document.getElementById('top-btn-group').style.display = selection.count > 0 ? 'inline-flex' : 'none';
-        }
-
-        // ---- CARREGAMENTO CORE DOS MANIFESTOS ----
+        // ---- CARREGAMENTO DOS MANIFESTOS DO GITHUB ----
         window.addEventListener('load', () => {
             fetch('data/manifesto.json?t=' + Date.now())
                 .then(res => res.json())
                 .then(imagens => { window.galeriaMestra = imagens; })
-                .catch(() => console.log("Manifesto de imagens não localizado."));
+                .catch(() => console.log("Manifesto de mídias não localizado."));
 
             fetch('data/versoes.json?t=' + Date.now())
                 .then(res => res.json())
@@ -521,8 +468,6 @@
                     }
                 })
                 .catch(() => { layoutSelect.innerHTML = '<option value="">Nenhum layout salvo</option>'; });
-            
-            buildColorPicker();
         });
 
         function buildVersionDropdown(versoes) {
@@ -541,7 +486,8 @@
                 .then(structuralData => {
                     clearWorkspace();
                     structuralData.forEach(data => {
-                        const card = createCardRaw(data.items, data.left, data.top, data.width, data.activeIndex, data.isPostIt, data.isScene, data.sceneColor, data.linkedToId, data.branchHidden);
+                        // Preserva propriedades de cena no parser para compatibilidade com o geral.json antigo
+                        const card = createCardRaw(data.items, data.left, data.top, data.width, data.activeIndex, data.isPostIt);
                         card.id = data.id || 'card_' + Math.random().toString(36).substr(2, 9);
                         canvas.appendChild(card);
                     });
@@ -569,12 +515,10 @@
             drawConnectionLines();
         }
 
-        // ---- MODAL DA GALERIA (POP-UP) ----
+        // ---- POP-UP GALERIA ----
         function openGalleryModal() {
             document.getElementById('gallery-modal').style.display = 'flex';
-            modalSelection.clear();
-            lastModalSelectedIndex = -1;
-            renderModalGrid();
+            modalSelection.clear(); lastModalSelectedIndex = -1; renderModalGrid();
         }
 
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
@@ -586,18 +530,10 @@
                 const itemCard = document.createElement('div');
                 itemCard.className = 'gallery-item-card';
                 itemCard.dataset.index = index;
-                // CORREÇÃO: Força explicitamente a propriedade nativa drag-and-drop
                 itemCard.setAttribute('draggable', 'true');
-                itemCard.innerHTML = `
-                    <img src="img/${nome}" loading="lazy">
-                    <div class="gallery-item-title">${nome}</div>
-                `;
-                
+                itemCard.innerHTML = `<img src="img/${nome}" loading="lazy"><div class="gallery-item-title">${nome}</div>`;
                 itemCard.addEventListener('click', e => handleModalClick(e, index));
-                itemCard.addEventListener('dragstart', e => {
-                    e.dataTransfer.setData('text/plain', nome);
-                });
-
+                itemCard.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', nome); });
                 assetGrid.appendChild(itemCard);
             });
             setupModalMarquee();
@@ -614,20 +550,13 @@
                 else modalSelection.add(index);
                 lastModalSelectedIndex = index;
             } else {
-                modalSelection.clear();
-                modalSelection.add(index);
-                lastModalSelectedIndex = index;
+                modalSelection.clear(); modalSelection.add(index); lastModalSelectedIndex = index;
             }
             updateModalVisualSelection();
         }
 
-        function updateModalVisualSelection() {
-            document.querySelectorAll('.gallery-item-card').forEach(card => {
-                const idx = parseInt(card.dataset.index);
-                if (modalSelection.has(idx)) card.classList.add('selected');
-                else card.classList.remove('selected');
-            });
-        }
+        function clearGallerySelectionOutside(e) { if(e.target === assetGrid) { modalSelection.clear(); updateModalVisualSelection(); } }
+        function updateModalVisualSelection() { document.querySelectorAll('.gallery-item-card').forEach(card => { const idx = parseInt(card.dataset.index); if (modalSelection.has(idx)) card.classList.add('selected'); else card.classList.remove('selected'); }); }
 
         function setupModalMarquee() {
             let isM = false, sx, sy;
@@ -639,33 +568,22 @@
                 if(e.target === assetGrid) {
                     isM = true; modalSelection.clear();
                     const rect = assetGrid.getBoundingClientRect();
-                    sx = e.clientX - rect.left + assetGrid.scrollLeft;
-                    sy = e.clientY - rect.top + assetGrid.scrollTop;
-                    mBox.style.left = sx+'px'; mBox.style.top = sy+'px';
-                    mBox.style.width = '0px'; mBox.style.height = '0px'; mBox.style.display='block';
+                    sx = e.clientX - rect.left + assetGrid.scrollLeft; sy = e.clientY - rect.top + assetGrid.scrollTop;
+                    mBox.style.left = sx+'px'; mBox.style.top = sy+'px'; mBox.style.width = '0px'; mBox.style.height = '0px'; mBox.style.display='block';
                 }
             });
             assetGrid.addEventListener('mousemove', e => {
                 if(!isM) return;
                 const rect = assetGrid.getBoundingClientRect();
-                const cx = e.clientX - rect.left + assetGrid.scrollLeft;
-                const cy = e.clientY - rect.top + assetGrid.scrollTop;
-                const w = Math.abs(cx - sx), h = Math.abs(cy - sy);
-                const l = Math.min(cx, sx), t = Math.min(cy, sy);
+                const cx = e.clientX - rect.left + assetGrid.scrollLeft; const cy = e.clientY - rect.top + assetGrid.scrollTop;
+                const w = Math.abs(cx - sx), h = Math.abs(cy - sy); const l = Math.min(cx, sx), t = Math.min(cy, sy);
                 mBox.style.left = l+'px'; mBox.style.top = t+'px'; mBox.style.width = w+'px'; mBox.style.height = h+'px';
-
-                document.querySelectorAll('.gallery-item-card').forEach(card => {
-                    const idx = parseInt(card.dataset.index);
-                    if(l < card.offsetLeft + card.offsetWidth && l + w > card.offsetLeft && t < card.offsetTop + card.offsetHeight && t + h > card.offsetTop) {
-                        modalSelection.add(idx);
-                    } else { modalSelection.delete(idx); }
-                });
+                document.querySelectorAll('.gallery-item-card').forEach(card => { const idx = parseInt(card.dataset.index); if(l < card.offsetLeft + card.offsetWidth && l + w > card.offsetLeft && t < card.offsetTop + card.offsetHeight && t + h > card.offsetTop) { modalSelection.add(idx); } else { modalSelection.delete(idx); } });
                 updateModalVisualSelection();
             });
             document.addEventListener('mouseup', () => { isM = false; mBox.style.display='none'; });
         }
 
-        // ---- INGESTÃO INTELIGENTE LADO A LADO ----
         function insertSelectedAssetsFromModal() {
             if (modalSelection.size === 0) return;
             pushHistory();
@@ -682,11 +600,8 @@
                 const nomeArquivo = window.galeriaMestra[globalIdx];
                 const cleanName = nomeArquivo.replace(/\.[^/.]+$/, "");
                 
-                let col = orderIdx % maxCols;
-                let row = Math.floor(orderIdx / maxCols);
-
-                let targetX = startLeft + (col * spacingX);
-                let targetY = startTop + (row * spacingY);
+                let col = orderIdx % maxCols; let row = Math.floor(orderIdx / maxCols);
+                let targetX = startLeft + (col * spacingX); let targetY = startTop + (row * spacingY);
 
                 const card = createCardRaw([{ fileName: nomeArquivo, labelText: cleanName, captionText: "" }], targetX + 'px', targetY + 'px', BASE_WIDTH + 'px', 0, false);
                 canvas.appendChild(card);
@@ -696,31 +611,35 @@
             updateCanvasBounds();
         }
 
-        // ---- CONSTRUTOR DE CARDS AVANÇADO ----
-        function createCardRaw(itemsArray, leftStr, topStr, widthStr, activeIndex = 0, isPostIt = false, isScene = false, sceneColor = "", linkedToId = null, branchHidden = false) {
+        // ---- REQUISITO 1: ADICIONAR NOTA VIA BOTÃO ----
+        function createNewPostItAtCenter() {
+            pushHistory();
+            let x = Math.round((viewport.scrollLeft + 120) / 30) * 30;
+            let y = Math.round((viewport.scrollTop + 120) / 30) * 30;
+            const card = createCardRaw([{ labelText: "Anotação...", captionText: "" }], x + 'px', y + 'px', '192px', 0, true);
+            canvas.appendChild(card);
+            updateCanvasBounds();
+            
+            const label = card.querySelector('.still-label');
+            label.setAttribute('contenteditable', 'true');
+            label.focus();
+        }
+
+        // ---- CONSTRUTOR DE CARDS ----
+        function createCardRaw(itemsArray, leftStr, topStr, widthStr, activeIndex = 0, isPostIt = false) {
             const card = document.createElement('div');
             card.className = 'still-card';
             card.id = 'card_' + Math.random().toString(36).substr(2, 9);
             
-            card._itemData = itemsArray;
-            card._activeIndex = activeIndex;
-            card._isPostIt = isPostIt;
-            card._isScene = isScene;
-            card._sceneColor = sceneColor;
-            card._linkedToId = linkedToId;
-            card._branchHidden = branchHidden;
-            card._linkedTarget = null;
+            card._itemData = itemsArray; card._activeIndex = activeIndex;
+            card._isPostIt = isPostIt; card._linkedToId = null; card._branchHidden = false; card._linkedTarget = null;
 
             if (isPostIt) card.classList.add('post-it-style');
-            if (isScene) card.classList.add('scene-group-style');
 
-            card.style.left = leftStr;
-            card.style.top = topStr;
-            card.style.width = widthStr;
+            card.style.left = leftStr; card.style.top = topStr; card.style.width = widthStr;
 
             card.innerHTML = `
-                <button class="link-toggle-btn" title="Expandir/Recolher Conexões">👁</button>
-                ${isScene ? `<div class="scene-title-badge" style="background:${sceneColor}">Cena</div>` : ''}
+                <button class="link-toggle-btn" title="Recolher Conexões">👁</button>
                 <div class="card-header-row">
                     <div class="editable-text still-label" contenteditable="false"></div>
                     <div class="gallery-controls">
@@ -729,7 +648,7 @@
                         <button class="gallery-btn next-btn">▶</button>
                     </div>
                 </div>
-                <div class="img-container" style="${(isPostIt || isScene) ? 'display:none;' : ''}">
+                <div class="img-container" style="${isPostIt ? 'display:none;' : ''}">
                     <img>
                 </div>
                 <div class="editable-text still-caption" contenteditable="false"></div>
@@ -751,29 +670,25 @@
             caption.innerHTML = item.captionText;
             caption.style.display = item.captionText ? 'block' : 'none';
 
-            if (card._linkedToId) {
-                toggleBtn.textContent = card._branchHidden ? "❌" : "👁";
-            }
+            if (card._linkedToId) toggleBtn.textContent = card._branchHidden ? "❌" : "👁";
 
-            if (!card._isPostIt && !card._isScene) {
+            if (!card._isPostIt) {
                 const img = card.querySelector('img');
                 const controls = card.querySelector('.gallery-controls');
                 const counter = card.querySelector('.gallery-counter');
-
                 img.src = `img/${item.fileName}`;
 
                 if (card._itemData.length > 1) {
-                    controls.style.display = 'flex';
-                    counter.textContent = `${card._activeIndex + 1}/${card._itemData.length}`;
+                    controls.style.display = 'flex'; counter.textContent = `${card._activeIndex + 1}/${card._itemData.length}`;
                 } else { controls.style.display = 'none'; }
             }
         }
 
-        // ---- COMPORTAMENTOS E EVENTOS DE MOVIMENTO ----
         function bindCardEvents(card) {
             const label = card.querySelector('.still-label');
             const caption = card.querySelector('.still-caption');
             const resizeHandle = card.querySelector('.resize-handle');
+            const imgContainer = card.querySelector('.img-container');
             const toggleBtn = card.querySelector('.link-toggle-btn');
 
             function wireText(elem, key) {
@@ -787,112 +702,106 @@
                 elem.addEventListener('keydown', e => { if(e.key === 'Enter') e.stopPropagation(); });
                 elem.addEventListener('mousedown', e => { if(elem.getAttribute('contenteditable') === 'true') e.stopPropagation(); });
             }
-            wireText(label, 'labelText');
-            wireText(caption, 'captionText');
+            wireText(label, 'labelText'); wireText(caption, 'captionText');
 
-            if (!card._isPostIt && !card._isScene) {
+            if (!card._isPostIt) {
                 const img = card.querySelector('img');
                 img.addEventListener('dblclick', e => { e.stopPropagation(); caption.style.display = 'block'; setTimeout(() => { caption.setAttribute('contenteditable', 'true'); caption.focus(); }, 20); });
                 card.querySelector('.prev-btn').addEventListener('click', e => { e.stopPropagation(); navigateGallery(card, -1); });
                 card.querySelector('.next-btn').addEventListener('click', e => { e.stopPropagation(); navigateGallery(card, 1); });
+
+                card.addEventListener('dragenter', () => { if(!selection.has(card)) imgContainer.classList.add('drag-hover-intercept'); });
+                card.addEventListener('dragleave', () => { imgContainer.classList.remove('drag-hover-intercept'); });
+                card.addEventListener('dragover', e => e.preventDefault());
             }
 
             toggleBtn.addEventListener('click', e => {
-                e.stopPropagation();
-                card._branchHidden = !card._branchHidden;
-                toggleBranchVisibility(card, card._branchHidden);
-                pushHistory();
-                renderCard(card);
-                drawConnectionLines();
+                e.stopPropagation(); card._branchHidden = !card._branchHidden;
+                toggleBranchVisibility(card, card._branchHidden); pushHistory();
+                renderCard(card); drawConnectionLines();
             });
 
-            card.addEventListener('wheel', e => {
-                if (!card._isPostIt && !card._isScene && card._itemData.length > 1 && Math.abs(e.deltaX) > 4) {
-                    e.preventDefault(); e.stopPropagation(); navigateGallery(card, e.deltaX > 0 ? 1 : -1);
-                }
-            });
+            card.addEventListener('wheel', e => { if (!card._isPostIt && card._itemData.length > 1 && Math.abs(e.deltaX) > 4) { e.preventDefault(); e.stopPropagation(); navigateGallery(card, e.deltaX > 0 ? 1 : -1); } });
 
-            // ARRASTO, AGNT-STACKING E INTERCEPÇÃO VISUAL EM TEMPO REAL (REQUISITO 2 E 9)
+            // ---- REQUISITO 3 e 4: DRAG CONJUNTO LÍDER/DEPENDENTE COM REQUISITO SHIFT SELECTION ----
             card.addEventListener('mousedown', e => {
                 if (e.button !== 0 || label.getAttribute('contenteditable') === 'true' || caption.getAttribute('contenteditable') === 'true') return;
                 
                 if (activeLinkingOriginCard) {
                     e.stopPropagation(); e.preventDefault();
                     if (activeLinkingOriginCard !== card) {
-                        pushHistory();
-                        activeLinkingOriginCard._linkedToId = card.id;
-                        activeLinkingOriginCard._linkedTarget = card;
-                        activeLinkingOriginCard = null;
-                        document.body.style.cursor = 'default';
-                        drawConnectionLines();
+                        pushHistory(); activeLinkingOriginCard._linkedToId = card.id; activeLinkingOriginCard._linkedTarget = card;
+                        activeLinkingOriginCard = null; document.body.style.cursor = 'default'; resolvePostLoadLinks();
                     }
                     return;
                 }
 
                 e.stopPropagation(); e.preventDefault();
 
-                if (!selection.has(card)) { if (!e.ctrlKey && !e.metaKey) selection.clear(); selection.select(card); }
+                // Habilita a seleção múltipla incremental acumulativa tradicional via tecla Shift
+                if (!selection.has(card)) {
+                    if (!e.ctrlKey && !e.metaKey && !e.shiftKey) selection.clear();
+                    selection.select(card);
+                } else if (e.ctrlKey || e.metaKey || e.shiftKey) {
+                    selection.unselect(card); return;
+                }
 
                 const startX = e.clientX; const startY = e.clientY;
-                const initialPositions = selection.list.map(c => ({
-                    card: c, left: parseFloat(c.style.left), top: parseFloat(c.style.top),
-                    childrenInScene: c._isScene ? findCardsInsideSceneFrame(c) : []
+
+                // Captura recursivamente todos os elementos acoplados (dependentes ligados) ao líder (Requisito 3)
+                const movingSet = new Set(selection.list);
+                function collectLinkedNotes(target) {
+                    document.querySelectorAll('.still-card').forEach(c => {
+                        if (c._linkedToId === target.id && !movingSet.has(c)) {
+                            movingSet.add(c); collectLinkedNotes(c);
+                        }
+                    });
+                }
+                selection.list.forEach(c => collectLinkedNotes(c));
+
+                const initialPositions = Array.from(movingSet).map(c => ({
+                    card: c, left: parseFloat(c.style.left), top: parseFloat(c.style.top)
                 }));
 
                 function onMove(mEvent) {
-                    const dx = (mEvent.clientX - startX) / zoom;
-                    const dy = (mEvent.clientY - startY) / zoom;
+                    const dx = (mEvent.clientX - startX) / zoom; const dy = (mEvent.clientY - startY) / zoom;
 
-                    initialPositions.forEach(pos => {
-                        let targetLeft = pos.left + dx;
-                        let targetTop = pos.top + dy;
+                    const primaryPos = initialPositions.find(p => p.card === card);
+                    if (!primaryPos) return;
 
-                        if (pos.card === card) {
-                            let snapX = Math.round(targetLeft / 30) * 30;
-                            let snapY = Math.round(targetTop / 30) * 30;
-                            const sdx = snapX - pos.left;
-                            const sdy = snapY - pos.top;
+                    let snapX = Math.round((primaryPos.left + dx) / 30) * 30;
+                    let snapY = Math.round((primaryPos.top + dy) / 30) * 30;
+                    const sdx = snapX - primaryPos.left; const sdy = snapY - primaryPos.top;
 
-                            initialPositions.forEach(p => {
-                                p.card.style.left = (p.left + sdx) + 'px';
-                                p.card.style.top = (p.top + sdy) + 'px';
-                                
-                                p.childrenInScene.forEach(child => {
-                                    child.card.style.left = (child.left + sdx) + 'px';
-                                    child.card.style.top = (child.top + sdy) + 'px';
-                                });
-                            });
-                        }
+                    initialPositions.forEach(p => {
+                        p.card.style.left = (p.left + sdx) + 'px'; p.card.style.top = (p.top + sdy) + 'px';
                     });
 
-                    // FEEDBACK EM TEMPO REAL: Detecta se o card mestre sobrepõe outro take para acender o overlay
+                    // Realimentação em tempo real para acúmulo de slides em galeria
                     let currentTarget = null;
-                    if (selection.count === 1 && !card._isPostIt && !card._isScene) {
+                    if (selection.count === 1 && !card._isPostIt) {
                         const fx = parseFloat(card.style.left) + card.offsetWidth / 2;
                         const fy = parseFloat(card.style.top) + card.offsetHeight / 2;
                         currentTarget = getCardAtPos(fx, fy);
                     }
                     document.querySelectorAll('.img-container').forEach(ic => ic.classList.remove('drag-hover-intercept'));
-                    if (currentTarget && !currentTarget._isPostIt && !currentTarget._isScene) {
-                        const ic = currentTarget.querySelector('.img-container');
-                        if (ic) ic.classList.add('drag-hover-intercept');
+                    if (currentTarget && !currentTarget._isPostIt) {
+                        const ic = currentTarget.querySelector('.img-container'); if (ic) ic.classList.add('drag-hover-intercept');
                     }
 
                     drawConnectionLines();
                 }
 
                 function onRelease() {
-                    document.removeEventListener('mousemove', onMove);
-                    document.removeEventListener('mouseup', onRelease);
+                    document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onRelease);
                     
-                    if (selection.count === 1 && !card._isPostIt && !card._isScene) {
+                    if (selection.count === 1 && !card._isPostIt) {
                         const finalX = parseFloat(card.style.left) + card.offsetWidth/2;
                         const finalY = parseFloat(card.style.top) + card.offsetHeight/2;
                         const targetCard = getCardAtPos(finalX, finalY);
 
-                        if (targetCard && targetCard !== card && !targetCard._isPostIt && !targetCard._isScene) {
-                            pushHistory();
-                            targetCard._itemData.push(...card._itemData);
+                        if (targetCard && targetCard !== card && !targetCard._isPostIt) {
+                            pushHistory(); targetCard._itemData.push(...card._itemData);
                             targetCard._activeIndex = targetCard._itemData.length - card._itemData.length;
                             card.remove(); selection.clear(); renderCard(targetCard);
                         }
@@ -900,11 +809,10 @@
                     document.querySelectorAll('.img-container').forEach(ic => ic.classList.remove('drag-hover-intercept'));
                     updateCanvasBounds();
                 }
-                document.addEventListener('mousemove', onMove);
-                document.addEventListener('mouseup', onRelease);
+                document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onRelease);
             });
 
-            // RESIZE EM SALTOS DE 20%
+            // RESIZE
             resizeHandle.addEventListener('mousedown', e => {
                 e.stopPropagation(); e.preventDefault(); pushHistory();
                 const startX = e.clientX;
@@ -931,13 +839,7 @@
         }
 
         function toggleBranchVisibility(originCard, hide) {
-            document.querySelectorAll('.still-card').forEach(c => {
-                if (c._linkedToId === originCard.id) {
-                    if (hide) c.classList.add('hidden-branch');
-                    else c.classList.remove('hidden-branch');
-                    toggleBranchVisibility(c, hide);
-                }
-            });
+            document.querySelectorAll('.still-card').forEach(c => { if (c._linkedToId === originCard.id) { if (hide) c.classList.add('hidden-branch'); else c.classList.remove('hidden-branch'); toggleBranchVisibility(c, hide); } });
         }
 
         function drawConnectionLines() {
@@ -961,301 +863,91 @@
             });
         }
 
-        function startAnnotationLinking() {
-            if (selection.count !== 1) return;
-            activeLinkingOriginCard = selection.list[0];
-            document.body.style.cursor = 'crosshair';
-            contextMenu.style.display = 'none';
-        }
+        function startAnnotationLinking() { if (selection.count !== 1) return; activeLinkingOriginCard = selection.list[0]; document.body.style.cursor = 'crosshair'; contextMenu.style.display = 'none'; }
 
-        function findCardsInsideSceneFrame(sceneCard) {
-            const list = [];
-            const sl = parseFloat(sceneCard.style.left), st = parseFloat(sceneCard.style.top);
-            const sw = sceneCard.offsetWidth, sh = sceneCard.offsetHeight;
-            document.querySelectorAll('.still-card').forEach(c => {
-                if (c === sceneCard || selection.has(c)) return;
-                const cl = parseFloat(c.style.left), ct = parseFloat(c.style.top);
-                if (cl >= sl && cl <= sl + sw && ct >= st && ct <= st + sh) {
-                    list.push({ card: c, left: cl, top: ct });
-                }
-            });
-            return list;
-        }
+        // ZOOM MOUSE/TRACKPAD
+        viewport.addEventListener('wheel', e => { if (e.ctrlKey || e.metaKey) { e.preventDefault(); applyZoom(zoom + (e.deltaY < 0 ? 0.015 : -0.015)); } });
+        function applyZoom(val) { zoom = Math.max(0.15, Math.min(2.5, val)); canvas.style.transform = `scale(${zoom})`; zoomBadge.textContent = `${Math.round(zoom * 100)}%`; drawConnectionLines(); }
+        function openZoomMenu(e) { e.stopPropagation(); zoomMenu.style.left = e.clientX + 'px'; zoomMenu.style.top = e.clientY + 'px'; zoomMenu.style.display = 'block'; }
+        function fitZoom(type) { let maxX = 0, maxY = 0; document.querySelectorAll('.still-card').forEach(c => { let r = parseFloat(c.style.left) + c.offsetWidth; let b = parseFloat(c.style.top) + c.offsetHeight; if(r > maxX) maxX = r; if(b > maxY) maxY = b; }); if(maxX === 0 || maxY === 0) return; let scale = (type === 'horizontal') ? (viewport.offsetWidth - 80) / maxX : (viewport.offsetHeight - 80) / maxY; applyZoom(scale); zoomMenu.style.display = 'none'; }
 
-        function buildColorPicker() {
-            const grid = document.getElementById('scene-color-picker');
-            grid.innerHTML = "";
-            sceneColors.forEach(cor => {
-                const opt = document.createElement('div');
-                opt.className = 'color-option';
-                opt.style.background = cor;
-                if(cor === selectedSceneColor) opt.classList.add('selected');
-                opt.addEventListener('click', () => {
-                    document.querySelectorAll('.color-option').forEach(o => o.classList.remove('selected'));
-                    opt.classList.add('selected');
-                    selectedSceneColor = cor;
-                });
-                grid.appendChild(opt);
-            });
-        }
-
-        function triggerSceneCreation() {
-            if (selection.count < 1) return;
-            contextMenu.style.display = 'none';
-            document.getElementById('scene-name-input').value = "";
-            document.getElementById('scene-config-modal').style.display = 'flex';
-        }
-
-        function confirmSceneCreation() {
-            pushHistory();
-            let nomeCena = document.getElementById('scene-name-input').value || "NOVA CENA";
-            
-            let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-            selection.list.forEach(c => {
-                const l = parseFloat(c.style.left), t = parseFloat(c.style.top);
-                if(l < minX) minX = l; if(l + c.offsetWidth > maxX) maxX = l + c.offsetWidth;
-                if(t < minY) minY = t; if(t + c.offsetHeight > maxY) maxY = t + c.offsetHeight;
-            });
-
-            minX -= 30; minY -= 30; maxX += 30; maxY += 30;
-            minX = Math.round(minX / 30) * 30; minY = Math.round(minY / 30) * 30;
-
-            const sceneFrame = createCardRaw([{ labelText: nomeCena, captionText: "" }], minX+'px', minY+'px', (maxX - minX)+'px', 0, false, true, selectedSceneColor);
-            sceneFrame.style.height = (maxY - minY) + 'px';
-            sceneFrame.style.borderColor = selectedSceneColor;
-
-            canvas.appendChild(sceneFrame);
-            selection.clear();
-            closeModal('scene-config-modal');
-            updateCanvasBounds();
-        }
-
-        function getLayoutStateData() {
-            const state = [];
-            document.querySelectorAll('.still-card').forEach(card => {
-                state.push({
-                    id: card.id, left: card.style.left, top: card.style.top, width: card.style.width,
-                    activeIndex: card._activeIndex || 0, isPostIt: card._isPostIt || false,
-                    isScene: card._isScene || false, sceneColor: card._sceneColor || "",
-                    linkedToId: card._linkedToId || null, branchHidden: card._branchHidden || false,
-                    items: card._itemData
-                });
-            });
-            return JSON.stringify(state, null, 2);
-        }
-
-        function exportLayoutJson() {
-            const data = getLayoutStateData();
-            const blob = new Blob([data], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            const dataHora = new Date().toISOString().slice(0,10);
-            a.download = `storyboard_${dataHora}.json`;
-            a.href = url; a.click();
-            URL.revokeObjectURL(url);
-        }
-
-        function copyLayoutToClipboard() {
-            const data = getLayoutStateData();
-            navigator.clipboard.writeText(data).then(() => {
-                const btn = document.querySelector('button[onclick="copyLayoutToClipboard()"]');
-                const t = btn.textContent; btn.textContent = "✓ Copiado!";
-                setTimeout(() => btn.textContent = t, 1200);
-            });
-        }
-
-        // AMORTECIMENTO DO TRACKPAD / PINCH (REQUISITO 5)
-        viewport.addEventListener('wheel', e => {
-            if (e.ctrlKey || e.metaKey) {
-                e.preventDefault();
-                let nextZoom = zoom + (e.deltaY < 0 ? 0.012 : -0.012);
-                applyZoom(nextZoom);
-            }
-        });
-
-        function openZoomMenu(e) {
-            e.stopPropagation();
-            zoomMenu.style.left = e.clientX + 'px';
-            zoomMenu.style.top = e.clientY + 'px';
-            zoomMenu.style.display = 'block';
-        }
-
-        function fitZoom(type) {
-            let maxX = 0, maxY = 0;
-            document.querySelectorAll('.still-card').forEach(c => {
-                let r = parseFloat(c.style.left) + c.offsetWidth;
-                let b = parseFloat(c.style.top) + c.offsetHeight;
-                if(r > maxX) maxX = r; if(b > maxY) maxY = b;
-            });
-            if(maxX === 0 || maxY === 0) return;
-
-            let scale = 1;
-            if (type === 'horizontal') scale = (viewport.offsetWidth - 80) / maxX;
-            else scale = (viewport.offsetHeight - 80) / maxY;
-            
-            applyZoom(scale);
-            zoomMenu.style.display = 'none';
-        }
-
-        // ---- CORREÇÃO HISTÓRICO COMPACTO COMPLETO ----
-        function pushHistory() {
-            const state = [];
-            document.querySelectorAll('.still-card').forEach(card => {
-                state.push({
-                    id: card.id, left: card.style.left, top: card.style.top, width: card.style.width,
-                    activeIndex: card._activeIndex || 0, isPostIt: card._isPostIt || false,
-                    isScene: card._isScene || false, sceneColor: card._sceneColor || "",
-                    linkedToId: card._linkedToId || null, branchHidden: card._branchHidden || false,
-                    items: JSON.parse(JSON.stringify(card._itemData))
-                });
-            });
-            undoStack.push(JSON.stringify(state)); redoStack = [];
-            if (undoStack.length > 40) undoStack.shift();
-        }
-
-        // ---- BOTÕES DE ALINHAMENTO DO INDESIGN CORRIGIDOS ----
+        // ALINHAMENTOS INDESIGN
         function alignGroup(mode) {
-            if (selection.count === 0) return;
-            pushHistory();
-            
+            if (selection.count === 0) return; pushHistory();
             let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-            const bounds = selection.list.map(c => {
-                const l = parseFloat(c.style.left), t = parseFloat(c.style.top); const w = c.offsetWidth, h = c.offsetHeight;
-                if (l < minX) minX = l; if (l + w > maxX) maxX = l + w; if (t < minY) minY = t; if (t + h > maxY) maxY = t + h;
-                return { card: c, l, t, w, h };
-            });
+            const bounds = selection.list.map(c => { const l = parseFloat(c.style.left), t = parseFloat(c.style.top); const w = c.offsetWidth, h = c.offsetHeight; if (l < minX) minX = l; if (l + w > maxX) maxX = l + w; if (t < minY) minY = t; if (t + h > maxY) maxY = t + h; return { card: c, l, t, w, h }; });
             const midX = (minX + maxX) / 2; const midY = (minY + maxY) / 2;
-            bounds.forEach(b => {
-                if (mode === 'left') b.card.style.left = minX + 'px'; 
-                if (mode === 'centerH') b.card.style.left = (midX - b.w / 2) + 'px'; 
-                if (mode === 'right') b.card.style.left = (maxX - b.w) + 'px';
-                if (mode === 'top') b.card.style.top = minY + 'px'; 
-                if (mode === 'centerV') b.card.style.top = (midY - b.h / 2) + 'px'; 
-                if (mode === 'bottom') b.card.style.top = (maxY - b.h) + 'px';
-            });
+            bounds.forEach(b => { if (mode === 'left') b.card.style.left = minX + 'px'; if (mode === 'centerH') b.card.style.left = (midX - b.w / 2) + 'px'; if (mode === 'right') b.card.style.left = (maxX - b.w) + 'px'; if (mode === 'top') b.card.style.top = minY + 'px'; if (mode === 'centerV') b.card.style.top = (midY - b.h / 2) + 'px'; if (mode === 'bottom') b.card.style.top = (maxY - b.h) + 'px'; });
             drawConnectionLines(); updateCanvasBounds();
         }
 
         function distributeGroup(orientation) {
             if (selection.count <= 2) return; pushHistory();
             const list = selection.list.map(c => ({ card: c, l: parseFloat(c.style.left), t: parseFloat(c.style.top), w: c.offsetWidth, h: c.offsetHeight }));
-            if (orientation === 'horizontal') {
-                list.sort((a, b) => a.l - b.l); const first = list[0], last = list[list.length - 1];
-                const totalWidths = list.reduce((acc, cur) => acc + cur.w, 0) - first.w - last.w;
-                const gap = (last.l - (first.l + first.w) - totalWidths) / (list.length - 1);
-                let currentLeft = first.l + first.w + gap;
-                for(let i = 1; i < list.length - 1; i++) { list[i].card.style.left = currentLeft + 'px'; currentLeft += list[i].w + gap; }
-            } else {
-                list.sort((a, b) => a.t - b.t); const first = list[0], last = list[list.length - 1];
-                const totalHeights = list.reduce((acc, cur) => acc + cur.h, 0) - first.h - last.h;
-                const gap = (last.t - (first.t + first.h) - totalHeights) / (list.length - 1);
-                let currentTop = first.t + first.h + gap;
-                for(let i = 1; i < list.length - 1; i++) { list[i].card.style.top = currentTop + 'px'; currentTop += list[i].h + gap; }
-            }
+            if (orientation === 'horizontal') { list.sort((a, b) => a.l - b.l); const first = list[0], last = list[list.length - 1]; const totalWidths = list.reduce((acc, cur) => acc + cur.w, 0) - first.w - last.w; const gap = (last.l - (first.l + first.w) - totalWidths) / (list.length - 1); let currentLeft = first.l + first.w + gap; for(let i = 1; i < list.length - 1; i++) { list[i].card.style.left = currentLeft + 'px'; currentLeft += list[i].w + gap; } }
+            else { list.sort((a, b) => a.t - b.t); const first = list[0], last = list[list.length - 1]; const totalHeights = list.reduce((acc, cur) => acc + cur.h, 0) - first.h - last.h; const gap = (last.t - (first.t + first.h) - totalHeights) / (list.length - 1); let currentTop = first.t + first.h + gap; for(let i = 1; i < list.length - 1; i++) { list[i].card.style.top = currentTop + 'px'; currentTop += list[i].h + gap; } }
             drawConnectionLines(); updateCanvasBounds();
         }
 
-        function openHelpModal() { document.getElementById('help-modal').style.display='flex'; }
-
-        // ---- DRAG AND DROP DA SIDEBAR DO COMPUTADOR ----
+        // DRAG AND DROP MANUAL LOCAL
         canvas.addEventListener('dragover', e => e.preventDefault());
         canvas.addEventListener('drop', e => {
-            e.preventDefault();
-            const fileName = e.dataTransfer.getData('text/plain');
-            if (!fileName || fileName.includes('{')) return; 
-
-            pushHistory();
-            const rect = canvas.getBoundingClientRect();
-            const x = (e.clientX - rect.left) / zoom; const y = (e.clientY - rect.top) / zoom;
-            const steppedX = Math.round(x / 30) * 30; const steppedY = Math.round(y / 30) * 30;
-            const cleanName = fileName.replace(/\.[^/.]+$/, "");
-
-            const card = createCardRaw([{ fileName: fileName, labelText: cleanName, captionText: "" }], steppedX + 'px', steppedY + 'px', BASE_WIDTH + 'px', 0, false);
-            canvas.appendChild(card);
-            updateCanvasBounds();
+            e.preventDefault(); const fileName = e.dataTransfer.getData('text/plain'); if (!fileName || fileName.includes('{')) return; pushHistory();
+            const rect = canvas.getBoundingClientRect(); const x = (e.clientX - rect.left) / zoom; const y = (e.clientY - rect.top) / zoom;
+            const card = createCardRaw([{ fileName: fileName, labelText: fileName.replace(/\.[^/.]+$/, ""), captionText: "" }], (Math.round(x / 30) * 30) + 'px', (Math.round(y / 30) * 30) + 'px', BASE_WIDTH + 'px', 0, false);
+            canvas.appendChild(card); updateCanvasBounds();
         });
 
-        // ---- SELEÇÃO WORKSPACE MARQUEE ----
-        let isMarquee = false, mStartX, mStartY;
-        canvas.addEventListener('mousedown', e => {
-            if (e.target === canvas && e.button === 0) {
-                selection.clear(); contextMenu.style.display = 'none'; zoomMenu.style.display = 'none'; isMarquee = true;
-                const rect = canvas.getBoundingClientRect(); mStartX = (e.clientX - rect.left) / zoom; mStartY = (e.clientY - rect.top) / zoom;
-                marquee.style.left = mStartX + 'px'; marquee.style.top = mStartY + 'px'; marquee.style.width = '0px'; marquee.style.height = '0px'; marquee.style.display = 'block';
+        // REQUISITO 2: ADICIONAR NOTA VIA DUPLO CLIQUE EM ÁREA VAZIA
+        canvas.addEventListener('dblclick', e => {
+            if (e.target === canvas) {
+                pushHistory(); const rect = canvas.getBoundingClientRect();
+                const x = (e.clientX - rect.left) / zoom; const y = (e.clientY - rect.top) / zoom;
+                const card = createCardRaw([{ labelText: "Anotação...", captionText: "" }], (Math.round(x / 30) * 30) + 'px', (Math.round(y / 30) * 30) + 'px', '192px', 0, true);
+                canvas.appendChild(card); updateCanvasBounds();
+                const label = card.querySelector('.still-label'); label.setAttribute('contenteditable', 'true'); label.focus();
             }
         });
-        canvas.addEventListener('mousemove', e => {
-            if (!isMarquee) return;
-            const rect = canvas.getBoundingClientRect(); const curX = (e.clientX - rect.left) / zoom; const curY = (e.clientY - rect.top) / zoom;
-            const w = Math.abs(curX - mStartX), h = Math.abs(curY - mStartY); const l = Math.min(curX, mStartX), t = Math.min(curY, mStartY);
-            marquee.style.left = l + 'px'; marquee.style.top = t + 'px'; marquee.style.width = w + 'px'; marquee.style.height = h + 'px';
-            document.querySelectorAll('.still-card').forEach(card => {
-                const cl = parseFloat(card.style.left), ct = parseFloat(card.style.top);
-                const overlaps = l < (cl + card.offsetWidth) && (l + w) > cl && t < (ct + card.offsetHeight) && (t + h) > ct;
-                if (overlaps) selection.select(card); else selection.unselect(card);
-            });
-        });
+
+        // MARQUEE
+        let isMarquee = false, mStartX, mStartY;
+        canvas.addEventListener('mousedown', e => { if (e.target === canvas && e.button === 0) { if(!e.shiftKey) selection.clear(); contextMenu.style.display = 'none'; zoomMenu.style.display = 'none'; isMarquee = true; const rect = canvas.getBoundingClientRect(); mStartX = (e.clientX - rect.left) / zoom; mStartY = (e.clientY - rect.top) / zoom; marquee.style.left = mStartX + 'px'; marquee.style.top = mStartY + 'px'; marquee.style.width = '0px'; marquee.style.height = '0px'; marquee.style.display = 'block'; } });
+        canvas.addEventListener('mousemove', e => { if (!isMarquee) return; const rect = canvas.getBoundingClientRect(); const curX = (e.clientX - rect.left) / zoom; const curY = (e.clientY - rect.top) / zoom; const w = Math.abs(curX - mStartX), h = Math.abs(curY - mStartY); const l = Math.min(curX, mStartX), t = Math.min(curY, mStartY); marquee.style.left = l + 'px'; marquee.style.top = t + 'px'; marquee.style.width = w + 'px'; marquee.style.height = h + 'px'; document.querySelectorAll('.still-card').forEach(card => { const cl = parseFloat(card.style.left), ct = parseFloat(card.style.top); const overlaps = l < (cl + card.offsetWidth) && (l + w) > cl && t < (ct + card.offsetHeight) && (t + h) > ct; if (overlaps) selection.select(card); else if (!e.shiftKey) selection.unselect(card); }); });
         document.addEventListener('mouseup', () => { isMarquee = false; marquee.style.display = 'none'; });
 
-        // ---- MENUS CONTEXTUAIS ----
-        canvas.addEventListener('contextmenu', e => {
-            e.preventDefault();
-            const targetCard = e.target.closest('.still-card');
-            if (targetCard && !selection.has(targetCard)) { selection.clear(); selection.select(targetCard); }
-            
-            if (!targetCard) {
-                openZoomMenu(e);
-                contextMenu.style.display = 'none';
-            } else {
-                contextMenu.style.left = e.clientX + 'px'; contextMenu.style.top = e.clientY + 'px'; contextMenu.style.display = 'block';
-                zoomMenu.style.display = 'none';
-            }
-        });
-        document.addEventListener('click', e => {
-            if(!e.target.closest('#context-menu')) contextMenu.style.display = 'none';
-            if(!e.target.closest('#zoom-menu') && !e.target.closest('#zoom-badge')) zoomMenu.style.display = 'none';
-        });
+        // CONTEXT MENU
+        canvas.addEventListener('contextmenu', e => { e.preventDefault(); const targetCard = e.target.closest('.still-card'); if (targetCard && !selection.has(targetCard)) { selection.clear(); selection.select(targetCard); } let menuToUse = targetCard ? contextMenu : zoomMenu; menuToUse.style.left = e.clientX + 'px'; menuToUse.style.top = e.clientY + 'px'; menuToUse.style.display = 'block'; if (targetCard) zoomMenu.style.display = 'none'; else contextMenu.style.display = 'none'; });
+        document.addEventListener('click', e => { if(!e.target.closest('#context-menu')) contextMenu.style.display = 'none'; if(!e.target.closest('#zoom-menu') && !e.target.closest('#zoom-badge')) zoomMenu.style.display = 'none'; });
 
-        function breakActiveGallery() {
-            if (selection.count !== 1) return; const card = selection.list[0]; if (card._isPostIt || card._itemData.length <= 1) return;
-            pushHistory(); const items = [...card._itemData]; const baseLeft = parseFloat(card.style.left), baseTop = parseFloat(card.style.top);
-            card._itemData = [items[0]]; card._activeIndex = 0; renderCard(card);
-            items.slice(1).forEach((item, index) => { const spawned = createCardRaw([item], (baseLeft + (index + 1) * 40) + 'px', (baseTop + (index + 1) * 40) + 'px', card.style.width, 0, false); canvas.appendChild(spawned); });
-            selection.clear(); updateCanvasBounds();
-        }
+        function breakActiveGallery() { if (selection.count !== 1) return; const card = selection.list[0]; if (card._isPostIt || card._itemData.length <= 1) return; pushHistory(); const items = [...card._itemData]; const baseLeft = parseFloat(card.style.left), baseTop = parseFloat(card.style.top); card._itemData = [items[0]]; card._activeIndex = 0; renderCard(card); items.slice(1).forEach((item, index) => { const spawned = createCardRaw([item], (baseLeft + (index + 1) * 40) + 'px', (baseTop + (index + 1) * 40) + 'px', card.style.width, 0, false); canvas.appendChild(spawned); }); selection.clear(); }
+        function deleteActiveSelection() { if(selection.count === 0) return; pushHistory(); selection.deleteSelected(); resolvePostLoadLinks(); }
+        function openHelpModal() { document.getElementById('help-modal').style.display='flex'; }
+        function getCardAtPos(x, y) { let match = null; document.querySelectorAll('.still-card').forEach(card => { if (selection.has(card)) return; const left = parseFloat(card.style.left), top = parseFloat(card.style.top); if (x >= left && x <= left + card.offsetWidth && y >= top && y <= top + card.offsetHeight) match = card; }); return match; }
+        function updateCanvasBounds() { let maxBottom = 0; document.querySelectorAll('.still-card').forEach(c => { const b = parseFloat(c.style.top) + c.offsetHeight; if (b > maxBottom) maxBottom = b; }); canvas.style.height = Math.max(3000, maxBottom + 300) + 'px'; }
 
-        function deleteActiveSelection() { if(selection.count === 0) return; pushHistory(); selection.deleteSelected(); drawConnectionLines(); updateCanvasBounds(); }
-        function updateCanvasBounds() {
-            let maxBottom = 0; document.querySelectorAll('.still-card').forEach(c => { const b = parseFloat(c.style.top) + c.offsetHeight; if (b > maxBottom) maxBottom = b; });
-            canvas.style.height = Math.max(3000, maxBottom + 300) + 'px';
-        }
+        // EXPORTADORES
+        function exportLayoutJson() { const state = []; document.querySelectorAll('.still-card').forEach(card => { state.push({ id: card.id, left: card.style.left, top: card.style.top, width: card.style.width, activeIndex: card._activeIndex || 0, isPostIt: card._isPostIt || false, linkedToId: card._linkedToId || null, branchHidden: card._branchHidden || false, items: card._itemData }); }); const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.download = `storyboard_${Date.now()}.json`; a.href = url; a.click(); URL.revokeObjectURL(url); }
+        function copyLayoutToClipboard() { const state = []; document.querySelectorAll('.still-card').forEach(card => { state.push({ id: card.id, left: card.style.left, top: card.style.top, width: card.style.width, activeIndex: card._activeIndex || 0, isPostIt: card._isPostIt || false, linkedToId: card._linkedToId || null, branchHidden: card._branchHidden || false, items: card._itemData }); }); navigator.clipboard.writeText(JSON.stringify(state, null, 2)).then(() => { const btn = document.querySelector('button[onclick="copyLayoutToClipboard()"]'); const t = btn.textContent; btn.textContent = "✓ Copiado!"; setTimeout(() => btn.textContent = t, 1200); }); }
 
-        function getCardAtPos(x, y) {
-            let match = null;
-            document.querySelectorAll('.still-card').forEach(card => {
-                if (selection.has(card)) return;
-                const left = parseFloat(card.style.left), top = parseFloat(card.style.top);
-                if (x >= left && x <= left + card.offsetWidth && y >= top && y <= top + card.offsetHeight) match = card;
-            });
-            return match;
-        }
+        // UNDO / REDO
+        function executeUndo() { if (undoStack.length === 0) return; const current = []; document.querySelectorAll('.still-card').forEach(card => { current.push({ id: card.id, left: card.style.left, top: card.style.top, width: card.style.width, activeIndex: card._activeIndex || 0, isPostIt: card._isPostIt || false, linkedToId: card._linkedToId || null, branchHidden: card._branchHidden || false, items: JSON.parse(JSON.stringify(card._itemData)) }); }); redoStack.push(JSON.stringify(current)); restoreStateSnapshot(JSON.parse(undoStack.pop())); }
+        function executeRedo() { if (redoStack.length === 0) return; const current = []; document.querySelectorAll('.still-card').forEach(card => { current.push({ id: card.id, left: card.style.left, top: card.style.top, width: card.style.width, activeIndex: card._activeIndex || 0, isPostIt: card._isPostIt || false, linkedToId: card._linkedToId || null, branchHidden: card._branchHidden || false, items: JSON.parse(JSON.stringify(card._itemData)) }); }); undoStack.push(JSON.stringify(current)); restoreStateSnapshot(JSON.parse(redoStack.pop())); }
+        function restoreStateSnapshot(stateData) { document.querySelectorAll('.still-card').forEach(c => c.remove()); selection.clear(); stateData.forEach(data => { const card = createCardRaw(data.items, data.left, data.top, data.width, data.activeIndex, data.isPostIt); card.id = data.id; canvas.appendChild(card); }); resolvePostLoadLinks(); updateCanvasBounds(); }
 
-        function executeUndo() { if (undoStack.length === 0) return; const current = []; document.querySelectorAll('.still-card').forEach(card => { current.push({ id: card.id, left: card.style.left, top: card.style.top, width: card.style.width, activeIndex: card._activeIndex || 0, isPostIt: card._isPostIt || false, isScene: card._isScene || false, sceneColor: card._sceneColor || "", linkedToId: card._linkedToId || null, branchHidden: card._branchHidden || false, items: JSON.parse(JSON.stringify(card._itemData)) }); }); redoStack.push(JSON.stringify(current)); restoreStateSnapshot(JSON.parse(undoStack.pop())); }
-        function executeRedo() { if (redoStack.length === 0) return; const current = []; document.querySelectorAll('.still-card').forEach(card => { current.push({ id: card.id, left: card.style.left, top: card.style.top, width: card.style.width, activeIndex: card._activeIndex || 0, isPostIt: card._isPostIt || false, isScene: card._isScene || false, sceneColor: card._sceneColor || "", linkedToId: card._linkedToId || null, branchHidden: card._branchHidden || false, items: JSON.parse(JSON.stringify(card._itemData)) }); }); undoStack.push(JSON.stringify(current)); restoreStateSnapshot(JSON.parse(redoStack.pop())); }
-        function restoreStateSnapshot(stateData) { document.querySelectorAll('.still-card').forEach(c => c.remove()); selection.clear(); stateData.forEach(data => { const card = createCardRaw(data.items, data.left, data.top, data.width, data.activeIndex, data.isPostIt, data.isScene, data.sceneColor, data.linkedToId, data.branchHidden); card.id = data.id; canvas.appendChild(card); }); resolvePostLoadLinks(); updateCanvasBounds(); }
-
-        // ---- GLOBAL KEYBOARD SHORTCUTS ----
+        // ---- SHORTCUTS DE TECLADO COMPLETOS ----
         document.addEventListener('keydown', e => {
             const isEditing = e.target.getAttribute('contenteditable') === 'true';
-            if (e.key === 'Escape') { closeModal('gallery-modal'); closeModal('scene-config-modal'); closeModal('help-modal'); if (activeLinkingOriginCard) { activeLinkingOriginCard = null; document.body.style.cursor='default'; } }
+            if (e.key === 'Escape') { closeModal('gallery-modal'); closeModal('help-modal'); if (activeLinkingOriginCard) { activeLinkingOriginCard = null; document.body.style.cursor='default'; } }
             if (e.key === 'Enter' && document.getElementById('gallery-modal').style.display === 'flex') { e.preventDefault(); insertSelectedAssetsFromModal(); }
             if (!isEditing && selection.count === 1 && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) { e.preventDefault(); navigateGallery(selection.list[0], e.key === 'ArrowRight' ? 1 : -1); }
             if (isEditing) return;
             if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); deleteActiveSelection(); }
             if (e.key === '+' || e.key === '=') { e.preventDefault(); applyZoom(zoom + 0.1); }
             if (e.key === '-') { e.preventDefault(); applyZoom(zoom - 0.1); }
-            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); executeUndo(); }
-            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') { e.preventDefault(); executeRedo(); }
+            
+            // Tratamento preciso sem crosstalk de chaves
+            if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 'z') { e.preventDefault(); executeUndo(); }
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'z') { e.preventDefault(); executeRedo(); }
         });
     </script>
 </body>
