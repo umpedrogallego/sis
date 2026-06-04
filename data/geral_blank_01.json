@@ -1,0 +1,819 @@
+[
+  {
+    "id": "card_ljwa3vjnt",
+    "left": "460px",
+    "top": "2190px",
+    "width": "288px",
+    "height": "",
+    "activeIndex": 4,
+    "isPostIt": false,
+    "linkedToId": "card_qvyhd0j99",
+    "branchHidden": false,
+    "zIndex": "",
+    "items": [
+      {
+        "fileName": "CIRCULO LUZES 04.jpg",
+        "labelText": "CIRCULO LUZES 04",
+        "captionText": ""
+      },
+      {
+        "fileName": "CIRCULO LUZES 05.jpg",
+        "labelText": "CIRCULO LUZES 05",
+        "captionText": ""
+      },
+      {
+        "fileName": "CIRCULO LUZES 06.jpg",
+        "labelText": "CIRCULO LUZES 06",
+        "captionText": ""
+      },
+      {
+        "fileName": "CIRCULO LUZES 07.jpg",
+        "labelText": "CIRCULO LUZES 07",
+        "captionText": ""
+      },
+      {
+        "fileName": "CIRCULO LUZES 08.jpg",
+        "labelText": "CIRCULO LUZES 08",
+        "captionText": ""
+      },
+      {
+        "fileName": "CIRCULO LUZES 09.jpg",
+        "labelText": "CIRCULO LUZES 09",
+        "captionText": ""
+      }
+    ]
+  },
+  {
+    "id": "card_to3eyyh0r",
+    "left": "770px",
+    "top": "2190px",
+    "width": "288px",
+    "height": "",
+    "activeIndex": 1,
+    "isPostIt": false,
+    "linkedToId": "card_qvyhd0j99",
+    "branchHidden": true,
+    "zIndex": "",
+    "items": [
+      {
+        "fileName": "CIRCULO LUZES 10.jpg",
+        "labelText": "CIRCULO LUZES 10",
+        "captionText": ""
+      },
+      {
+        "fileName": "CIRCULO LUZES 11.jpg",
+        "labelText": "CIRCULO LUZES 11",
+        "captionText": ""
+      }
+    ]
+  },
+  {
+    "id": "card_0pxzb2j45",
+    "left": "1080px",
+    "top": "2190px",
+    "width": "288px",
+    "height": "",
+    "activeIndex": 3,
+    "isPostIt": false,
+    "linkedToId": "card_qvyhd0j99",
+    "branchHidden": false,
+    "zIndex": "",
+    "items": [
+      {
+        "fileName": "CIRCULO LUZES 12.jpg",
+        "labelText": "CIRCULO LUZES 12",
+        "captionText": ""
+      },
+      {
+        "fileName": "CIRCULO LUZES 13.jpg",
+        "labelText": "CIRCULO LUZES 13",
+        "captionText": ""
+      },
+      {
+        "fileName": "CIRCULO LUZES 14.jpg",
+        "labelText": "CIRCULO LUZES 14",
+        "captionText": ""
+      },
+      {
+        "fileName": "CIRCULO LUZES 15.jpg",
+        "labelText": "CIRCULO LUZES 15",
+        "captionText": ""
+      }
+    ]
+  },
+  {
+    "id": "card_rlyimp5jl",
+    "left": "120px",
+    "top": "180px",
+    "width": "288px",
+    "height": "",
+    "activeIndex": 0,
+    "isPostIt": false,
+    "linkedToId": null,
+    "branchHidden": false,
+    "zIndex": "",
+    "items": [
+      {
+        "fileName": "CLARABOIA.jpg",
+        "labelText": "CLARABOIA",
+        "captionText": ""
+      }
+    ]
+  },
+  {
+    "id": "card_vpvuwik9y",
+    "left": "480px",
+    "top": "2490px",
+    "width": "288px",
+    "height": "",
+    "activeIndex": 0,
+    "isPostIt": false,
+    "linkedToId": null,
+    "branchHidden": true,
+    "zIndex": "",
+    "items": [
+      {
+        "fileName": "CORREDOR JANELAS PASSAGEM 01.jpg",
+        "labelText": "CORREDOR JANELAS PASSAGEM 01",
+        "captionText": ""
+      }
+    ]
+  },
+  {
+    "id": "card_cjsktc8di",
+    "left": "1590px",
+    "top": "2220px",
+    "width": "288px",
+    "height": "",
+    "activeIndex": 0,
+    "isPostIt": false,
+    "linkedToId": null,
+    "branchHidden": false,
+    "zIndex": "",
+    "items": [
+      {
+        "fileName": "ESCADA JANELA 01.jpg",
+        "labelText": "ESCADA JANELA 01",
+        "captionText": ""
+      }
+    ]
+  },
+  {
+    "id": "card_wuym2a6ax",
+    "left": "150px",
+    "top": "1770px",
+    "width": "288px",
+    "height": "",
+    "activeIndex": 1,
+    "isPostIt": false,
+    "linkedToId": "card_zf83kujce",
+    "branchHidden": false,
+    "zIndex": "",
+    "items": [
+      {
+        "fileName": "GOTICULAS 03.jpg",
+        "labelText": "GOTICULAS 03",
+        "captionText": ""
+      },
+      {
+        "fileName": "GOTICULAS 01.jpg",
+        "labelText": "GOTICULAS 01",
+        "captionText": ""
+      }
+    ]
+  },
+  {
+    "id": "card_28yw056dg",
+    "left": "420px",
+    "top": "180px",
+    "width": "288px",
+    "height": "",
+    "activeIndex": 0,
+    "isPostIt": false,
+    "linkedToId": null,
+    "branchHidden": false,
+    "zIndex": "",
+    "items": [
+      {
+        "fileName": "JANELA CLARABOIA 01.jpg",
+        "labelText": "JANELA CLARABOIA 01",
+        "captionText": ""
+      }
+    ]
+  },
+  {
+    "id": "card_kdg9172xe",
+    "left": "150px",
+    "top": "2490px",
+    "width": "288px",
+    "height": "",
+    "activeIndex": 1,
+    "isPostIt": false,
+    "linkedToId": null,
+    "branchHidden": false,
+    "zIndex": "",
+    "items": [
+      {
+        "fileName": "JANELAS PASSAGEM 01.jpg",
+        "labelText": "JANELAS PASSAGEM 01",
+        "captionText": ""
+      },
+      {
+        "fileName": "JANELAS PASSAGEM 02.jpg",
+        "labelText": "JANELAS PASSAGEM 02",
+        "captionText": ""
+      }
+    ]
+  },
+  {
+    "id": "card_uzudt0yzv",
+    "left": "120px",
+    "top": "1350px",
+    "width": "288px",
+    "height": "",
+    "activeIndex": 7,
+    "isPostIt": false,
+    "linkedToId": null,
+    "branchHidden": false,
+    "zIndex": "",
+    "items": [
+      {
+        "fileName": "MOVIMENTO AMBIENTE 01.jpg",
+        "labelText": "MOVIMENTO AMBIENTE 01",
+        "captionText": ""
+      },
+      {
+        "fileName": "MOVIMENTO AMBIENTE 02.jpg",
+        "labelText": "MOVIMENTO AMBIENTE 02",
+        "captionText": ""
+      },
+      {
+        "fileName": "MOVIMENTO AMBIENTE 03.jpg",
+        "labelText": "MOVIMENTO AMBIENTE 03",
+        "captionText": ""
+      },
+      {
+        "fileName": "MOVIMENTO AMBIENTE 04.jpg",
+        "labelText": "MOVIMENTO AMBIENTE 04",
+        "captionText": ""
+      },
+      {
+        "fileName": "MOVIMENTO AMBIENTE 05.jpg",
+        "labelText": "MOVIMENTO AMBIENTE 05",
+        "captionText": ""
+      },
+      {
+        "fileName": "MOVIMENTO AMBIENTE 06.jpg",
+        "labelText": "MOVIMENTO AMBIENTE 06",
+        "captionText": ""
+      },
+      {
+        "fileName": "MOVIMENTO AMBIENTE 07.jpg",
+        "labelText": "MOVIMENTO AMBIENTE 07",
+        "captionText": ""
+      },
+      {
+        "fileName": "MOVIMENTO AMBIENTE 08.jpg",
+        "labelText": "MOVIMENTO AMBIENTE 08",
+        "captionText": ""
+      },
+      {
+        "fileName": "MOVIMENTO AMBIENTE 09.jpg",
+        "labelText": "MOVIMENTO AMBIENTE 09",
+        "captionText": ""
+      },
+      {
+        "fileName": "MOVIMENTO AMBIENTE 10.jpg",
+        "labelText": "MOVIMENTO AMBIENTE 10",
+        "captionText": ""
+      },
+      {
+        "fileName": "MOVIMENTO AMBIENTE 11.jpg",
+        "labelText": "MOVIMENTO AMBIENTE 11",
+        "captionText": ""
+      },
+      {
+        "fileName": "MOVIMENTO AMBIENTE 12.jpg",
+        "labelText": "MOVIMENTO AMBIENTE 12",
+        "captionText": ""
+      },
+      {
+        "fileName": "MOVIMENTO AMBIENTE 13.jpg",
+        "labelText": "MOVIMENTO AMBIENTE 13",
+        "captionText": ""
+      }
+    ]
+  },
+  {
+    "id": "card_fjmibhqu5",
+    "left": "1050px",
+    "top": "660px",
+    "width": "288px",
+    "height": "",
+    "activeIndex": 0,
+    "isPostIt": false,
+    "linkedToId": null,
+    "branchHidden": false,
+    "zIndex": "",
+    "items": [
+      {
+        "fileName": "PROP PARAPEITO 01.jpg",
+        "labelText": "PROP PARAPEITO 01",
+        "captionText": ""
+      }
+    ]
+  },
+  {
+    "id": "card_6m07ailh4",
+    "left": "120px",
+    "top": "660px",
+    "width": "288px",
+    "height": "",
+    "activeIndex": 0,
+    "isPostIt": false,
+    "linkedToId": null,
+    "branchHidden": false,
+    "zIndex": "",
+    "items": [
+      {
+        "fileName": "PROPS AMBIENTE 01.jpg",
+        "labelText": "PROPS AMBIENTE 01",
+        "captionText": ""
+      }
+    ]
+  },
+  {
+    "id": "card_ust95r7ck",
+    "left": "440px",
+    "top": "660px",
+    "width": "288px",
+    "height": "",
+    "activeIndex": 0,
+    "isPostIt": false,
+    "linkedToId": null,
+    "branchHidden": false,
+    "zIndex": "",
+    "items": [
+      {
+        "fileName": "PROPS AMBIENTE 02.jpg",
+        "labelText": "PROPS AMBIENTE 02",
+        "captionText": ""
+      }
+    ]
+  },
+  {
+    "id": "card_w56tclnv3",
+    "left": "750px",
+    "top": "660px",
+    "width": "288px",
+    "height": "",
+    "activeIndex": 0,
+    "isPostIt": false,
+    "linkedToId": null,
+    "branchHidden": false,
+    "zIndex": "",
+    "items": [
+      {
+        "fileName": "PROPS AMBIENTE 03.jpg",
+        "labelText": "PROPS AMBIENTE 03",
+        "captionText": ""
+      }
+    ]
+  },
+  {
+    "id": "card_punex2gor",
+    "left": "1020px",
+    "top": "180px",
+    "width": "288px",
+    "height": "",
+    "activeIndex": 0,
+    "isPostIt": false,
+    "linkedToId": null,
+    "branchHidden": false,
+    "zIndex": "",
+    "items": [
+      {
+        "fileName": "SALA JANELA 01.jpg",
+        "labelText": "SALA JANELA 01",
+        "captionText": ""
+      }
+    ]
+  },
+  {
+    "id": "card_x57oz0phn",
+    "left": "720px",
+    "top": "180px",
+    "width": "288px",
+    "height": "",
+    "activeIndex": 0,
+    "isPostIt": false,
+    "linkedToId": null,
+    "branchHidden": true,
+    "zIndex": "",
+    "items": [
+      {
+        "fileName": "SALA JANELA CIMA 01.jpg",
+        "labelText": "SALA JANELA CIMA 01",
+        "captionText": ""
+      }
+    ]
+  },
+  {
+    "id": "card_758leui93",
+    "left": "1328.57px",
+    "top": "180px",
+    "width": "288px",
+    "height": "",
+    "activeIndex": 0,
+    "isPostIt": false,
+    "linkedToId": null,
+    "branchHidden": false,
+    "zIndex": "",
+    "items": [
+      {
+        "fileName": "SALA PROP JANELA 01.jpg",
+        "labelText": "SALA PROP JANELA 01",
+        "captionText": ""
+      }
+    ]
+  },
+  {
+    "id": "card_yhuez4x4a",
+    "left": "1650px",
+    "top": "180px",
+    "width": "288px",
+    "height": "",
+    "activeIndex": 0,
+    "isPostIt": false,
+    "linkedToId": null,
+    "branchHidden": false,
+    "zIndex": "",
+    "items": [
+      {
+        "fileName": "SALA PROP JANELA 02.jpg",
+        "labelText": "SALA PROP JANELA 02",
+        "captionText": ""
+      }
+    ]
+  },
+  {
+    "id": "card_ln1rkzjs2",
+    "left": "780px",
+    "top": "1350px",
+    "width": "288px",
+    "height": "",
+    "activeIndex": 0,
+    "isPostIt": false,
+    "linkedToId": null,
+    "branchHidden": false,
+    "zIndex": "",
+    "items": [
+      {
+        "fileName": "TUNEL JANELAS 01.jpg",
+        "labelText": "TUNEL JANELAS 01",
+        "captionText": ""
+      }
+    ]
+  },
+  {
+    "id": "card_ikisgd5ob",
+    "left": "1030px",
+    "top": "2472px",
+    "width": "240px",
+    "height": "",
+    "activeIndex": 1,
+    "isPostIt": false,
+    "linkedToId": "card_vpvuwik9y",
+    "branchHidden": false,
+    "zIndex": "",
+    "items": [
+      {
+        "fileName": "CORREDOR JANELAS PASSAGEM 02.jpg",
+        "labelText": "CORREDOR JANELAS PASSAGEM 02",
+        "captionText": ""
+      },
+      {
+        "fileName": "CORREDOR JANELAS PASSAGEM 03.jpg",
+        "labelText": "CORREDOR JANELAS PASSAGEM 03",
+        "captionText": ""
+      }
+    ]
+  },
+  {
+    "id": "card_18v68dlrk",
+    "left": "90px",
+    "top": "120px",
+    "width": "1881.6px",
+    "height": "420px",
+    "activeIndex": 0,
+    "isPostIt": true,
+    "linkedToId": null,
+    "branchHidden": false,
+    "zIndex": "1",
+    "items": [
+      {
+        "fileName": "",
+        "labelText": "01_SALA PRINCIPAL",
+        "captionText": ""
+      }
+    ]
+  },
+  {
+    "id": "card_b3ztti4u5",
+    "left": "90px",
+    "top": "570px",
+    "width": "1305.6px",
+    "height": "390px",
+    "activeIndex": 0,
+    "isPostIt": true,
+    "linkedToId": null,
+    "branchHidden": false,
+    "zIndex": "1",
+    "items": [
+      {
+        "fileName": "",
+        "labelText": "02_AMBIENTE PROPS",
+        "captionText": ""
+      }
+    ]
+  },
+  {
+    "id": "card_py89xhiwm",
+    "left": "90px",
+    "top": "990px",
+    "width": "1305.6px",
+    "height": "660px",
+    "activeIndex": 0,
+    "isPostIt": true,
+    "linkedToId": null,
+    "branchHidden": false,
+    "zIndex": "",
+    "items": [
+      {
+        "fileName": "",
+        "labelText": "03_MOVIMENTO DE CÂMERA",
+        "captionText": ""
+      }
+    ]
+  },
+  {
+    "id": "card_zf83kujce",
+    "left": "90px",
+    "top": "1680px",
+    "width": "1305.6px",
+    "height": "390px",
+    "activeIndex": 0,
+    "isPostIt": true,
+    "linkedToId": null,
+    "branchHidden": false,
+    "zIndex": "",
+    "items": [
+      {
+        "fileName": "",
+        "labelText": "04_GOTÍCULAS",
+        "captionText": ""
+      }
+    ]
+  },
+  {
+    "id": "card_hlbfnglyj",
+    "left": "120px",
+    "top": "1050px",
+    "width": "288px",
+    "height": "",
+    "activeIndex": 0,
+    "isPostIt": false,
+    "linkedToId": null,
+    "branchHidden": false,
+    "zIndex": "",
+    "items": [
+      {
+        "fileName": "TETO ESCADA 01.jpg",
+        "labelText": "TETO ESCADA 01",
+        "captionText": ""
+      },
+      {
+        "fileName": "TETO ESCADA 02.jpg",
+        "labelText": "TETO ESCADA 02",
+        "captionText": ""
+      },
+      {
+        "fileName": "TETO ESCADA 03.jpg",
+        "labelText": "TETO ESCADA 03",
+        "captionText": ""
+      }
+    ]
+  },
+  {
+    "id": "card_vlrbgr9ol",
+    "left": "450px",
+    "top": "1050px",
+    "width": "288px",
+    "height": "",
+    "activeIndex": 0,
+    "isPostIt": false,
+    "linkedToId": null,
+    "branchHidden": false,
+    "zIndex": "",
+    "items": [
+      {
+        "fileName": "TETO ESCADA 04.jpg",
+        "labelText": "TETO ESCADA 04",
+        "captionText": ""
+      },
+      {
+        "fileName": "TETO ESCADA 05.jpg",
+        "labelText": "TETO ESCADA 05",
+        "captionText": ""
+      },
+      {
+        "fileName": "TETO ESCADA 06.jpg",
+        "labelText": "TETO ESCADA 06",
+        "captionText": ""
+      }
+    ]
+  },
+  {
+    "id": "card_ebsrct0ok",
+    "left": "780px",
+    "top": "1050px",
+    "width": "288px",
+    "height": "",
+    "activeIndex": 0,
+    "isPostIt": false,
+    "linkedToId": null,
+    "branchHidden": false,
+    "zIndex": "",
+    "items": [
+      {
+        "fileName": "TETO ESCADA 07.jpg",
+        "labelText": "TETO ESCADA 07",
+        "captionText": ""
+      },
+      {
+        "fileName": "TETO ESCADA 08.jpg",
+        "labelText": "TETO ESCADA 08",
+        "captionText": ""
+      },
+      {
+        "fileName": "TETO ESCADA 09.jpg",
+        "labelText": "TETO ESCADA 09",
+        "captionText": ""
+      }
+    ]
+  },
+  {
+    "id": "card_bgk0ym6za",
+    "left": "780px",
+    "top": "1770px",
+    "width": "288px",
+    "height": "",
+    "activeIndex": 4,
+    "isPostIt": false,
+    "linkedToId": "card_wuym2a6ax",
+    "branchHidden": false,
+    "zIndex": "",
+    "items": [
+      {
+        "fileName": "GOTICULAS 05.jpg",
+        "labelText": "GOTICULAS 05",
+        "captionText": ""
+      },
+      {
+        "fileName": "GOTICULAS 02.jpg",
+        "labelText": "GOTICULAS 02",
+        "captionText": ""
+      },
+      {
+        "fileName": "GOTICULAS 06.jpg",
+        "labelText": "GOTICULAS 06",
+        "captionText": ""
+      },
+      {
+        "fileName": "GOTICULAS 07.jpg",
+        "labelText": "GOTICULAS 07",
+        "captionText": ""
+      },
+      {
+        "fileName": "GOTICULAS 08.jpg",
+        "labelText": "GOTICULAS 08",
+        "captionText": ""
+      },
+      {
+        "fileName": "GOTICULAS 10.jpg",
+        "labelText": "GOTICULAS 10",
+        "captionText": ""
+      }
+    ]
+  },
+  {
+    "id": "card_5zppm9r0o",
+    "left": "465px",
+    "top": "1770px",
+    "width": "288px",
+    "height": "",
+    "activeIndex": 1,
+    "isPostIt": false,
+    "linkedToId": "card_wuym2a6ax",
+    "branchHidden": false,
+    "zIndex": "",
+    "items": [
+      {
+        "fileName": "GOTICULAS 04.jpg",
+        "labelText": "GOTICULAS 04",
+        "captionText": ""
+      },
+      {
+        "fileName": "GOTICULAS 09.jpg",
+        "labelText": "GOTICULAS 09",
+        "captionText": ""
+      }
+    ]
+  },
+  {
+    "id": "card_k6j73e2d4",
+    "left": "150px",
+    "top": "2190px",
+    "width": "288px",
+    "height": "",
+    "activeIndex": 2,
+    "isPostIt": false,
+    "linkedToId": null,
+    "branchHidden": false,
+    "zIndex": "",
+    "items": [
+      {
+        "fileName": "CIRCULO LUZES 01.jpg",
+        "labelText": "CIRCULO LUZES 01",
+        "captionText": ""
+      },
+      {
+        "fileName": "CIRCULO LUZES 02.jpg",
+        "labelText": "CIRCULO LUZES 02",
+        "captionText": ""
+      },
+      {
+        "fileName": "CIRCULO LUZES 03.jpg",
+        "labelText": "CIRCULO LUZES 03",
+        "captionText": ""
+      }
+    ]
+  },
+  {
+    "id": "card_yxitjlj1k",
+    "left": "450px",
+    "top": "1350px",
+    "width": "288px",
+    "height": "",
+    "activeIndex": 0,
+    "isPostIt": false,
+    "linkedToId": null,
+    "branchHidden": false,
+    "zIndex": "",
+    "items": [
+      {
+        "fileName": "ESCADA 01.jpg",
+        "labelText": "ESCADA 01",
+        "captionText": ""
+      }
+    ]
+  },
+  {
+    "id": "card_bzoeizywz",
+    "left": "90px",
+    "top": "2100px",
+    "width": "1305.6px",
+    "height": "660px",
+    "activeIndex": 0,
+    "isPostIt": true,
+    "linkedToId": null,
+    "branchHidden": false,
+    "zIndex": "",
+    "items": [
+      {
+        "fileName": "",
+        "labelText": "05_LUZES MOVIMENTO",
+        "captionText": ""
+      }
+    ]
+  },
+  {
+    "id": "card_744v96625",
+    "left": "1590px",
+    "top": "2490px",
+    "width": "288px",
+    "height": "",
+    "activeIndex": 0,
+    "isPostIt": false,
+    "linkedToId": null,
+    "branchHidden": false,
+    "zIndex": "",
+    "items": [
+      {
+        "fileName": "FOCO PRATELEIRAS.jpg",
+        "labelText": "FOCO PRATELEIRAS",
+        "captionText": ""
+      }
+    ]
+  }
+]
