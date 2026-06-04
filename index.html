@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>SIS | Storyboard v7</title>
+    <title>SIS | Storyboard v6</title>
     <style>
         * {
             box-sizing: border-box;
@@ -33,85 +33,6 @@
             padding: 0 20px;
             gap: 10px;
             z-index: 10000;
-        }
-
-        /* SISTEMA DE ABAS ESTILO CHROME */
-        #tab-bar {
-            position: fixed;
-            top: 50px;
-            left: 0;
-            width: 100%;
-            height: 35px;
-            background: #141111;
-            border-bottom: 1px solid #423737;
-            display: flex;
-            align-items: flex-end;
-            padding: 0 20px;
-            z-index: 9999;
-        }
-
-        .tab {
-            background: #231e1e;
-            color: #8c8282;
-            padding: 4px 14px;
-            border-radius: 6px 6px 0 0;
-            margin-right: 4px;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 0.75rem;
-            border: 1px solid #423737;
-            border-bottom: none;
-            height: 28px;
-            transition: all 0.15s ease;
-            max-width: 160px;
-            white-space: nowrap;
-        }
-
-        .tab.active {
-            background: #2b2424;
-            color: #ffffff;
-            border-top: 2px solid #ff0000;
-            font-weight: 600;
-        }
-
-        .tab-title {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .tab-close {
-            font-size: 0.7rem;
-            font-weight: bold;
-            color: #8c8282;
-            border-radius: 50%;
-            padding: 0 3px;
-        }
-        .tab-close:hover {
-            background: #ff0000;
-            color: #ffffff;
-        }
-
-        .add-tab-btn {
-            background: #3a3232;
-            color: #ffffff;
-            border: 1px solid #524646;
-            padding: 0px 8px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            margin-bottom: 4px;
-            margin-left: 4px;
-            height: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .add-tab-btn:hover {
-            background: #ff0000;
-            border-color: #ff0000;
         }
 
         .btn {
@@ -148,6 +69,17 @@
             border-color: #cc0000;
         }
 
+        .select-version {
+            background: #3a3232;
+            color: #ffffff;
+            border: 1px solid #524646;
+            padding: 5px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            outline: none;
+            min-width: 180px;
+        }
+
         .divider {
             width: 1px;
             height: 20px;
@@ -165,8 +97,8 @@
         /* ÁREA PRINCIPAL DA MESA DE TRABALHO */
         #viewport {
             width: 100vw;
-            height: calc(100vh - 85px);
-            margin-top: 85px;
+            height: calc(100vh - 50px);
+            margin-top: 50px;
             overflow: auto;
             position: relative;
         }
@@ -213,7 +145,7 @@
             flex-direction: column;
             cursor: move;
             user-select: none;
-            z-index: 10;
+            z-index: 10; /* Imagens ficam em camada superior padrão */
         }
 
         .still-card:hover { border-color: #5c4e4e; }
@@ -225,35 +157,7 @@
         .still-card.post-it-style {
             background: #231e1e;
             border: 1px dashed #bebab0;
-            z-index: 5;
-        }
-
-        /* ESTILIZAÇÃO DO CONTAINER DE CENA */
-        .still-card.scene-style {
-            background: rgba(26, 22, 22, 0.4);
-            border: 2px solid #ff0000;
-            z-index: 2 !important;
-        }
-
-        .scene-badge {
-            font-size: 0.65rem;
-            background: #ff0000;
-            color: #ffffff;
-            padding: 1px 5px;
-            border-radius: 3px;
-            font-weight: bold;
-            text-transform: uppercase;
-            margin-right: auto;
-            margin-bottom: 4px;
-        }
-
-        .scene-toggle-eye {
-            background: none;
-            border: none;
-            color: #ff0000;
-            cursor: pointer;
-            font-size: 0.85rem;
-            padding: 0 4px;
+            z-index: 5; /* Post-its ficam sempre abaixo das imagens por padrão */
         }
 
         .card-header-row {
@@ -361,7 +265,6 @@
         }
         .still-card:hover .link-toggle-btn { display: flex; }
         .hidden-branch { display: none !important; }
-        .hidden-by-scene { display: none !important; }
 
         /* MODAL POP-UP DA GALERIA MESTRA */
         .modal-overlay {
@@ -407,6 +310,8 @@
             display: flex; justify-content: flex-end; gap: 10px;
         }
 
+        .input-text-field { width: 100%; background: #2b2424; border: 1px solid #524646; padding: 6px; border-radius: 4px; color: #ffffff; outline: none; font-size: 0.85rem; }
+
         #marquee { position: absolute; border: 1px dashed #ff0000; background: rgba(255, 0, 0, 0.08); display: none; pointer-events: none; z-index: 999; }
         
         #zoom-badge {
@@ -420,35 +325,18 @@
             position: fixed; background: #1a1616; border: 1px solid #423737;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5); border-radius: 6px; padding: 5px 0; display: none; z-index: 20000; min-width: 180px;
         }
-        .menu-item { padding: 8px 14px; font-size: 0.8rem; color: #bebab0; cursor: pointer; user-select: none; display: flex; align-items: center; justify-content: space-between; }
+        .menu-item { padding: 8px 14px; font-size: 0.8rem; color: #bebab0; cursor: pointer; user-select: none; }
         .menu-item:hover { background: #ff0000; color: #ffffff; }
         .menu-item.danger:hover { background: #cc0000; }
-
-        /* Submenu de Cenas */
-        .submenu-wrapper {
-            position: relative;
-        }
-        .submenu-items {
-            position: absolute;
-            left: 100%;
-            top: 0;
-            background: #1a1616;
-            border: 1px solid #423737;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            border-radius: 6px;
-            padding: 5px 0;
-            display: none;
-            min-width: 160px;
-        }
-        .submenu-wrapper:hover .submenu-items {
-            display: block;
-        }
     </style>
 </head>
 <body>
 
     <div id="top-bar">
-        <span class="section-label">SIS | v6</span>
+        <span class="section-label">Mesa:</span>
+        <select id="layout-select" class="select-version" onchange="switchLayoutVersion(this.value)">
+            <option value="">Carregando Versões...</option>
+        </select>
         <button class="btn btn-primary" onclick="openGalleryModal()">📁 Abrir Galeria</button>
         <button class="btn" onclick="createNewNoteFromTopBar()">📝 Nova Nota</button>
         <button class="btn" onclick="exportLayoutJson()">↓ Baixar Versão</button>
@@ -472,12 +360,7 @@
         <button class="btn" onclick="distributeGroup('vertical')">↕ Empilhar</button>
         
         <div class="divider" style="margin-left:auto;"></div>
-        <button class="btn" onclick="openHelpModal()" style="border-color:#bebab0;">Manual</button>
-    </div>
-
-    <div id="tab-bar">
-        <div id="tabs-container" style="display: flex; align-items: flex-end;"></div>
-        <button class="add-tab-btn" onclick="triggerCreateTab()">+</button>
+        <button class="btn" onclick="openHelpModal()" style="border-color:#bebab0;">Manual (Como Usar)</button>
     </div>
 
     <div id="viewport">
@@ -497,7 +380,7 @@
             </div>
             <div class="modal-content-grid" id="modal-asset-grid"></div>
             <div class="modal-footer">
-                <span style="font-size:0.75rem; color:#8c8282; margin-right:auto; align-self:center;">Dica: Use Ctrl/Shift ou seleção por área.</span>
+                <span style="font-size:0.75rem; color:#8c8282; margin-right:auto; align-self:center;">Dica: Arraste os itens, use Ctrl/Shift ou faça seleção por área.</span>
                 <button class="btn" onclick="closeModal('gallery-modal')">Cancelar</button>
                 <button class="btn btn-primary" onclick="insertSelectedAssetsFromModal()">Adicionar à Mesa (Enter)</button>
             </div>
@@ -506,15 +389,16 @@
 
     <div id="help-modal" class="modal-overlay" onclick="closeModalOnOverlay(event, 'help-modal')">
         <div class="modal-window" style="width:50vw; height:70vh;">
-            <div class="modal-header"><div class="modal-title">Manual de Operação (SIS v6)</div><button class="modal-close" onclick="closeModal('help-modal')">✕</button></div>
+            <div class="modal-header"><div class="modal-title">Manual de Operação da Interface (SIS v6)</div><button class="modal-close" onclick="closeModal('help-modal')">✕</button></div>
             <div style="flex:1; overflow-y:auto; padding:25px; font-size:0.85rem; line-height:1.6; color:#ffffff;">
-                <h3 style="color:#ff0000; margin-bottom:10px;">📌 Controle de Seleção & Abas</h3>
-                <p>• <b>Shift + Clique:</b> Seleção inteligente por intervalo de camadas.</p>
-                <p>• <b>Ctrl + Clique:</b> Seleção cumulativa unitária.</p>
-                <p>• <b>Abas Estilo Chrome:</b> Alterne abas na barra superior. Todo o progresso é guardado instantaneamente via LocalStorage.</p>
-                <br>
-                <h3 style="color:#ff0000; margin-bottom:10px;">🎬 Sistema de Containers de Cenas</h3>
-                <p>• Selecione elementos e clique com o botão direito para <b>Converter em Cena</b>. O container gerado agrupa os itens. Se mover a cena, o conteúdo move-se junto. Use o olho (👁) no cabeçalho da cena para recolher/expandir o conteúdo de forma compacta.</p>
+                <h3 style="color:#ff0000; margin-bottom:10px;">📌 Comandos Gerais & Atalhos</h3>
+                <p>• <b>Duplo Clique no Fundo:</b> Instancia uma Nota de Texto Livre (Post-it).</p>
+                <p>• <b>Duplo Clique na Nota / Título:</b> Ativa modo edição de texto.</p>
+                <p>• <b>Shift + Clique:</b> Seleciona um intervalo contínuo entre elementos.</p>
+                <p>• <b>Ctrl + Clique:</b> Adiciona/remove elementos de forma unitária à seleção.</p>
+                <p>• <b>Ctrl + Arrastar Item:</b> Duplica o item movendo a cópia.</p>
+                <p>• <b>Ctrl + C / V / A:</b> Copiar, Colar e Selecionar Tudo no Canvas.</p>
+                <p>• <b>Ctrl + Z / Ctrl + Shift + Z:</b> Desfazer e Refazer estrito.</p>
             </div>
         </div>
     </div>
@@ -524,14 +408,7 @@
         <div class="menu-item" onclick="alignGroup('top')">Alinhar ao Topo (↑)</div>
         <div class="menu-item" onclick="distributeGroup('horizontal')">Distribuir Lado a Lado</div>
         <div class="menu-item" onclick="startAnnotationLinking()">Vincular Nota Flutuante</div>
-        <div class="menu-item" onclick="convertActiveSelectionToScene()">🎬 Converter em Cena</div>
         <div class="divider" style="width:100%; height:1px; margin:4px 0;"></div>
-        
-        <div class="submenu-wrapper" id="add-to-scene-submenu" style="display: none;">
-            <div class="menu-item">Add à Cena... <span>▶</span></div>
-            <div class="submenu-items" id="scenes-submenu-list"></div>
-        </div>
-
         <div class="menu-item post-it-only" onclick="movePostItLayer('front')">Trazer Post-it para Frente</div>
         <div class="menu-item post-it-only" onclick="movePostItLayer('back')">Enviar Post-it para Trás</div>
         <div class="menu-item non-post-it" onclick="breakActiveGallery()">Desfazer Galeria/Grupo</div>
@@ -545,32 +422,10 @@
     </div>
 
     <script>
-        // SEED INICIAL COM O TEU CONTEÚDO JSON DO ARQUIVO ANEXADO
-        const SEED_DEFAULT_DATA = [
-            {"id":"card_hlbfnglyj","left":"120px","top":"1050px","width":"288px","height":"","activeIndex":0,"isPostIt":false,"linkedToId":null,"branchHidden":false,"items":[{"fileName":"TETO ESCADA 01.jpg","labelText":"TETO ESCADA 01","captionText":""},{"fileName":"TETO ESCADA 02.jpg","labelText":"TETO ESCADA 02","captionText":""},{"fileName":"TETO ESCADA 03.jpg","labelText":"TETO ESCADA 03","captionText":""}]},
-            {"id":"card_vlrbgr9ol","left":"450px","top":"1050px","width":"288px","height":"","activeIndex":0,"isPostIt":false,"linkedToId":null,"branchHidden":false,"items":[{"fileName":"TETO ESCADA 04.jpg","labelText":"TETO ESCADA 04","captionText":""},{"fileName":"TETO ESCADA 05.jpg","labelText":"TETO ESCADA 05","captionText":""},{"fileName":"TETO ESCADA 06.jpg","labelText":"TETO ESCADA 06","captionText":""}]},
-            {"id":"card_ebsrct0ok","left":"780px","top":"1050px","width":"288px","height":"","activeIndex":0,"isPostIt":false,"linkedToId":null,"branchHidden":false,"items":[{"fileName":"TETO ESCADA 07.jpg","labelText":"TETO ESCADA 07","captionText":""},{"fileName":"TETO ESCADA 08.jpg","labelText":"TETO ESCADA 08","captionText":""},{"fileName":"TETO ESCADA 09.jpg","labelText":"TETO ESCADA 09","captionText":""}]},
-            {"id":"card_6m07ailh4","left":"120px","top":"660px","width":"288px","height":"","activeIndex":0,"isPostIt":false,"linkedToId":null,"branchHidden":false,"items":[{"fileName":"PROPS AMBIENTE 01.jpg","labelText":"PROPS AMBIENTE 01","captionText":""}]},
-            {"id":"card_ust95r7ck","left":"440px","top":"660px","width":"288px","height":"","activeIndex":0,"isPostIt":false,"linkedToId":null,"branchHidden":false,"items":[{"fileName":"PROPS AMBIENTE 02.jpg","labelText":"PROPS AMBIENTE 02","captionText":""}]},
-            {"id":"card_w56tclnv3","left":"750px","top":"660px","width":"288px","height":"","activeIndex":0,"isPostIt":false,"linkedToId":null,"branchHidden":false,"items":[{"fileName":"PROPS AMBIENTE 03.jpg","labelText":"PROPS AMBIENTE 03","captionText":""}]},
-            {"id":"card_fjmibhqu5","left":"1050px","top":"660px","width":"288px","height":"","activeIndex":0,"isPostIt":false,"linkedToId":null,"branchHidden":false,"items":[{"fileName":"PROP PARAPEITO 01.jpg","labelText":"PROP PARAPEITO 01","captionText":""}]},
-            {"id":"card_rlyimp5jl","left":"120px","top":"180px","width":"288px","height":"","activeIndex":0,"isPostIt":false,"linkedToId":null,"branchHidden":false,"items":[{"fileName":"CLARABOIA.jpg","labelText":"CLARABOIA","captionText":""}]},
-            {"id":"card_28yw056dg","left":"420px","top":"180px","width":"288px","height":"","activeIndex":0,"isPostIt":false,"linkedToId":null,"branchHidden":false,"items":[{"fileName":"JANELA CLARABOIA 01.jpg","labelText":"JANELA CLARABOIA 01","captionText":""}]},
-            {"id":"card_x57oz0phn","left":"720px","top":"180px","width":"288px","height":"","activeIndex":0,"isPostIt":false,"linkedToId":null,"branchHidden":true,"items":[{"fileName":"SALA JANELA CIMA 01.jpg","labelText":"SALA JANELA CIMA 01","captionText":""}]},
-            {"id":"card_punex2gor","left":"1020px","top":"180px","width":"288px","height":"","activeIndex":0,"isPostIt":false,"linkedToId":null,"branchHidden":false,"items":[{"fileName":"SALA JANELA 01.jpg","labelText":"SALA JANELA 01","captionText":""}]},
-            {"id":"card_758leui93","left":"1328px","top":"180px","width":"288px","height":"","activeIndex":0,"isPostIt":false,"linkedToId":null,"branchHidden":false,"items":[{"fileName":"SALA PROP JANELA 01.jpg","labelText":"SALA PROP JANELA 01","captionText":""}]},
-            {"id":"card_yhuez4x4a","left":"1650px","top":"180px","width":"288px","height":"","activeIndex":0,"isPostIt":false,"linkedToId":null,"branchHidden":false,"items":[{"fileName":"SALA PROP JANELA 02.jpg","labelText":"SALA PROP JANELA 02","captionText":""}]},
-            {"id":"card_18v68dlrk","left":"90px","top":"120px","width":"1881px","height":"420px","activeIndex":0,"isPostIt":true,"linkedToId":null,"branchHidden":false,"zIndex":"1","items":[{"fileName":"","labelText":"01_SALA PRINCIPAL","captionText":""}],"isScene":true,"sceneChildren":["card_rlyimp5jl","card_28yw056dg","card_x57oz0phn","card_punex2gor","card_758leui93","card_yhuez4x4a"]},
-            {"id":"card_b3ztti4u5","left":"90px","top":"570px","width":"1305px","height":"390px","activeIndex":0,"isPostIt":true,"linkedToId":null,"branchHidden":false,"zIndex":"1","items":[{"fileName":"","labelText":"02_AMBIENTE PROPS","captionText":""}],"isScene":true,"sceneChildren":["card_6m07ailh4","card_ust95r7ck","card_w56tclnv3","card_fjmibhqu5"]},
-            {"id":"card_py89xhiwm","left":"90px","top":"990px","width":"1305px","height":"660px","activeIndex":0,"isPostIt":true,"linkedToId":null,"branchHidden":false,"zIndex":"1","items":[{"fileName":"","labelText":"03_MOVIMENTO DE CÂMERA","captionText":""}],"isScene":true,"sceneChildren":["card_hlbfnglyj","card_vlrbgr9ol","card_ebsrct0ok"]}
-        ];
-
-        let activeTabId = '';
-        let tabsList = [];
-
         const viewport = document.getElementById('viewport');
         const canvas = document.getElementById('canvas');
         const assetGrid = document.getElementById('modal-asset-grid');
+        const layoutSelect = document.getElementById('layout-select');
         const marquee = document.getElementById('marquee');
         const zoomBadge = document.getElementById('zoom-badge');
         const contextMenu = document.getElementById('context-menu');
@@ -589,6 +444,7 @@
         let lastClickedCard = null;
         window.copiedCardsData = null;
 
+        // Classe interna gerenciadora de seleções e deleções unificada
         class SelectionManager {
             constructor() { this.items = new Set(); }
             select(card) { card.classList.add('selected'); this.items.add(card); }
@@ -598,164 +454,59 @@
             get count() { return this.items.size; }
             get list() { return Array.from(this.items); }
             deleteSelected() {
-                this.items.forEach(card => {
-                    // Remove associação se o item deletado for filho de alguma cena
-                    document.querySelectorAll('.still-card.scene-style').forEach(sc => {
-                        if(sc._sceneChildren) sc._sceneChildren = sc._sceneChildren.filter(id => id !== card.id);
-                    });
-                    card.remove();
-                });
+                this.items.forEach(card => card.remove());
                 this.clear();
             }
         }
         const selection = new SelectionManager();
 
-        // ---- INICIALIZAÇÃO CORE E MECÂNICA DE ABAS COM LOCALSTORAGE ----
+        // ---- CARREGAMENTO CORE DOS MANIFESTOS ----
         window.addEventListener('load', () => {
             fetch('data/manifesto.json?t=' + Date.now())
                 .then(res => res.json())
                 .then(imagens => { window.galeriaMestra = imagens; })
-                .catch(() => console.log("Manifesto de imagens estáticas offline."));
+                .catch(() => console.log("Manifesto de imagens não localizado."));
 
-            initTabsSystem();
+            fetch('data/versoes.json?t=' + Date.now())
+                .then(res => res.json())
+                .then(versoes => {
+                    buildVersionDropdown(versoes);
+                    if (versoes.length > 0) {
+                        layoutSelect.value = versoes[0];
+                        switchLayoutVersion(versoes[0]);
+                    }
+                })
+                .catch(() => { layoutSelect.innerHTML = '<option value="">Nenhum layout salvo</option>'; });
         });
 
-        function initTabsSystem() {
-            let savedTabs = localStorage.getItem('sis_tabs_list');
-            let savedActive = localStorage.getItem('sis_active_tab_id');
-
-            if (savedTabs) {
-                tabsList = JSON.parse(savedTabs);
-                activeTabId = savedActive;
-            } else {
-                // Seed de Fábrica Inicial
-                tabsList = [
-                    { id: 'tab_storyboard_geral', title: 'storyboard-geral' },
-                    { id: 'tab_geral', title: 'geral' }
-                ];
-                activeTabId = 'tab_storyboard_geral';
-                localStorage.setItem(`sis_tab_data_tab_storyboard_geral`, JSON.stringify(SEED_DEFAULT_DATA));
-                localStorage.setItem(`sis_tab_data_tab_geral`, JSON.stringify([]));
-                saveTabsMetaToLocalStorage();
-            }
-
-            renderTabsUI();
-            loadCurrentTabFromStorage();
-        }
-
-        function renderTabsUI() {
-            const container = document.getElementById('tabs-container');
-            container.innerHTML = '';
-            tabsList.forEach(t => {
-                const tabEl = document.createElement('div');
-                tabEl.className = `tab ${t.id === activeTabId ? 'active' : ''}`;
-                tabEl.onclick = () => switchTab(t.id);
-
-                const titleSpan = document.createElement('span');
-                titleSpan.className = 'tab-title';
-                titleSpan.textContent = t.title;
-                titleSpan.ondblclick = (e) => {
-                    e.stopPropagation();
-                    const newTitle = prompt("Renomear Mesa:", t.title);
-                    if(newTitle) { t.title = newTitle; renderTabsUI(); saveTabsMetaToLocalStorage(); }
-                };
-
-                const closeBtn = document.createElement('span');
-                closeBtn.className = 'tab-close';
-                closeBtn.textContent = '✕';
-                closeBtn.onclick = (e) => {
-                    e.stopPropagation();
-                    triggerDeleteTab(t.id);
-                };
-
-                tabEl.appendChild(titleSpan);
-                tabEl.appendChild(closeBtn);
-                container.appendChild(tabEl);
+        function buildVersionDropdown(versoes) {
+            layoutSelect.innerHTML = '<option value="">-- Selecione o Layout --</option>';
+            versoes.forEach(v => {
+                const opt = document.createElement('option');
+                opt.value = v; opt.textContent = v.replace('.json', '');
+                layoutSelect.appendChild(opt);
             });
         }
 
-        function saveTabsMetaToLocalStorage() {
-            localStorage.setItem('sis_tabs_list', JSON.stringify(tabsList));
-            localStorage.setItem('sis_active_tab_id', activeTabId);
+        function switchLayoutVersion(nomeVersao) {
+            if (!nomeVersao) { clearWorkspace(); return; }
+            fetch('data/' + nomeVersao + '?t=' + Date.now())
+                .then(res => res.json())
+                .then(structuralData => {
+                    clearWorkspace();
+                    structuralData.forEach(data => {
+                        const card = createCardRaw(data.items, data.left, data.top, data.width, data.activeIndex, data.isPostIt, data.linkedToId, data.branchHidden);
+                        card.id = data.id || 'card_' + Math.random().toString(36).substr(2, 9);
+                        if (data.height) card.style.height = data.height;
+                        if (data.zIndex) card.style.zIndex = data.zIndex;
+                        canvas.appendChild(card);
+                    });
+                    resolvePostLoadLinks();
+                    updateCanvasBounds();
+                });
         }
 
-        function saveCurrentTabContentToStorage() {
-            if(!activeTabId) return;
-            localStorage.setItem(`sis_tab_data_${activeTabId}`, getLayoutStateData());
-        }
-
-        function loadCurrentTabFromStorage() {
-            clearWorkspaceRaw();
-            if(!activeTabId) return;
-            let rawData = localStorage.getItem(`sis_tab_data_${activeTabId}`);
-            if(!rawData) return;
-
-            let structuralData = JSON.parse(rawData);
-            structuralData.forEach(data => {
-                const card = createCardRaw(data.items, data.left, data.top, data.width, data.activeIndex, data.isPostIt, data.linkedToId, data.branchHidden);
-                card.id = data.id;
-                card._isScene = data.isScene || false;
-                card._sceneChildren = data.sceneChildren || [];
-                card._sceneCollapsed = data.sceneCollapsed || false;
-                card._originalHeight = data.originalHeight || '';
-                
-                if (data.height) card.style.height = data.height;
-                if (data.zIndex) card.style.zIndex = data.zIndex;
-                
-                if (card._isScene) {
-                    card.classList.add('scene-style');
-                }
-
-                canvas.appendChild(card);
-            });
-
-            resolvePostLoadLinks();
-            applyStrictSceneCollapseStates();
-            updateCanvasBounds();
-        }
-
-        function switchTab(targetTabId) {
-            if(targetTabId === activeTabId) return;
-            saveCurrentTabContentToStorage();
-            activeTabId = targetTabId;
-            saveTabsMetaToLocalStorage();
-            renderTabsUI();
-            undoStack = []; redoStack = []; // Reseta pilhas locais por prancha
-            loadCurrentTabFromStorage();
-        }
-
-        function triggerCreateTab() {
-            saveCurrentTabContentToStorage();
-            const name = prompt("Nome da Nova Mesa:", `Mesa ${tabsList.length + 1}`);
-            if(!name) return;
-            const newId = 'tab_' + Math.random().toString(36).substr(2, 9);
-            tabsList.push({ id: newId, title: name });
-            activeTabId = newId;
-            localStorage.setItem(`sis_tab_data_${newId}`, JSON.stringify([]));
-            saveTabsMetaToLocalStorage();
-            renderTabsUI();
-            loadCurrentTabFromStorage();
-        }
-
-        function triggerDeleteTab(idToDelete) {
-            if(tabsList.length <= 1) {
-                alert("O SIS precisa de manter pelo menos uma aba ativa.");
-                return;
-            }
-            if(!confirm("Deseja excluir permanentemente esta prancha de storyboard?")) return;
-            
-            tabsList = tabsList.filter(t => t.id !== idToDelete);
-            localStorage.removeItem(`sis_tab_data_${idToDelete}`);
-            
-            if(activeTabId === idToDelete) {
-                activeTabId = tabsList[0].id;
-            }
-            saveTabsMetaToLocalStorage();
-            renderTabsUI();
-            loadCurrentTabFromStorage();
-        }
-
-        function clearWorkspaceRaw() {
+        function clearWorkspace() {
             document.querySelectorAll('.still-card').forEach(c => c.remove());
             selection.clear();
             svgLayer.innerHTML = "";
@@ -766,16 +517,16 @@
             document.querySelectorAll('.still-card').forEach(card => {
                 if (card._linkedToId) {
                     const target = document.getElementById(card._linkedToId);
-                    if (target) card._linkedTarget = target;
+                    if (target) {
+                        card._linkedTarget = target;
+                    }
                 }
             });
             applyStrictBranchVisibility();
         }
 
         function applyStrictBranchVisibility() {
-            document.querySelectorAll('.still-card').forEach(c => {
-                if(!c._sceneHiddenByParent) c.classList.remove('hidden-branch');
-            });
+            document.querySelectorAll('.still-card').forEach(c => c.classList.remove('hidden-branch'));
             const internalHide = (originId) => {
                 document.querySelectorAll('.still-card').forEach(c => {
                     if (c._linkedToId === originId) {
@@ -785,34 +536,21 @@
                 });
             };
             document.querySelectorAll('.still-card').forEach(card => {
-                if (card._branchHidden) internalHide(card.id);
-            });
-            drawConnectionLines();
-        }
-
-        function applyStrictSceneCollapseStates() {
-            document.querySelectorAll('.still-card').forEach(c => {
-                c._sceneHiddenByParent = false;
-                c.classList.remove('hidden-by-scene');
-            });
-
-            document.querySelectorAll('.still-card.scene-style').forEach(sceneCard => {
-                if (sceneCard._sceneCollapsed) {
-                    if(sceneCard._sceneChildren) {
-                        sceneCard._sceneChildren.forEach(childId => {
-                            const child = document.getElementById(childId);
-                            if(child) {
-                                child._sceneHiddenByParent = true;
-                                child.classList.add('hidden-by-scene');
-                            }
-                        });
-                    }
+                if (card._branchHidden) {
+                    internalHide(card.id);
                 }
             });
             drawConnectionLines();
         }
 
-        // ---- MODAL DA GALERIA MESTRA ----
+        // ---- MODAL DA GALERIA (POP-UP) ----
+        function openGalleryModal() {
+            document.getElementById('gallery-modal').style.display = 'flex';
+            modalSelection.clear();
+            lastModalSelectedIndex = -1;
+            renderModalGrid();
+        }
+
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
         function closeModalOnOverlay(e, id) { if(e.target.id === id) closeModal(id); }
 
@@ -827,8 +565,12 @@
                     <img src="img/${nome}" loading="lazy">
                     <div class="gallery-item-title">${nome}</div>
                 `;
+                
                 itemCard.addEventListener('click', e => handleModalClick(e, index));
-                itemCard.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', nome); });
+                itemCard.addEventListener('dragstart', e => {
+                    e.dataTransfer.setData('text/plain', nome);
+                });
+
                 assetGrid.appendChild(itemCard);
             });
             setupModalMarquee();
@@ -845,7 +587,9 @@
                 else modalSelection.add(index);
                 lastModalSelectedIndex = index;
             } else {
-                modalSelection.clear(); modalSelection.add(index); lastModalSelectedIndex = index;
+                modalSelection.clear();
+                modalSelection.add(index);
+                lastModalSelectedIndex = index;
             }
             updateModalVisualSelection();
         }
@@ -894,20 +638,28 @@
             document.addEventListener('mouseup', () => { isM = false; mBox.style.display='none'; });
         }
 
+        // ---- INGESTÃO INTELIGENTE LADO A LADO ----
         function insertSelectedAssetsFromModal() {
             if (modalSelection.size === 0) return;
             pushHistory();
 
             const indices = Array.from(modalSelection).sort((a,b) => a-b);
-            const maxCols = 6; const spacingX = 260; const spacingY = 240;
+            const maxCols = 6;
+            const spacingX = 260;
+            const spacingY = 240;
+
             let startLeft = Math.round((viewport.scrollLeft + 60) / 30) * 30;
             let startTop = Math.round((viewport.scrollTop + 60) / 30) * 30;
 
             indices.forEach((globalIdx, orderIdx) => {
                 const nomeArquivo = window.galeriaMestra[globalIdx];
                 const cleanName = nomeArquivo.replace(/\.[^/.]+$/, "");
-                let col = orderIdx % maxCols; let row = Math.floor(orderIdx / maxCols);
-                let targetX = startLeft + (col * spacingX); let targetY = startTop + (row * spacingY);
+                
+                let col = orderIdx % maxCols;
+                let row = Math.floor(orderIdx / maxCols);
+
+                let targetX = startLeft + (col * spacingX);
+                let targetY = startTop + (row * spacingY);
 
                 const card = createCardRaw([{ fileName: nomeArquivo, labelText: cleanName, captionText: "" }], targetX + 'px', targetY + 'px', BASE_WIDTH + 'px', 0, false);
                 canvas.appendChild(card);
@@ -915,10 +667,9 @@
 
             closeModal('gallery-modal');
             updateCanvasBounds();
-            saveCurrentTabContentToStorage();
         }
 
-        // ---- CONSTRUTOR DE CARDS ENGENHARIA V6 ----
+        // ---- CONSTRUTOR DE CARDS AVANÇADO ----
         function createCardRaw(itemsArray, leftStr, topStr, widthStr, activeIndex = 0, isPostIt = false, linkedToId = null, branchHidden = false) {
             const card = document.createElement('div');
             card.className = 'still-card';
@@ -930,11 +681,6 @@
             card._linkedToId = linkedToId;
             card._branchHidden = branchHidden;
             card._linkedTarget = null;
-            
-            card._isScene = false;
-            card._sceneChildren = [];
-            card._sceneCollapsed = false;
-            card._originalHeight = '';
 
             if (isPostIt) card.classList.add('post-it-style');
 
@@ -944,10 +690,8 @@
 
             card.innerHTML = `
                 <button class="link-toggle-btn" title="Expandir/Recolher Conexões">👁</button>
-                <div class="scene-badge" style="display:none;">Cena</div>
                 <div class="card-header-row">
                     <div class="editable-text still-label" contenteditable="false"></div>
-                    <button class="scene-toggle-eye" style="display:none;" title="Recolher/Expandir Conteúdo da Cena">👁</button>
                     <div class="gallery-controls">
                         <button class="gallery-btn prev-btn">◀</button>
                         <span class="gallery-counter">1/1</span>
@@ -971,61 +715,51 @@
             const label = card.querySelector('.still-label');
             const caption = card.querySelector('.still-caption');
             const toggleBtn = card.querySelector('.link-toggle-btn');
-            const sBadge = card.querySelector('.scene-badge');
-            const sEye = card.querySelector('.scene-toggle-eye');
             
             label.innerHTML = item.labelText;
             caption.innerHTML = item.captionText;
-            caption.style.display = (item.captionText && !card._isScene) ? 'block' : 'none';
+            caption.style.display = item.captionText ? 'block' : 'none';
 
-            if (card._linkedToId) toggleBtn.textContent = card._branchHidden ? "❌" : "👁";
+            if (card._linkedToId) {
+                toggleBtn.textContent = card._branchHidden ? "❌" : "👁";
+            }
 
-            if (card._isScene) {
-                sBadge.style.display = 'block';
-                sEye.style.display = 'block';
-                sEye.textContent = card._sceneCollapsed ? '❌ Oculto' : '👁 Recolher';
-                card.querySelector('.img-container').style.display = 'none';
-                caption.style.display = 'none';
-            } else {
-                sBadge.style.display = 'none';
-                sEye.style.display = 'none';
-                if (!card._isPostIt) {
-                    card.querySelector('.img-container').style.display = 'block';
-                    const img = card.querySelector('img');
-                    const controls = card.querySelector('.gallery-controls');
-                    const counter = card.querySelector('.gallery-counter');
+            if (!card._isPostIt) {
+                const img = card.querySelector('img');
+                const controls = card.querySelector('.gallery-controls');
+                const counter = card.querySelector('.gallery-counter');
 
-                    img.src = `img/${item.fileName}`;
-                    if (card._itemData.length > 1) {
-                        controls.style.display = 'flex';
-                        counter.textContent = `${card._activeIndex + 1}/${card._itemData.length}`;
-                    } else { controls.style.display = 'none'; }
-                }
+                img.src = `img/${item.fileName}`;
+
+                if (card._itemData.length > 1) {
+                    controls.style.display = 'flex';
+                    counter.textContent = `${card._activeIndex + 1}/${card._itemData.length}`;
+                } else { controls.style.display = 'none'; }
             }
         }
 
-        // ---- REGRAS DE ACOPLAMENTO LÍDER/DEPENDENTE E ARRASTO ----
+        function getDependents(cardsArray) {
+            const dependents = new Set();
+            const queue = [...cardsArray];
+            const baseIds = new Set(cardsArray.map(c => c.id));
+            while (queue.length > 0) {
+                const current = queue.shift();
+                document.querySelectorAll('.still-card').forEach(c => {
+                    if (c._linkedToId === current.id && !dependents.has(c) && !baseIds.has(c.id)) {
+                        dependents.add(c);
+                        queue.push(c);
+                    }
+                });
+            }
+            return Array.from(dependents);
+        }
+
+        // ---- COMPORTAMENTOS E EVENTOS DE MOVIMENTO ----
         function bindCardEvents(card) {
             const label = card.querySelector('.still-label');
             const caption = card.querySelector('.still-caption');
             const resizeHandle = card.querySelector('.resize-handle');
             const toggleBtn = card.querySelector('.link-toggle-btn');
-            const sEye = card.querySelector('.scene-toggle-eye');
-
-            sEye.addEventListener('click', e => {
-                e.stopPropagation();
-                pushHistory();
-                card._sceneCollapsed = !card._sceneCollapsed;
-                if(card._sceneCollapsed) {
-                    card._originalHeight = card.style.height;
-                    card.style.height = '75px';
-                } else {
-                    card.style.height = card._originalHeight || 'auto';
-                }
-                renderCard(card);
-                applyStrictSceneCollapseStates();
-                saveCurrentTabContentToStorage();
-            });
 
             function wireText(elem, key) {
                 elem.addEventListener('dblclick', e => { e.stopPropagation(); elem.setAttribute('contenteditable', 'true'); elem.focus(); });
@@ -1033,13 +767,13 @@
                     elem.setAttribute('contenteditable', 'false');
                     if(card._itemData[card._activeIndex][key] !== elem.innerHTML) {
                         pushHistory(); card._itemData[card._activeIndex][key] = elem.innerHTML;
-                        saveCurrentTabContentToStorage();
                     }
                 });
                 elem.addEventListener('keydown', e => { if(e.key === 'Enter') e.stopPropagation(); });
                 elem.addEventListener('mousedown', e => { if(elem.getAttribute('contenteditable') === 'true') e.stopPropagation(); });
             }
-            wireText(label, 'labelText'); wireText(caption, 'captionText');
+            wireText(label, 'labelText');
+            wireText(caption, 'captionText');
 
             if (!card._isPostIt) {
                 const img = card.querySelector('img');
@@ -1049,58 +783,96 @@
             }
 
             toggleBtn.addEventListener('click', e => {
-                e.stopPropagation(); card._branchHidden = !card._branchHidden; pushHistory(); applyStrictBranchVisibility(); saveCurrentTabContentToStorage();
+                e.stopPropagation();
+                card._branchHidden = !card._branchHidden;
+                pushHistory();
+                applyStrictBranchVisibility();
             });
 
-            // ARRASTO TRADICIONAL COM SELEÇÃO INVERTIDA (SHIFT/CTRL) E ACOPLAMENTO DE CENA
+            card.addEventListener('wheel', e => {
+                if (!card._isPostIt && card._itemData.length > 1 && Math.abs(e.deltaX) > 4) {
+                    e.preventDefault(); e.stopPropagation(); navigateGallery(card, e.deltaX > 0 ? 1 : -1);
+                }
+            });
+
+            // GESTÃO DE CLIQUES (SHIFT INTERVALO / CTRL MULTIPLO) E ARRASTO DUPLICADO
             card.addEventListener('mousedown', e => {
                 if (e.button !== 0 || label.getAttribute('contenteditable') === 'true' || caption.getAttribute('contenteditable') === 'true') return;
                 
                 if (activeLinkingOriginCard) {
                     e.stopPropagation(); e.preventDefault();
                     if (activeLinkingOriginCard !== card) {
-                        pushHistory(); activeLinkingOriginCard._linkedToId = card.id; activeLinkingOriginCard._linkedTarget = card; activeLinkingOriginCard = null;
-                        document.body.style.cursor = 'default'; applyStrictBranchVisibility(); saveCurrentTabContentToStorage();
+                        pushHistory();
+                        activeLinkingOriginCard._linkedToId = card.id;
+                        activeLinkingOriginCard._linkedTarget = card;
+                        activeLinkingOriginCard = null;
+                        document.body.style.cursor = 'default';
+                        applyStrictBranchVisibility();
                     }
                     return;
                 }
 
                 e.stopPropagation(); e.preventDefault();
 
-                // Lógica de Seleção Invertida Exigida
-                if (e.shiftKey && lastClickedCard && lastClickedCard !== card) {
+                // Lógica Inteligente de Intervalos (Shift) e Individualização (Ctrl)
+                if (e.shiftKey && lastClickedCard && lastClickedCard !== card && lastClickedCard.parentNode && card.parentNode) {
                     const allCards = Array.from(document.querySelectorAll('.still-card'));
-                    const idx1 = allCards.indexOf(lastClickedCard); const idx2 = allCards.indexOf(card);
-                    const start = Math.min(idx1, idx2); const end = Math.max(idx1, idx2);
+                    const idx1 = allCards.indexOf(lastClickedCard);
+                    const idx2 = allCards.indexOf(card);
+                    const start = Math.min(idx1, idx2);
+                    const end = Math.max(idx1, idx2);
+                    
                     selection.clear();
-                    for(let i = start; i <= end; i++) selection.select(allCards[i]);
+                    for(let i = start; i <= end; i++) {
+                        selection.select(allCards[i]);
+                    }
                 } else if (e.ctrlKey || e.metaKey) {
-                    if (selection.has(card)) selection.unselect(card);
-                    else { selection.select(card); lastClickedCard = card; }
+                    if (selection.has(card)) {
+                        selection.unselect(card);
+                    } else {
+                        selection.select(card);
+                        lastClickedCard = card;
+                    }
                 } else {
-                    if (!selection.has(card)) { selection.clear(); selection.select(card); }
+                    if (!selection.has(card)) {
+                        selection.clear();
+                        selection.select(card);
+                    }
                     lastClickedCard = card;
                 }
 
-                pushHistory();
-                const startX = e.clientX; const startY = e.clientY;
-                
-                // Mapeia líderes + dependentes de vínculo + filhos de Cenas arrastadas
                 let draggingLeaders = selection.list;
-                let collectiveSet = new Set(draggingLeaders);
                 
-                draggingLeaders.forEach(c => {
-                    if(c._isScene && c._sceneChildren) {
-                        c._sceneChildren.forEach(id => { const child = document.getElementById(id); if(child) collectiveSet.add(child); });
-                    }
-                });
-                
-                const linksDependents = getDependents(Array.from(collectiveSet));
-                linksDependents.forEach(d => collectiveSet.add(d));
+                // GESTÃO DE ARRASTO COM CTRL (MECANISMO DE CÓPIA IMEDIATA)
+                if ((e.ctrlKey || e.metaKey) && !e.shiftKey) {
+                    pushHistory();
+                    const copies = [];
+                    selection.list.forEach(c => {
+                        const clone = createCardRaw(
+                            JSON.parse(JSON.stringify(c._itemData)),
+                            c.style.left, c.style.top, c.style.width,
+                            c._activeIndex, c._isPostIt, c._linkedToId, c._branchHidden
+                        );
+                        if (c.style.height) clone.style.height = c.style.height;
+                        if (c.style.zIndex) clone.style.zIndex = c.style.zIndex;
+                        canvas.appendChild(clone);
+                        copies.push(clone);
+                    });
+                    
+                    // Direciona o arrasto para as cópias recém criadas
+                    selection.clear();
+                    copies.forEach(cp => selection.select(cp));
+                    draggingLeaders = selection.list;
+                }
 
-                const initialPositions = Array.from(collectiveSet).map(c => ({
+                const startX = e.clientX; const startY = e.clientY;
+                const dependents = getDependents(draggingLeaders);
+                
+                const initialPositions = draggingLeaders.map(c => ({
                     card: c, left: parseFloat(c.style.left), top: parseFloat(c.style.top)
-                }));
+                })).concat(dependents.map(c => ({
+                    card: c, left: parseFloat(c.style.left), top: parseFloat(c.style.top)
+                })));
 
                 function onMove(mEvent) {
                     const dx = (mEvent.clientX - startX) / zoom;
@@ -1108,27 +880,32 @@
 
                     const mainPos = initialPositions.find(p => p.card === card);
                     if (mainPos) {
-                        let snapX = Math.round((mainPos.left + dx) / 30) * 30;
-                        let snapY = Math.round((mainPos.top + dy) / 30) * 30;
-                        const sdx = snapX - mainPos.left; const sdy = snapY - mainPos.top;
+                        let targetLeft = mainPos.left + dx;
+                        let targetTop = mainPos.top + dy;
+                        let snapX = Math.round(targetLeft / 30) * 30;
+                        let snapY = Math.round(targetTop / 30) * 30;
+                        
+                        const sdx = snapX - mainPos.left;
+                        const sdy = snapY - mainPos.top;
 
                         initialPositions.forEach(p => {
-                            p.card.style.left = (p.left + sdx) + 'px'; p.card.style.top = (p.top + sdy) + 'px';
+                            p.card.style.left = (p.left + sdx) + 'px';
+                            p.card.style.top = (p.top + sdy) + 'px';
                         });
                     }
 
-                    // Interceptador Visual de Galeria Slider
                     let currentTarget = null;
-                    if (selection.count === 1 && !card._isPostIt && !card._isScene) {
+                    if (selection.count === 1 && !card._isPostIt) {
                         const fx = parseFloat(card.style.left) + card.offsetWidth / 2;
                         const fy = parseFloat(card.style.top) + card.offsetHeight / 2;
                         currentTarget = getCardAtPos(fx, fy);
                     }
                     document.querySelectorAll('.img-container').forEach(ic => ic.classList.remove('drag-hover-intercept'));
-                    if (currentTarget && !currentTarget._isPostIt && !currentTarget._isScene) {
+                    if (currentTarget && !currentTarget._isPostIt) {
                         const ic = currentTarget.querySelector('.img-container');
                         if (ic) ic.classList.add('drag-hover-intercept');
                     }
+
                     drawConnectionLines();
                 }
 
@@ -1136,12 +913,13 @@
                     document.removeEventListener('mousemove', onMove);
                     document.removeEventListener('mouseup', onRelease);
                     
-                    if (selection.count === 1 && !card._isPostIt && !card._isScene) {
+                    if (selection.count === 1 && !card._isPostIt) {
                         const finalX = parseFloat(card.style.left) + card.offsetWidth/2;
                         const finalY = parseFloat(card.style.top) + card.offsetHeight/2;
                         const targetCard = getCardAtPos(finalX, finalY);
 
-                        if (targetCard && targetCard !== card && !targetCard._isPostIt && !targetCard._isScene) {
+                        if (targetCard && targetCard !== card && !targetCard._isPostIt) {
+                            pushHistory();
                             targetCard._itemData.push(...card._itemData);
                             targetCard._activeIndex = targetCard._itemData.length - card._itemData.length;
                             card.remove(); selection.clear(); renderCard(targetCard);
@@ -1149,17 +927,21 @@
                     }
                     document.querySelectorAll('.img-container').forEach(ic => ic.classList.remove('drag-hover-intercept'));
                     updateCanvasBounds();
-                    saveCurrentTabContentToStorage();
                 }
                 document.addEventListener('mousemove', onMove);
                 document.addEventListener('mouseup', onRelease);
             });
 
-            // REDIMENSIONAMENTO VERTICAL E HORIZONTAL INTEGRADO PARA POST-ITS
+            // RESIZE EM SALTOS DE 20% (HORIZONTAL E VERTICAL PARA POST-ITS)
             resizeHandle.addEventListener('mousedown', e => {
                 e.stopPropagation(); e.preventDefault(); pushHistory();
                 const startX = e.clientX; const startY = e.clientY;
-                const targets = selection.list.map(c => ({ card: c, startW: c.offsetWidth, startH: c.offsetHeight, baseW: c._isPostIt ? 192 : BASE_WIDTH }));
+                const targets = selection.list.map(c => ({ 
+                    card: c, 
+                    startW: c.offsetWidth, 
+                    startH: c.offsetHeight, 
+                    baseW: c._isPostIt ? 192 : BASE_WIDTH 
+                }));
                 if(!selection.has(card)) targets.push({ card, startW: card.offsetWidth, startH: card.offsetHeight, baseW: card._isPostIt ? 192 : BASE_WIDTH });
 
                 function onResizeMove(mEvent) {
@@ -1170,8 +952,8 @@
                         let snappedW = Math.round(rawWidth / stepX) * stepX;
                         if (snappedW < stepX * 2) snappedW = stepX * 2; t.card.style.width = snappedW + 'px';
                         
-                        // Redimensionamento Vertical para Notas/Cenas (Encaixado nos 30px da grade)
-                        if (t.card._isPostIt || t.card._isScene) {
+                        // Resizing vertical exclusivo para Post-its encaixados na grade de 30px
+                        if (t.card._isPostIt) {
                             const rawHeight = t.startH + totalDeltaY;
                             let snappedH = Math.round(rawHeight / 30) * 30;
                             if (snappedH < 60) snappedH = 60;
@@ -1180,23 +962,22 @@
                     });
                     drawConnectionLines();
                 }
-                function onResizeRelease() { document.removeEventListener('mousemove', onResizeMove); document.removeEventListener('mouseup', onResizeRelease); updateCanvasBounds(); saveCurrentTabContentToStorage(); }
+                function onResizeRelease() { document.removeEventListener('mousemove', onResizeMove); document.removeEventListener('mouseup', onResizeRelease); updateCanvasBounds(); }
                 document.addEventListener('mousemove', onResizeMove); document.addEventListener('mouseup', onResizeRelease);
             });
         }
 
         function navigateGallery(card, direction) {
             let nextIndex = card._activeIndex + direction;
-            if (nextIndex >= 0 && nextIndex < card._itemData.length) { card._activeIndex = nextIndex; renderCard(card); saveCurrentTabContentToStorage(); }
+            if (nextIndex >= 0 && nextIndex < card._itemData.length) { card._activeIndex = nextIndex; renderCard(card); }
         }
 
-        // ---- DINÂMICA COMPLETA DE LINHAS SVG TRACEJADAS ----
         function drawConnectionLines() {
             svgLayer.innerHTML = "";
             document.querySelectorAll('.still-card').forEach(card => {
-                if (card._linkedToId && !card.classList.contains('hidden-branch') && !card.classList.contains('hidden-by-scene')) {
+                if (card._linkedToId && !card.classList.contains('hidden-branch')) {
                     const target = document.getElementById(card._linkedToId);
-                    if (target && !target.classList.contains('hidden-branch') && !target.classList.contains('hidden-by-scene')) {
+                    if (target && !target.classList.contains('hidden-branch')) {
                         const x1 = parseFloat(card.style.left) + card.offsetWidth / 2;
                         const y1 = parseFloat(card.style.top) + card.offsetHeight / 2;
                         const x2 = parseFloat(target.style.left) + target.offsetWidth / 2;
@@ -1212,93 +993,27 @@
             });
         }
 
-        // ---- CONVERSOR E INJETOR AVANÇADO DE CENAS ----
-        function convertActiveSelectionToScene() {
-            if(selection.count === 0) return;
-            pushHistory();
-
-            // Localiza se há algum Post-it na seleção para virar o container chefe, senão cria um
-            let sceneMaster = selection.list.find(c => c._isPostIt);
-            let itemsToGroup = selection.list.filter(c => c !== sceneMaster);
-
-            if(!sceneMaster) {
-                // Monta caixa envolvente automática
-                let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-                selection.list.forEach(c => {
-                    const l = parseFloat(c.style.left), t = parseFloat(c.style.top);
-                    if(l < minX) minX = l; if(l + c.offsetWidth > maxX) maxX = l + c.offsetWidth;
-                    if(t < minY) minY = t; if(t + c.offsetHeight > maxY) maxY = t + c.offsetHeight;
-                });
-                minX = Math.round((minX - 30)/30)*30; minY = Math.round((minY - 30)/30)*30;
-                
-                sceneMaster = createCardRaw([{ fileName: '', labelText: 'NOVA CENA', captionText: '' }], minX+'px', minY+'px', (maxX - minX + 60)+'px', 0, true);
-                sceneMaster.style.height = (maxY - minY + 60)+'px';
-                canvas.appendChild(sceneMaster);
-                itemsToGroup = selection.list.filter(c => c !== sceneMaster);
-            }
-
-            sceneMaster._isScene = true;
-            sceneMaster.classList.add('scene-style');
-            sceneMaster.style.zIndex = "2";
-            sceneMaster._sceneChildren = itemsToGroup.map(c => c.id);
-
-            selection.clear();
-            selection.select(sceneMaster);
-            renderCard(sceneMaster);
-            updateCanvasBounds();
-            saveCurrentTabContentToStorage();
+        function startAnnotationLinking() {
+            if (selection.count !== 1) return;
+            activeLinkingOriginCard = selection.list[0];
+            document.body.style.cursor = 'crosshair';
+            contextMenu.style.display = 'none';
         }
 
-        function injectCardIntoScene(cardId, sceneCardId) {
-            pushHistory();
-            const card = document.getElementById(cardId);
-            const scene = document.getElementById(sceneCardId);
-            if(!card || !scene) return;
-
-            if(scene._sceneCollapsed) {
-                scene._sceneCollapsed = false;
-                scene.style.height = scene._originalHeight || 'auto';
-                applyStrictSceneCollapseStates();
-            }
-
-            if(!scene._sceneChildren) scene._sceneChildren = [];
-            if(!scene._sceneChildren.includes(cardId)) scene._sceneChildren.push(cardId);
-
-            // Posiciona a imagem automaticamente abaixo das demais dentro da cena
-            let lowestBottom = parseFloat(scene.style.top) + 60;
-            scene._sceneChildren.forEach(cid => {
-                const child = document.getElementById(cid);
-                if(child && child !== card) {
-                    lowestBottom = Math.max(lowestBottom, parseFloat(child.style.top) + child.offsetHeight);
-                }
-            });
-
-            card.style.left = (parseFloat(scene.style.left) + 30) + 'px';
-            card.style.top = (lowestBottom + 30) + 'px';
-
-            // Acomoda e redimensiona o perímetro da CENA de forma automatizada
-            let neededWidth = parseFloat(card.style.left) + card.offsetWidth + 30 - parseFloat(scene.style.left);
-            let neededHeight = parseFloat(card.style.top) + card.offsetHeight + 30 - parseFloat(scene.style.top);
-
-            scene.style.width = Math.max(parseFloat(scene.style.width), neededWidth) + 'px';
-            scene.style.height = Math.max(parseFloat(scene.style.height), neededHeight) + 'px';
-
-            renderCard(scene);
-            drawConnectionLines();
-            updateCanvasBounds();
-            saveCurrentTabContentToStorage();
-        }
-
-        // ---- GESTÃO DE SOBREPOSIÇÃO DAS CAMADAS DE POST-ITS ----
+        // GESTÃO EXCLUSIVA DE CAMADAS DE SOBREPOSIÇÃO DE POST-ITS
         function movePostItLayer(direction) {
             if (selection.count === 0) return;
             pushHistory();
-            const postIts = Array.from(document.querySelectorAll('.still-card.post-it-style, .still-card.scene-style'));
+            const postIts = Array.from(document.querySelectorAll('.still-card.post-it-style'));
             
-            postIts.sort((a, b) => (parseInt(a.style.zIndex) || 5) - (parseInt(b.style.zIndex) || 5));
+            postIts.sort((a, b) => {
+                const zA = parseInt(a.style.zIndex) || 5;
+                const zB = parseInt(b.style.zIndex) || 5;
+                return zA - zB;
+            });
             
             selection.list.forEach(card => {
-                if (!card._isPostIt && !card._isScene) return;
+                if (!card._isPostIt) return;
                 const idx = postIts.indexOf(card);
                 if (idx !== -1) {
                     postIts.splice(idx, 1);
@@ -1307,14 +1022,47 @@
                 }
             });
             
+            // Reatribui z-indices seguros (entre 1 e 9) para nunca ultrapassar os Stills normais (z-index 10)
             postIts.forEach((card, index) => {
-                card.style.zIndex = 1 + Math.min(index, 8); // z-index restrito entre 1 e 9 (abaixo de stills de imagem)
+                card.style.zIndex = 1 + Math.min(index, 8);
             });
             contextMenu.style.display = 'none';
-            saveCurrentTabContentToStorage();
         }
 
-        // ---- COPIAR, COLAR E ÁREA DE TRANFERÊNCIA INTER-ABAS ----
+        function getLayoutStateData() {
+            const state = [];
+            document.querySelectorAll('.still-card').forEach(card => {
+                state.push({
+                    id: card.id, left: card.style.left, top: card.style.top, width: card.style.width,
+                    height: card.style.height || '', activeIndex: card._activeIndex || 0, isPostIt: card._isPostIt || false,
+                    linkedToId: card._linkedToId || null, branchHidden: card._branchHidden || false,
+                    zIndex: card.style.zIndex || '', items: card._itemData
+                });
+            });
+            return JSON.stringify(state, null, 2);
+        }
+
+        function exportLayoutJson() {
+            const data = getLayoutStateData();
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const dataHora = new Date().toISOString().slice(0,10);
+            a.download = `storyboard_${dataHora}.json`;
+            a.href = url; a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function copyLayoutToClipboard() {
+            const data = getLayoutStateData();
+            navigator.clipboard.writeText(data).then(() => {
+                const btn = document.querySelector('button[onclick="copyLayoutToClipboard()"]');
+                const t = btn.textContent; btn.textContent = "✓ Copiado!";
+                setTimeout(() => btn.textContent = t, 1200);
+            });
+        }
+
+        // COPIAR / COLAR INTERNO DE ELEMENTOS DA INTERFACE
         function copySelectedCardsInternal() {
             if (selection.count === 0) return;
             let minX = Infinity, minY = Infinity;
@@ -1330,8 +1078,6 @@
                 height: c.style.height || '',
                 isPostIt: c._isPostIt,
                 activeIndex: c._activeIndex,
-                isScene: c._isScene,
-                sceneChildren: c._isScene ? [] : [], // Desacopla IDs antigos na cópia
                 items: JSON.parse(JSON.stringify(c._itemData)),
                 zIndex: c.style.zIndex || ''
             }));
@@ -1350,8 +1096,6 @@
                 const targetY = Math.round((baseTop + data.relTop) / 30) * 30;
                 
                 const card = createCardRaw(data.items, targetX+'px', targetY+'px', data.width, data.activeIndex, data.isPostIt);
-                card._isScene = data.isScene || false;
-                if(card._isScene) card.classList.add('scene-style');
                 if (data.height) card.style.height = data.height;
                 if (data.zIndex) card.style.zIndex = data.zIndex;
                 
@@ -1363,69 +1107,66 @@
             newClones.forEach(c => selection.select(c));
             updateCanvasBounds();
             drawConnectionLines();
-            saveCurrentTabContentToStorage();
         }
 
-        // ---- HISTÓRICO E EXPORTADORES MESTRES LIMPOS ----
-        function getLayoutStateData() {
+        function applyZoom(newZoom) {
+            zoom = Math.max(0.1, Math.min(newZoom, 3));
+            canvas.style.transform = `scale(${zoom})`;
+            zoomBadge.textContent = `${Math.round(zoom * 100)}%`;
+            drawConnectionLines();
+        }
+
+        viewport.addEventListener('wheel', e => {
+            if (e.ctrlKey || e.metaKey) {
+                e.preventDefault();
+                let nextZoom = zoom + (e.deltaY < 0 ? 0.012 : -0.012);
+                applyZoom(nextZoom);
+            }
+        });
+
+        function openZoomMenu(e) {
+            e.stopPropagation();
+            zoomMenu.style.left = e.clientX + 'px';
+            zoomMenu.style.top = e.clientY + 'px';
+            zoomMenu.style.display = 'block';
+        }
+
+        function fitZoom(type) {
+            let maxX = 0, maxY = 0;
+            document.querySelectorAll('.still-card').forEach(c => {
+                let r = parseFloat(c.style.left) + c.offsetWidth;
+                let b = parseFloat(c.style.top) + c.offsetHeight;
+                if(r > maxX) maxX = r; if(b > maxY) maxY = b;
+            });
+            if(maxX === 0 || maxY === 0) return;
+
+            let scale = 1;
+            if (type === 'horizontal') scale = (viewport.offsetWidth - 80) / maxX;
+            else scale = (viewport.offsetHeight - 80) / maxY;
+            
+            applyZoom(scale);
+            zoomMenu.style.display = 'none';
+        }
+
+        function pushHistory() {
             const state = [];
             document.querySelectorAll('.still-card').forEach(card => {
                 state.push({
                     id: card.id, left: card.style.left, top: card.style.top, width: card.style.width,
                     height: card.style.height || '', activeIndex: card._activeIndex || 0, isPostIt: card._isPostIt || false,
                     linkedToId: card._linkedToId || null, branchHidden: card._branchHidden || false,
-                    zIndex: card.style.zIndex || '', isScene: card._isScene || false,
-                    sceneChildren: card._sceneChildren || [], sceneCollapsed: card._sceneCollapsed || false,
-                    originalHeight: card._originalHeight || '', items: card._itemData
+                    zIndex: card.style.zIndex || '', items: JSON.parse(JSON.stringify(card._itemData))
                 });
             });
-            return JSON.stringify(state, null, 2);
+            undoStack.push(JSON.stringify(state)); redoStack = [];
+            if (undoStack.length > 40) undoStack.shift();
         }
 
-        function executeUndo() { if (undoStack.length === 0) return; redoStack.push(getLayoutStateData()); restoreStateSnapshot(JSON.parse(undoStack.pop())); saveCurrentTabContentToStorage(); }
-        function executeRedo() { if (redoStack.length === 0) return; undoStack.push(getLayoutStateData()); restoreStateSnapshot(JSON.parse(redoStack.pop())); saveCurrentTabContentToStorage(); }
-        function restoreStateSnapshot(stateData) { clearWorkspaceRaw(); stateData.forEach(data => { const card = createCardRaw(data.items, data.left, data.top, data.width, data.activeIndex, data.isPostIt, data.linkedToId, data.branchHidden); card.id = data.id; card._isScene = data.isScene || false; card._sceneChildren = data.sceneChildren || []; card._sceneCollapsed = data.sceneCollapsed || false; card._originalHeight = data.originalHeight || ''; if (card._isScene) card.classList.add('scene-style'); if (data.height) card.style.height = data.height; if (data.zIndex) card.style.zIndex = data.zIndex; canvas.appendChild(card); }); resolvePostLoadLinks(); applyStrictSceneCollapseStates(); updateCanvasBounds(); }
-
-        function startAnnotationLinking() { if (selection.count !== 1) return; activeLinkingOriginCard = selection.list[0]; document.body.style.cursor = 'crosshair'; contextMenu.style.display = 'none'; }
-        function applyZoom(newZoom) { zoom = Math.max(0.1, Math.min(newZoom, 3)); canvas.style.transform = `scale(${zoom})`; zoomBadge.textContent = `${Math.round(zoom * 100)}%`; drawConnectionLines(); }
-        function openGalleryModal() { document.getElementById('gallery-modal').style.display = 'flex'; modalSelection.clear(); lastModalSelectedIndex = -1; renderModalGrid(); }
-        function exportLayoutJson() { const data = getLayoutStateData(); const blob = new Blob([data], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.download = `storyboard_v6.json`; a.href = url; a.click(); URL.revokeObjectURL(url); }
-
-        // ---- CRIAÇÃO MANUAL DE POST-ITS ----
-        canvas.addEventListener('dblclick', e => {
-            if (e.target !== canvas) return;
-            pushHistory();
-            const rect = canvas.getBoundingClientRect();
-            const steppedX = Math.round(((e.clientX - rect.left) / zoom) / 30) * 30;
-            const steppedY = Math.round(((e.clientY - rect.top) / zoom) / 30) * 30;
-            
-            const card = createCardRaw([{ fileName: '', labelText: 'Nova Nota', captionText: '' }], steppedX + 'px', steppedY + 'px', '192px', 0, true);
-            canvas.appendChild(card); updateCanvasBounds(); saveCurrentTabContentToStorage();
-            const label = card.querySelector('.still-label'); label.setAttribute('contenteditable', 'true'); label.focus(); document.execCommand('selectAll', false, null);
-        });
-
-        function createNewNoteFromTopBar() {
-            pushHistory();
-            const steppedX = Math.round(((viewport.scrollLeft + (viewport.clientWidth / 2)) / zoom) / 30) * 30;
-            const steppedY = Math.round(((viewport.scrollTop + (viewport.clientHeight / 2)) / zoom) / 30) * 30;
-            const card = createCardRaw([{ fileName: '', labelText: 'Nova Nota', captionText: '' }], steppedX + 'px', steppedY + 'px', '192px', 0, true);
-            canvas.appendChild(card); updateCanvasBounds(); saveCurrentTabContentToStorage();
-            const label = card.querySelector('.still-label'); label.setAttribute('contenteditable', 'true'); label.focus(); document.execCommand('selectAll', false, null);
-        }
-
-        function getDependents(cardsArray) {
-            const dependents = new Set(); const queue = [...cardsArray]; const baseIds = new Set(cardsArray.map(c => c.id));
-            while (queue.length > 0) {
-                const current = queue.shift();
-                document.querySelectorAll('.still-card').forEach(c => {
-                    if (c._linkedToId === current.id && !dependents.has(c) && !baseIds.has(c.id)) { dependents.add(c); queue.push(c); }
-                });
-            }
-            return Array.from(dependents);
-        }
-
+        // ---- BOTÕES DE ALINHAMENTO ----
         function alignGroup(mode) {
-            if (selection.count === 0) return; pushHistory();
+            if (selection.count === 0) return;
+            pushHistory();
+            
             let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
             const bounds = selection.list.map(c => {
                 const l = parseFloat(c.style.left), t = parseFloat(c.style.top); const w = c.offsetWidth, h = c.offsetHeight;
@@ -1441,7 +1182,7 @@
                 if (mode === 'centerV') b.card.style.top = (midY - b.h / 2) + 'px'; 
                 if (mode === 'bottom') b.card.style.top = (maxY - b.h) + 'px';
             });
-            drawConnectionLines(); updateCanvasBounds(); saveCurrentTabContentToStorage();
+            drawConnectionLines(); updateCanvasBounds();
         }
 
         function distributeGroup(orientation) {
@@ -1460,14 +1201,82 @@
                 let currentTop = first.t + first.h + gap;
                 for(let i = 1; i < list.length - 1; i++) { list[i].card.style.top = currentTop + 'px'; currentTop += list[i].h + gap; }
             }
-            drawConnectionLines(); updateCanvasBounds(); saveCurrentTabContentToStorage();
+            drawConnectionLines(); updateCanvasBounds();
         }
 
-        // ---- OPERAÇÃO DO MARQUEE DE SELEÇÃO ----
+        function openHelpModal() { document.getElementById('help-modal').style.display='flex'; }
+
+        // ---- CRIAÇÃO RÁPIDA DE POST-ITS POR DUPLO CLIQUE ----
+        canvas.addEventListener('dblclick', e => {
+            if (e.target !== canvas) return;
+            pushHistory();
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / zoom;
+            const y = (e.clientY - rect.top) / zoom;
+            const steppedX = Math.round(x / 30) * 30;
+            const steppedY = Math.round(y / 30) * 30;
+            
+            const card = createCardRaw([{ fileName: '', labelText: 'Nova Nota', captionText: '' }], steppedX + 'px', steppedY + 'px', '192px', 0, true);
+            canvas.appendChild(card);
+            updateCanvasBounds();
+            
+            const label = card.querySelector('.still-label');
+            label.setAttribute('contenteditable', 'true');
+            label.focus();
+            document.execCommand('selectAll', false, null);
+        });
+
+        function createNewNoteFromTopBar() {
+            pushHistory();
+            const visibleCenterX = viewport.scrollLeft + (viewport.clientWidth / 2);
+            const visibleCenterY = viewport.scrollTop + (viewport.clientHeight / 2);
+            
+            const canvasX = visibleCenterX / zoom;
+            const canvasY = visibleCenterY / zoom;
+            
+            const steppedX = Math.round(canvasX / 30) * 30;
+            const steppedY = Math.round(canvasY / 30) * 30;
+
+            const card = createCardRaw([{ fileName: '', labelText: 'Nova Nota', captionText: '' }], steppedX + 'px', steppedY + 'px', '192px', 0, true);
+            canvas.appendChild(card);
+            updateCanvasBounds();
+            
+            const label = card.querySelector('.still-label');
+            label.setAttribute('contenteditable', 'true');
+            label.focus();
+            document.execCommand('selectAll', false, null);
+        }
+
+        // ---- DRAG AND DROP DA SIDEBAR DO COMPUTADOR ----
+        canvas.addEventListener('dragover', e => e.preventDefault());
+        canvas.addEventListener('drop', e => {
+            e.preventDefault();
+            const fileName = e.dataTransfer.getData('text/plain');
+            if (!fileName || fileName.includes('{')) return; 
+
+            pushHistory();
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / zoom; const y = (e.clientY - rect.top) / zoom;
+            const steppedX = Math.round(x / 30) * 30; const steppedY = Math.round(y / 30) * 30;
+            const cleanName = fileName.replace(/\.[^/.]+$/, "");
+
+            const card = createCardRaw([{ fileName: fileName, labelText: cleanName, captionText: "" }], steppedX + 'px', steppedY + 'px', BASE_WIDTH + 'px', 0, false);
+            canvas.appendChild(card);
+            updateCanvasBounds();
+        });
+
+        // ---- SELEÇÃO WORKSPACE MARQUEE ACUMULATIVA (SHIFT CONSERVA) ----
+        let isMarquee = false, mStartX, mStartY;
+        let existingSelection = new Set();
+
         canvas.addEventListener('mousedown', e => {
             if (e.target === canvas && e.button === 0) {
-                if (e.shiftKey || e.ctrlKey || e.metaKey) existingSelection = new Set(selection.list);
-                else { selection.clear(); existingSelection.clear(); }
+                if (e.shiftKey || e.ctrlKey || e.metaKey) {
+                    existingSelection = new Set(selection.list);
+                } else {
+                    selection.clear();
+                    existingSelection.clear();
+                }
                 contextMenu.style.display = 'none'; zoomMenu.style.display = 'none'; isMarquee = true;
                 const rect = canvas.getBoundingClientRect(); mStartX = (e.clientX - rect.left) / zoom; mStartY = (e.clientY - rect.top) / zoom;
                 marquee.style.left = mStartX + 'px'; marquee.style.top = mStartY + 'px'; marquee.style.width = '0px'; marquee.style.height = '0px'; marquee.style.display = 'block';
@@ -1481,44 +1290,31 @@
             document.querySelectorAll('.still-card').forEach(card => {
                 const cl = parseFloat(card.style.left), ct = parseFloat(card.style.top);
                 const overlaps = l < (cl + card.offsetWidth) && (l + w) > cl && t < (ct + card.offsetHeight) && (t + h) > ct;
-                if (overlaps) selection.select(card);
-                else { if (!existingSelection.has(card)) selection.unselect(card); }
+                if (overlaps) {
+                    selection.select(card);
+                } else {
+                    if (!existingSelection.has(card)) {
+                        selection.unselect(card);
+                    }
+                }
             });
         });
         document.addEventListener('mouseup', () => { isMarquee = false; marquee.style.display = 'none'; });
 
-        // ---- MENUS CONTEXTUAIS COM SUBMENU DE CENAS DINÂMICO ----
+        // ---- MENUS CONTEXTUAIS VISUAIS ----
         canvas.addEventListener('contextmenu', e => {
             e.preventDefault();
             const targetCard = e.target.closest('.still-card');
             if (targetCard && !selection.has(targetCard)) { selection.clear(); selection.select(targetCard); }
             
             if (!targetCard) {
-                openZoomMenu(e); contextMenu.style.display = 'none';
+                openZoomMenu(e);
+                contextMenu.style.display = 'none';
             } else {
                 const isPostIt = targetCard._isPostIt;
-                document.querySelectorAll('.post-it-only').forEach(el => el.style.display = (isPostIt || targetCard._isScene) ? 'block' : 'none');
-                document.querySelectorAll('.non-post-it').forEach(el => el.style.display = (isPostIt || targetCard._isScene) ? 'none' : 'block');
+                document.querySelectorAll('.post-it-only').forEach(el => el.style.display = isPostIt ? 'block' : 'none');
+                document.querySelectorAll('.non-post-it').forEach(el => el.style.display = isPostIt ? 'none' : 'block');
                 
-                // Monta injeção dinâmica de Cenas no Submenu
-                const subWrapper = document.getElementById('add-to-scene-submenu');
-                const subList = document.getElementById('scenes-submenu-list');
-                const allScenes = Array.from(document.querySelectorAll('.still-card.scene-style'));
-
-                if(allScenes.length > 0 && !targetCard._isScene) {
-                    subWrapper.style.display = 'block'; subList.innerHTML = '';
-                    allScenes.forEach(sceneCard => {
-                        const sItem = document.createElement('div');
-                        sItem.className = 'menu-item';
-                        sItem.textContent = sceneCard.querySelector('.still-label').textContent || "Cena sem Nome";
-                        sItem.onclick = () => {
-                            injectCardIntoScene(targetCard.id, sceneCard.id);
-                            contextMenu.style.display = 'none';
-                        };
-                        subList.appendChild(sItem);
-                    });
-                } else { subWrapper.style.display = 'none'; }
-
                 contextMenu.style.left = e.clientX + 'px'; contextMenu.style.top = e.clientY + 'px'; contextMenu.style.display = 'block';
                 zoomMenu.style.display = 'none';
             }
@@ -1527,6 +1323,20 @@
             if(!e.target.closest('#context-menu')) contextMenu.style.display = 'none';
             if(!e.target.closest('#zoom-menu') && !e.target.closest('#zoom-badge')) zoomMenu.style.display = 'none';
         });
+
+        function breakActiveGallery() {
+            if (selection.count !== 1) return; const card = selection.list[0]; if (card._isPostIt || card._itemData.length <= 1) return;
+            pushHistory(); const items = [...card._itemData]; const baseLeft = parseFloat(card.style.left), baseTop = parseFloat(card.style.top);
+            card._itemData = [items[0]]; card._activeIndex = 0; renderCard(card);
+            items.slice(1).forEach((item, index) => { const spawned = createCardRaw([item], (baseLeft + (index + 1) * 40) + 'px', (baseTop + (index + 1) * 40) + 'px', card.style.width, 0, false); canvas.appendChild(spawned); });
+            selection.clear(); updateCanvasBounds();
+        }
+
+        function deleteActiveSelection() { if(selection.count === 0) return; pushHistory(); selection.deleteSelected(); drawConnectionLines(); updateCanvasBounds(); }
+        function updateCanvasBounds() {
+            let maxBottom = 0; document.querySelectorAll('.still-card').forEach(c => { const b = parseFloat(c.style.top) + c.offsetHeight; if (b > maxBottom) maxBottom = b; });
+            canvas.style.height = Math.max(3000, maxBottom + 300) + 'px';
+        }
 
         function getCardAtPos(x, y) {
             let match = null;
@@ -1538,29 +1348,26 @@
             return match;
         }
 
-        function updateCanvasBounds() {
-            let maxBottom = 0; document.querySelectorAll('.still-card').forEach(c => { const b = parseFloat(c.style.top) + c.offsetHeight; if (b > maxBottom) maxBottom = b; });
-            canvas.style.height = Math.max(3000, maxBottom + 300) + 'px';
-        }
+        function executeUndo() { if (undoStack.length === 0) return; const current = []; document.querySelectorAll('.still-card').forEach(card => { current.push({ id: card.id, left: card.style.left, top: card.style.top, width: card.style.width, height: card.style.height || '', activeIndex: card._activeIndex || 0, isPostIt: card._isPostIt || false, linkedToId: card._linkedToId || null, branchHidden: card._branchHidden || false, zIndex: card.style.zIndex || '', items: JSON.parse(JSON.stringify(card._itemData)) }); }); redoStack.push(JSON.stringify(current)); restoreStateSnapshot(JSON.parse(undoStack.pop())); }
+        function executeRedo() { if (redoStack.length === 0) return; const current = []; document.querySelectorAll('.still-card').forEach(card => { current.push({ id: card.id, left: card.style.left, top: card.style.top, width: card.style.width, height: card.style.height || '', activeIndex: card._activeIndex || 0, isPostIt: card._isPostIt || false, linkedToId: card._linkedToId || null, branchHidden: card._branchHidden || false, zIndex: card.style.zIndex || '', items: JSON.parse(JSON.stringify(card._itemData)) }); }); undoStack.push(JSON.stringify(current)); restoreStateSnapshot(JSON.parse(redoStack.pop())); }
+        function restoreStateSnapshot(stateData) { document.querySelectorAll('.still-card').forEach(c => c.remove()); selection.clear(); stateData.forEach(data => { const card = createCardRaw(data.items, data.left, data.top, data.width, data.activeIndex, data.isPostIt, data.linkedToId, data.branchHidden); card.id = data.id; if (data.height) card.style.height = data.height; if (data.zIndex) card.style.zIndex = data.zIndex; canvas.appendChild(card); }); resolvePostLoadLinks(); updateCanvasBounds(); }
 
-        function deleteActiveSelection() { if(selection.count === 0) return; pushHistory(); selection.deleteSelected(); drawConnectionLines(); updateCanvasBounds(); saveCurrentTabContentToStorage(); }
-        function fitZoom(type) { let maxX = 0, maxY = 0; document.querySelectorAll('.still-card').forEach(c => { let r = parseFloat(c.style.left) + c.offsetWidth; let b = parseFloat(c.style.top) + c.offsetHeight; if(r > maxX) maxX = r; if(b > maxY) maxY = b; }); if(maxX === 0 || maxY === 0) return; let scale = (type === 'horizontal') ? (viewport.offsetWidth - 80) / maxX : (viewport.offsetHeight - 80) / maxY; applyZoom(scale); zoomMenu.style.display = 'none'; }
-        function openZoomMenu(e) { e.stopPropagation(); zoomMenu.style.left = e.clientX + 'px'; zoomMenu.style.top = e.clientY + 'px'; zoomMenu.style.display = 'block'; }
-
-        // ---- ATALHOS DE TECLADO MESTRES V6 ----
+        // ---- ATALHOS DE TECLADO COMPLETOS ----
         document.addEventListener('keydown', e => {
             const isEditing = e.target.getAttribute('contenteditable') === 'true';
             if (e.key === 'Escape') { closeModal('gallery-modal'); closeModal('help-modal'); if (activeLinkingOriginCard) { activeLinkingOriginCard = null; document.body.style.cursor='default'; } }
             if (e.key === 'Enter' && document.getElementById('gallery-modal').style.display === 'flex') { e.preventDefault(); insertSelectedAssetsFromModal(); }
             if (!isEditing && selection.count === 1 && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) { e.preventDefault(); navigateGallery(selection.list[0], e.key === 'ArrowRight' ? 1 : -1); }
+            
+            // Bloqueia interceptação se estiver em digitação ativa
             if (isEditing) return;
 
-            // Prancheta Integrada (Ctrl + C / V / A)
+            // Operações de Área de Transferência e Prancheta (Ctrl + C / V / A)
             if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c') { e.preventDefault(); copySelectedCardsInternal(); }
             if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v') { e.preventDefault(); pasteSelectedCardsInternal(); }
             if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'a') { e.preventDefault(); selection.clear(); document.querySelectorAll('.still-card').forEach(c => selection.select(c)); }
 
-            // Histórico Estrito Configurado (Ctrl + Z e Ctrl + Shift + Z)
+            // Histórico Estrito (Ctrl + Z e Ctrl + Shift + Z)
             if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'z') { e.preventDefault(); executeRedo(); }
             else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); executeUndo(); }
 
