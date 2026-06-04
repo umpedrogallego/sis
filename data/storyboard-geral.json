@@ -52,7 +52,7 @@
     "activeIndex": 1,
     "isPostIt": false,
     "linkedToId": "card_qvyhd0j99",
-    "branchHidden": false,
+    "branchHidden": true,
     "zIndex": "",
     "items": [
       {
@@ -141,8 +141,8 @@
   },
   {
     "id": "card_cjsktc8di",
-    "left": "1530px",
-    "top": "2250px",
+    "left": "1590px",
+    "top": "2220px",
     "width": "288px",
     "height": "",
     "activeIndex": 0,
@@ -154,25 +154,6 @@
       {
         "fileName": "ESCADA JANELA 01.jpg",
         "labelText": "ESCADA JANELA 01",
-        "captionText": ""
-      }
-    ]
-  },
-  {
-    "id": "card_10cf330fc",
-    "left": "1530px",
-    "top": "2520px",
-    "width": "288px",
-    "height": "",
-    "activeIndex": 0,
-    "isPostIt": false,
-    "linkedToId": null,
-    "branchHidden": false,
-    "zIndex": "",
-    "items": [
-      {
-        "fileName": "FOCO PRATELEIRAS.jpg",
-        "labelText": "FOCO PRATELEIRAS",
         "captionText": ""
       }
     ]
@@ -229,7 +210,7 @@
     "activeIndex": 1,
     "isPostIt": false,
     "linkedToId": null,
-    "branchHidden": true,
+    "branchHidden": false,
     "zIndex": "",
     "items": [
       {
@@ -755,7 +736,7 @@
     "top": "2190px",
     "width": "288px",
     "height": "",
-    "activeIndex": 0,
+    "activeIndex": 2,
     "isPostIt": false,
     "linkedToId": null,
     "branchHidden": false,
@@ -812,6 +793,25 @@
       {
         "fileName": "",
         "labelText": "05_LUZES MOVIMENTO",
+        "captionText": ""
+      }
+    ]
+  },
+  {
+    "id": "card_744v96625",
+    "left": "1590px",
+    "top": "2490px",
+    "width": "288px",
+    "height": "",
+    "activeIndex": 0,
+    "isPostIt": false,
+    "linkedToId": null,
+    "branchHidden": false,
+    "zIndex": "",
+    "items": [
+      {
+        "fileName": "FOCO PRATELEIRAS.jpg",
+        "labelText": "FOCO PRATELEIRAS",
         "captionText": ""
       }
     ]
