@@ -1,0 +1,1914 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>★ Revisão de Vídeo</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkbg: '#0f0f11',
+                        panelbg: '#161619',
+                        cardbg: '#1c1c21',
+                        bordercolor: '#27272a'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0f0f11; }
+        ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+
+        /* Timeline e Marcadores */
+        #timeline-container { position: relative; }
+
+        .timeline-playhead-dot {
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 10px;
+            height: 10px;
+            border-radius: 9999px;
+            background-color: #3b82f6;
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 6px rgba(59, 130, 246, 0.8);
+            pointer-events: none;
+            z-index: 15;
+        }
+
+        .timeline-hover-indicator {
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 8px;
+            height: 8px;
+            border-radius: 9999px;
+            background-color: rgba(255, 255, 255, 0.8);
+            pointer-events: none;
+            z-index: 14;
+            display: none;
+        }
+
+        .timeline-hover-badge {
+            position: absolute;
+            bottom: calc(100% + 6px);
+            transform: translateX(-50%);
+            background-color: #18181b;
+            border: 1px solid #3f3f46;
+            color: #60a5fa;
+            font-family: monospace;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            pointer-events: none;
+            white-space: nowrap;
+            z-index: 30;
+            display: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        .timeline-marker-point {
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 14px;
+            height: 14px;
+            border-radius: 9999px;
+            border: 2px solid #0f0f11;
+            z-index: 10;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px;
+            font-weight: bold;
+            color: white;
+            transition: transform 0.15s ease;
+        }
+        .timeline-marker-point:hover {
+            transform: translate(-50%, -50%) scale(1.35);
+            z-index: 25;
+        }
+
+        .timeline-marker-range {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            opacity: 0.35;
+            z-index: 5;
+            cursor: pointer;
+            border-left-width: 2px;
+            border-right-width: 2px;
+        }
+
+        /* Camada Interativa de Retângulos */
+        #video-canvas-overlay {
+            pointer-events: none;
+        }
+        #video-canvas-overlay.drawing-active {
+            pointer-events: auto;
+            cursor: crosshair;
+        }
+
+        .interactive-shape-wrapper {
+            position: absolute;
+            z-index: 25;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .interactive-shape-delete-btn {
+            display: none;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+            white-space: nowrap;
+            border: 1px solid rgba(255,255,255,0.4);
+            cursor: pointer;
+        }
+        .interactive-shape-wrapper:hover .interactive-shape-delete-btn {
+            display: inline-block;
+        }
+
+        /* Popover estilo Kirby */
+        #text-popover {
+            position: absolute;
+            display: none;
+            z-index: 70;
+            background: #27272a;
+            border: 1px solid #3f3f46;
+            border-radius: 6px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        /* Destaque em tempo real do cartão ativo */
+        .comment-highlight {
+            border-color: #3b82f6 !important;
+            background-color: rgba(59, 130, 246, 0.08) !important;
+            box-shadow: 0 0 12px rgba(59, 130, 246, 0.2);
+        }
+
+        /* Modo Fullscreen Real */
+        #video-wrapper:fullscreen {
+            width: 100vw;
+            height: 100vh;
+            background-color: #000000;
+        }
+        #video-wrapper:fullscreen #floating-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.85), transparent);
+            z-index: 50;
+            transition: opacity 0.3s ease;
+        }
+        .fullscreen-hide-cursor {
+            cursor: none;
+        }
+    </style>
+</head>
+<body class="bg-darkbg text-gray-100 font-sans h-screen w-screen overflow-hidden flex flex-col select-none">
+
+    <!-- MODAL SECRETO DE AUTENTICAÇÃO DO PEDRO (Ctrl + Shift + P) -->
+    <div id="modal-auth-pedro" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="bg-cardbg border border-bordercolor p-6 rounded-2xl w-full max-w-sm text-center shadow-2xl">
+            <div class="w-10 h-10 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center mx-auto mb-2 text-base font-bold">
+                🔐
+            </div>
+            <h2 class="text-sm font-bold text-white mb-1">Acesso do Editor</h2>
+            <p class="text-xs text-gray-400 mb-4">Insira a chave de acesso para alternar para o perfil Pedro:</p>
+            
+            <input type="password" id="input-pedro-pass" placeholder="Palavra-passe..." 
+                   class="w-full bg-darkbg border border-bordercolor rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 mb-2 text-center">
+            
+            <div id="auth-error-msg" class="text-[11px] text-red-400 mb-3 hidden">Palavra-passe incorreta.</div>
+
+            <div class="flex items-center gap-2">
+                <button id="btn-cancel-auth" class="flex-1 bg-zinc-800 hover:bg-zinc-700 text-gray-300 font-semibold py-2 rounded-xl text-xs transition-colors">
+                    Cancelar
+                </button>
+                <button id="btn-confirm-auth" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-xl text-xs transition-colors">
+                    Aceder
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- POPOVER DE FORMATAÇÃO E MENÇÃO (ESTILO KIRBY) -->
+    <div id="text-popover" class="flex items-center p-1 gap-1">
+        <button id="btn-format-bold" class="px-2 py-1 text-xs font-bold text-gray-200 hover:bg-zinc-700 rounded transition-colors" title="Negrito (Ctrl+B)">B</button>
+        <button id="btn-format-italic" class="px-2 py-1 text-xs italic font-serif text-gray-200 hover:bg-zinc-700 rounded transition-colors" title="Itálico (Ctrl+I)">I</button>
+        <div class="h-4 w-[1px] bg-zinc-600 mx-0.5"></div>
+        <button id="btn-format-mention" class="px-2 py-1 text-xs font-semibold text-blue-400 hover:bg-zinc-700 rounded transition-colors" title="Mencionar">@</button>
+    </div>
+
+    <!-- MENU SUSPENSO DE MENÇÃO (@) -->
+    <div id="mention-menu" class="fixed hidden z-50 bg-zinc-800 border border-zinc-700 rounded-xl shadow-2xl p-2 min-w-[200px] text-xs">
+        <div id="mention-menu-root" class="space-y-1">
+            <button class="w-full text-left px-3 py-1.5 rounded-lg hover:bg-zinc-700 text-gray-200 flex justify-between items-center" onclick="exibirSubmenuMencao('versao')">
+                <span>⊛ Versão do Vídeo</span> <span>▸</span>
+            </button>
+            <button class="w-full text-left px-3 py-1.5 rounded-lg hover:bg-zinc-700 text-gray-200 flex justify-between items-center" onclick="exibirSubmenuMencao('comentario')">
+                <span>⊜ Comentário</span> <span>▸</span>
+            </button>
+        </div>
+        <div id="mention-menu-versions" class="hidden space-y-1 max-h-48 overflow-y-auto"></div>
+        <div id="mention-menu-comments" class="hidden space-y-1 max-h-48 overflow-y-auto"></div>
+    </div>
+
+    <!-- ESTRUTURA PRINCIPAL -->
+    <div class="flex-1 flex w-full h-screen overflow-hidden">
+
+        <!-- LADO ESQUERDO: PLAYER E CONTROLES (OCUPAÇÃO PLENA SEM BORDAS) -->
+        <div class="flex-1 flex flex-col bg-black overflow-hidden relative" id="left-column-wrapper">
+            
+            <!-- ÁREA DO REPRODUTOR -->
+            <div class="flex-1 min-h-0 w-full h-full relative flex items-center justify-center bg-black overflow-hidden" id="video-wrapper">
+                <div class="relative w-full h-full flex items-center justify-center bg-black" id="video-inner-box">
+                    
+                    <video id="video-player" class="w-full h-full object-contain" preload="metadata" crossorigin="anonymous"></video>
+                    
+                    <!-- Camada de Canvas para Retângulos -->
+                    <canvas id="video-canvas-overlay" class="absolute inset-0 w-full h-full z-20"></canvas>
+
+                    <!-- Elementos Interativos de Marcações -->
+                    <div id="shapes-dom-layer" class="absolute inset-0 pointer-events-none z-25"></div>
+                </div>
+
+                <!-- CONTROLES FLUTUANTES / INFERIORES -->
+                <div id="floating-controls" class="w-full p-3 bg-cardbg border-t border-bordercolor flex flex-col gap-2 shrink-0">
+                    
+                    <!-- Linha do Tempo Interativa -->
+                    <div class="relative w-full h-8 flex items-center cursor-pointer group" id="timeline-container">
+                        <div class="w-full h-2 bg-zinc-800 rounded-full overflow-hidden relative" id="timeline-track">
+                            <div id="timeline-progress" class="h-full bg-blue-500 w-0"></div>
+                        </div>
+                        
+                        <div id="timeline-playhead-dot" class="timeline-playhead-dot" style="left: 0%;"></div>
+                        <div id="timeline-hover-indicator" class="timeline-hover-indicator"></div>
+                        <div id="timeline-hover-badge" class="timeline-hover-badge">00:00:00:00</div>
+
+                        <div id="markers-layer" class="absolute inset-0 pointer-events-none"></div>
+                    </div>
+
+                    <!-- Barra de Controles Inferior -->
+                    <div class="flex items-center justify-between text-xs">
+                        <div class="flex items-center gap-3">
+                            <button id="btn-play-pause" class="w-8 h-8 rounded-lg bg-zinc-800 hover:bg-zinc-700 flex items-center justify-center text-white transition-colors" title="Play/Pause (Espaço)">
+                                ⯈
+                            </button>
+                            <span id="display-timecode" class="font-mono text-blue-400 font-semibold tracking-wider">00:00:00:00 / 00:00:00:00</span>
+                        </div>
+
+                        <!-- Seletor de Versão (Dropup), Google Drive, Fullscreen e Autoplay -->
+                        <div class="flex items-center gap-2">
+                            
+                            <!-- Seletor de Versão (Dropup Compacto na Base) -->
+                            <div class="relative">
+                                <button id="btn-version-dropdown" class="bg-zinc-800 hover:bg-zinc-700 px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-200 flex items-center gap-1.5 transition-colors">
+                                    <span id="current-version-label">Versão</span> <span>▴</span>
+                                </button>
+                                <div id="version-dropup-menu" class="hidden absolute bottom-full mb-1 left-0 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl p-1 min-w-[150px] z-50 space-y-0.5"></div>
+                            </div>
+
+                            <!-- Botão de Contingência para o Google Drive -->
+                            <a href="https://drive.google.com/drive/folders/1SqxERxi75tzv-HKgjvBLjOGVq-XHyC0R?usp=sharing" target="_blank"
+                               class="bg-zinc-800 hover:bg-zinc-700 px-3 py-1.5 rounded-lg text-xs font-medium text-gray-300 flex items-center gap-1.5 transition-colors" title="Ver arquivos brutos no Google Drive">
+                                <span>📁</span> <span>Google Drive ↗</span>
+                            </a>
+
+                            <!-- Botão Tela Cheia -->
+                            <button id="btn-fullscreen-toggle" class="bg-zinc-800 hover:bg-zinc-700 px-3 py-1.5 rounded-lg text-xs font-medium text-gray-300 flex items-center gap-1.5 transition-colors" title="Tela Cheia">
+                                <span>⛶</span> <span>Tela Cheia</span>
+                            </button>
+
+                            <!-- Botão Autoplay -->
+                            <button id="btn-autoplay-toggle" class="bg-zinc-800 hover:bg-zinc-700 px-3 py-1.5 rounded-lg text-xs font-medium text-gray-300 flex items-center gap-1.5 transition-colors">
+                                Autoplay: <span id="autoplay-label" class="text-red-400 font-bold">OFF</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- LADO DIREITO: ABAS, LISTAGEM E FORMULÁRIO DE COMENTÁRIOS (LARGURA: 420px) -->
+        <div class="w-[420px] h-full bg-darkbg flex flex-col shrink-0 border-l border-bordercolor">
+            
+            <!-- CABEÇALHO LATERAL -->
+            <div class="p-3 border-b border-bordercolor bg-panelbg flex items-center justify-between gap-2 shrink-0">
+                <button id="btn-open-new-comment" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2 px-3 rounded-xl transition-colors shadow flex items-center justify-center gap-1.5">
+                    <span>+</span> <span>ADICIONAR COMENTÁRIO</span>
+                </button>
+                <button id="btn-reload-comments" class="w-8 h-8 rounded-xl bg-cardbg border border-bordercolor hover:border-zinc-700 flex items-center justify-center text-xs text-gray-300 transition-colors" title="Atualizar dados do servidor sem recarregar o vídeo">
+                    🔄
+                </button>
+            </div>
+
+            <!-- ABAS HORIZONTAIS: PENDENTES, FEITOS E LOG (LOG EXCLUSIVO DO PEDRO) -->
+            <div class="flex border-b border-bordercolor bg-panelbg text-center text-[10px] font-bold uppercase tracking-wider shrink-0" id="filter-tabs">
+                <button class="flex-1 py-2.5 text-blue-400 border-b-2 border-blue-500 tab-btn transition-colors" data-filter="pendentes">
+                    PENDENTES <span id="count-pendentes" class="ml-0.5"></span>
+                </button>
+                <button class="flex-1 py-2.5 text-gray-400 hover:text-white tab-btn transition-colors" data-filter="feitos">
+                    FEITOS <span id="count-feitos" class="ml-0.5"></span>
+                </button>
+                <button id="tab-btn-log" class="hidden flex-1 py-2.5 text-gray-400 hover:text-white tab-btn transition-colors" data-filter="log">
+                    LOG <span id="count-log" class="ml-0.5"></span>
+                </button>
+            </div>
+
+            <!-- CONTAINER DE ROLAGEM COM COMENTÁRIOS E FORMULÁRIO POSICIONADO -->
+            <div id="comments-container" class="flex-1 overflow-y-auto p-3 space-y-3">
+                <div id="rendered-comments-list" class="space-y-2.5"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- TEMPLATE DO FORMULÁRIO DE COMENTÁRIO (INLINE E AUTO-EXPANSÍVEL) -->
+    <template id="comment-form-template">
+        <div class="comment-box-form bg-cardbg border border-blue-500/80 rounded-xl p-3 flex flex-col gap-2.5 shadow-xl transition-all my-2">
+            
+            <!-- LINHA SUPERIOR DO FORMULÁRIO -->
+            <div class="flex items-center justify-between text-xs">
+                <div class="flex items-center gap-2">
+                    <span class="form-creator-avatar w-5 h-5 rounded-full flex items-center justify-center font-bold text-[10px] text-white shrink-0"></span>
+                    <span class="form-timecode-badge bg-blue-600/10 text-blue-300 border border-blue-300/80 text-[10px] font-mono px-1.5 py-0.5 rounded whitespace-nowrap">
+                        00:00:00:00
+                    </span>
+                    
+                    <!-- Badges de Marcações Criadas -->
+                    <div class="form-boxes-badges flex items-center gap-2 ml-1"></div>
+                </div>
+                
+                <!-- Botões Pontual / Trecho / Marcação -->
+                <div class="flex items-center gap-1.5">
+                    <div class="flex items-center bg-darkbg border border-bordercolor p-0.5 rounded-lg">
+                        <button class="btn-opt-point px-2 py-0.5 rounded text-[10px] font-bold bg-blue-600 text-white">
+                            Pontual
+                        </button>
+                        <button class="btn-opt-range px-2 py-0.5 rounded text-[10px] font-bold text-gray-400 hover:text-white">
+                            Trecho
+                        </button>
+                    </div>
+
+                    <div class="relative">
+                        <button class="btn-opt-box-draw px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-800 hover:bg-zinc-700 text-gray-300 flex items-center gap-1">
+                            <span>⬚</span> <span>Marcação</span>
+                        </button>
+                        
+                        <div class="form-palette-picker hidden absolute right-0 top-full mt-1 bg-zinc-800 border border-zinc-700 rounded-lg p-1.5 shadow-xl flex items-center gap-1.5 z-40"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aviso Integrado de Trecho (In/Out) -->
+            <div class="form-validation-msg hidden text-[11px] text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2.5 py-1.5 rounded-lg leading-snug"></div>
+
+            <!-- Campo de Texto Auto-expansível -->
+            <div class="relative">
+                <textarea rows="2" placeholder="Escreva o comentário... (Ctrl+Enter para enviar)"
+                          class="form-textarea w-full bg-darkbg border border-bordercolor rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-blue-500 resize-none overflow-hidden transition-all"></textarea>
+            </div>
+
+            <!-- Rodapé do Formulário -->
+            <div class="flex items-center justify-end gap-2 pt-1">
+                <button class="btn-form-cancel text-xs text-gray-400 hover:text-red-400 px-2 py-1">
+                    Cancelar
+                </button>
+                <button class="btn-form-submit bg-blue-600 hover:bg-blue-700 text-white font-bold w-7 h-7 rounded-lg flex items-center justify-center text-sm transition-colors" title="Enviar (Ctrl+Enter)">
+                    ⯈
+                </button>
+            </div>
+        </div>
+    </template>
+
+    <!-- JAVASCRIPT DA APLICAÇÃO -->
+    <script>
+        /* ========================================================
+           0. CONFIGURAÇÃO DE ROTAS E ENDPOINTS (HOSTINGER)
+        ======================================================== */
+        const ENDPOINT_HOSTINGER = "https://firebrick-mallard-266745.hostingersite.com/check/";
+        const URL_SALVAR_PHP = ENDPOINT_HOSTINGER + "salvar.php";
+        const URL_LOG_PHP = ENDPOINT_HOSTINGER + "log.php";
+
+        const LISTA_VIDEOS = [
+            { id: "01", nome: "TCC-Maria_01", arquivo: ENDPOINT_HOSTINGER + "TCC-Maria_01.mp4" },
+            { id: "02", nome: "TCC-Maria_02", arquivo: ENDPOINT_HOSTINGER + "TCC-Maria_02.mp4" }
+        ];
+
+        // Ordenação decrescente: o maior número abre primeiro
+        LISTA_VIDEOS.sort((a, b) => parseInt(b.id, 10) - parseInt(a.id, 10));
+
+        let videoAtivo = LISTA_VIDEOS[0];
+        const FPS = 23.976;
+
+        /* ========================================================
+           1. PERFIS E AUTENTICAÇÃO SECRETA COM HASH SHA-256
+        ======================================================== */
+        const HASH_PEDRO_SECRETO = "8cb7b63b3d35a84b1f6057ba0a38085606f485b02bc34fe9004b65c3f182fe0c";
+
+        const PERFIL_PEDRO = { id: "pedro", nome: "Pedro", cor: "#3b82f6", inicial: "P" };
+        const PERFIL_MARIA = { id: "maria", nome: "Maria", cor: "#a855f7", inicial: "M" };
+
+        let perfisCadastrados = [PERFIL_PEDRO, PERFIL_MARIA];
+        
+        // Inicializa por padrão como Maria, a menos que Pedro já esteja autenticado no localStorage
+        let usuarioAtivo = (localStorage.getItem('review_role_authenticated') === 'pedro') 
+            ? PERFIL_PEDRO 
+            : PERFIL_MARIA;
+
+        // 4 Cores Exclusivas para Marcações (Retângulos)
+        const CORES_MARCACAO = ["#fbbf24", "#2dd4bf", "#f43f5e", "#38bdf8"];
+
+        /* ========================================================
+           2. ESTADO GLOBAL
+        ======================================================== */
+        let comentarios = [];
+        let logsExclusao = [];
+        let filtroAtivo = 'pendentes';
+        let autoplayAtivo = false;
+
+        let formEstado = null;
+        let modoDesenhoAtivo = false;
+        let corDesenhoAtual = null;
+
+        // Elementos DOM
+        const video = document.getElementById('video-player');
+        const videoWrapper = document.getElementById('video-wrapper');
+        const canvas = document.getElementById('video-canvas-overlay');
+        const ctx = canvas.getContext('2d');
+        const shapesDomLayer = document.getElementById('shapes-dom-layer');
+
+        const displayTimecode = document.getElementById('display-timecode');
+        const timelineContainer = document.getElementById('timeline-container');
+        const timelineProgress = document.getElementById('timeline-progress');
+        const timelinePlayheadDot = document.getElementById('timeline-playhead-dot');
+        const timelineHoverIndicator = document.getElementById('timeline-hover-indicator');
+        const timelineHoverBadge = document.getElementById('timeline-hover-badge');
+        const markersLayer = document.getElementById('markers-layer');
+        const btnPlayPause = document.getElementById('btn-play-pause');
+        const btnFullscreenToggle = document.getElementById('btn-fullscreen-toggle');
+        const btnAutoplayToggle = document.getElementById('btn-autoplay-toggle');
+        const autoplayLabel = document.getElementById('autoplay-label');
+
+        const btnVersionDropdown = document.getElementById('btn-version-dropdown');
+        const currentVersionLabel = document.getElementById('current-version-label');
+        const versionDropupMenu = document.getElementById('version-dropup-menu');
+
+        const btnOpenNewComment = document.getElementById('btn-open-new-comment');
+        const renderedCommentsList = document.getElementById('rendered-comments-list');
+        const tabBtnLog = document.getElementById('tab-btn-log');
+
+        const textPopover = document.getElementById('text-popover');
+        const btnFormatBold = document.getElementById('btn-format-bold');
+        const btnFormatItalic = document.getElementById('btn-format-italic');
+        const btnFormatMention = document.getElementById('btn-format-mention');
+        const mentionMenu = document.getElementById('mention-menu');
+        let textareaAlvoPopover = null;
+
+        // Modal Secreto
+        const modalAuthPedro = document.getElementById('modal-auth-pedro');
+        const inputPedroPass = document.getElementById('input-pedro-pass');
+        const authErrorMsg = document.getElementById('auth-error-msg');
+        const btnConfirmAuth = document.getElementById('btn-confirm-auth');
+        const btnCancelAuth = document.getElementById('btn-cancel-auth');
+
+        /* ========================================================
+           3. INICIALIZAÇÃO
+        ======================================================== */
+        window.addEventListener('DOMContentLoaded', () => {
+            renderizarSeletorVersoesDropup();
+            aplicarPermissoesUsuario();
+            carregarComentariosDoServidor();
+            carregarLogsDoServidor();
+            configurarRedimensionamentoCanvas();
+            configurarFullscreenComControlesFlutuantes();
+            configurarAtalhoSecretoPedro();
+        });
+
+        function aplicarPermissoesUsuario() {
+            if (usuarioAtivo.nome === 'Pedro') {
+                tabBtnLog.classList.remove('hidden');
+            } else {
+                tabBtnLog.classList.add('hidden');
+                if (filtroAtivo === 'log') {
+                    filtroAtivo = 'pendentes';
+                    atualizarVisualAbas();
+                }
+            }
+        }
+
+        // Atalho secreto Ctrl + Shift + P
+        function configurarAtalhoSecretoPedro() {
+            document.addEventListener('keydown', (e) => {
+                if (e.ctrlKey && e.shiftKey && (e.key === 'p' || e.key === 'P')) {
+                    e.preventDefault();
+                    authErrorMsg.classList.add('hidden');
+                    inputPedroPass.value = '';
+                    modalAuthPedro.classList.remove('hidden');
+                    inputPedroPass.focus();
+                }
+            });
+
+            btnCancelAuth.addEventListener('click', () => {
+                modalAuthPedro.classList.add('hidden');
+            });
+
+            btnConfirmAuth.addEventListener('click', validarSenhaPedro);
+            inputPedroPass.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') validarSenhaPedro();
+            });
+        }
+
+        // Cálculo SHA-256 no navegador
+        async function sha256(str) {
+            const buffer = new TextEncoder().encode(str);
+            const digest = await crypto.subtle.digest('SHA-256', buffer);
+            return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        async function validarSenhaPedro() {
+            const digitada = inputPedroPass.value;
+            const hashGerada = await sha256(digitada);
+
+            if (hashGerada === HASH_PEDRO_SECRETO) {
+                usuarioAtivo = PERFIL_PEDRO;
+                localStorage.setItem('review_role_authenticated', 'pedro');
+                modalAuthPedro.classList.add('hidden');
+                aplicarPermissoesUsuario();
+                renderizarComentarios();
+                renderizarMarcadoresTimeline();
+            } else {
+                authErrorMsg.classList.remove('hidden');
+                inputPedroPass.focus();
+            }
+        }
+
+        /* ========================================================
+           4. SELETOR DE VERSÕES (DROPUP NA BASE)
+        ======================================================== */
+        function renderizarSeletorVersoesDropup() {
+            currentVersionLabel.textContent = videoAtivo.nome;
+            versionDropupMenu.innerHTML = '';
+
+            LISTA_VIDEOS.forEach(v => {
+                const btn = document.createElement('button');
+                btn.className = `w-full text-left px-2.5 py-1.5 rounded text-xs font-semibold flex items-center justify-between ${
+                    v.id === videoAtivo.id ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-zinc-700'
+                }`;
+                btn.textContent = v.nome;
+                btn.onclick = () => {
+                    trocarVersaoVideo(v);
+                    versionDropupMenu.classList.add('hidden');
+                };
+                versionDropupMenu.appendChild(btn);
+            });
+
+            carregarMidiaVideo(videoAtivo);
+        }
+
+        btnVersionDropdown.addEventListener('click', (e) => {
+            e.stopPropagation();
+            versionDropupMenu.classList.toggle('hidden');
+        });
+
+        document.addEventListener('click', () => {
+            versionDropupMenu.classList.add('hidden');
+        });
+
+        function trocarVersaoVideo(versao) {
+            videoAtivo = versao;
+            renderizarSeletorVersoesDropup();
+            carregarMidiaVideo(versao);
+            fecharFormularioAtivo();
+            renderizarComentarios();
+            renderizarMarcadoresTimeline();
+        }
+
+        function carregarMidiaVideo(versao) {
+            video.src = versao.arquivo;
+            video.load();
+            limparCanvas();
+        }
+
+        /* ========================================================
+           5. TIMECODE EM TEMPO REAL (MM:SS:FF a 23.976 fps)
+        ======================================================== */
+        function formatTimecode(seconds) {
+            if (isNaN(seconds) || seconds < 0) seconds = 0;
+            const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+            const s = Math.floor(seconds % 60).toString().padStart(2, '0');
+            const frames = Math.floor((seconds % 1) * FPS).toString().padStart(2, '0');
+            return `${m}:${s}:${frames}`;
+        }
+
+        function formatDateTime(isoString) {
+            const data = isoString ? new Date(isoString) : new Date();
+            const dia = data.getDate().toString().padStart(2, '0');
+            const mes = (data.getMonth() + 1).toString().padStart(2, '0');
+            const hora = data.getHours().toString().padStart(2, '0');
+            const min = data.getMinutes().toString().padStart(2, '0');
+            return `${dia}/${mes} ⍿ ${hora}:${min}`;
+        }
+
+        /* ========================================================
+           6. CONTROLES DO LEITOR E FULLSCREEN SOBREPOSTO
+        ======================================================== */
+        btnPlayPause.addEventListener('click', alternarReproducao);
+        video.addEventListener('click', alternarReproducao);
+
+        function alternarReproducao() {
+            if (video.paused) {
+                video.play();
+                btnPlayPause.textContent = "⏸︎";
+                limparCanvas();
+            } else {
+                video.pause();
+                btnPlayPause.textContent = "⯈";
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
+
+            if (e.code === 'Space') {
+                e.preventDefault();
+                alternarReproducao();
+            } else if (e.code === 'ArrowRight') {
+                e.preventDefault();
+                video.currentTime = Math.min((video.duration || 1), video.currentTime + (e.shiftKey ? 1 : (1 / FPS)));
+            } else if (e.code === 'ArrowLeft') {
+                e.preventDefault();
+                video.currentTime = Math.max(0, video.currentTime - (e.shiftKey ? 1 : (1 / FPS)));
+            }
+        });
+
+        btnAutoplayToggle.addEventListener('click', () => {
+            autoplayAtivo = !autoplayAtivo;
+            autoplayLabel.textContent = autoplayAtivo ? 'ON' : 'OFF';
+            autoplayLabel.className = autoplayAtivo ? 'text-emerald-400 font-bold' : 'text-red-400 font-bold';
+        });
+
+        function configurarFullscreenComControlesFlutuantes() {
+            const controls = document.getElementById('floating-controls');
+            let timerOcultar;
+
+            btnFullscreenToggle.addEventListener('click', () => {
+                if (!document.fullscreenElement) {
+                    videoWrapper.requestFullscreen().catch(() => {});
+                } else {
+                    document.exitFullscreen().catch(() => {});
+                }
+            });
+
+            document.addEventListener('fullscreenchange', () => {
+                const emFullscreen = !!document.fullscreenElement;
+                if (emFullscreen) {
+                    controls.style.position = 'absolute';
+                    controls.style.bottom = '0';
+                    controls.style.left = '0';
+                    controls.style.right = '0';
+                    controls.style.background = 'linear-gradient(to top, rgba(0,0,0,0.85), transparent)';
+                    controls.style.zIndex = '50';
+                } else {
+                    controls.style.position = 'relative';
+                    controls.style.background = '';
+                    controls.style.opacity = '1';
+                    videoWrapper.classList.remove('fullscreen-hide-cursor');
+                    clearTimeout(timerOcultar);
+                }
+            });
+
+            videoWrapper.addEventListener('mousemove', () => {
+                if (!document.fullscreenElement) return;
+                controls.style.opacity = '1';
+                videoWrapper.classList.remove('fullscreen-hide-cursor');
+                clearTimeout(timerOcultar);
+
+                timerOcultar = setTimeout(() => {
+                    if (document.fullscreenElement && !video.paused) {
+                        controls.style.opacity = '0';
+                        videoWrapper.classList.add('fullscreen-hide-cursor');
+                    }
+                }, 2500);
+            });
+        }
+
+        video.addEventListener('timeupdate', () => {
+            const current = video.currentTime;
+            const duration = video.duration || 1;
+            displayTimecode.textContent = `${formatTimecode(current)} / ${formatTimecode(duration)}`;
+            const perc = (current / duration) * 100;
+            timelineProgress.style.width = `${perc}%`;
+            timelinePlayheadDot.style.left = `${perc}%`;
+
+            if (formEstado && formEstado.tipo === 'range') {
+                if (current > formEstado.pontoIn) {
+                    formEstado.pontoOut = current;
+                } else {
+                    formEstado.pontoOut = null;
+                }
+                atualizarExibicaoTimecodeFormulario();
+            }
+
+            destacarComentariosAtivosNaTimeline(current);
+        });
+
+        timelineContainer.addEventListener('mousemove', (e) => {
+            const rect = timelineTrackBounding();
+            let posX = e.clientX - rect.left;
+            posX = Math.max(0, Math.min(rect.width, posX));
+            const frac = posX / rect.width;
+            const timeAtMouse = frac * (video.duration || 1);
+
+            timelineHoverIndicator.style.display = 'block';
+            timelineHoverIndicator.style.left = `${(frac * 100)}%`;
+
+            timelineHoverBadge.style.display = 'block';
+            timelineHoverBadge.style.left = `${(frac * 100)}%`;
+            timelineHoverBadge.textContent = formatTimecode(timeAtMouse);
+        });
+
+        timelineContainer.addEventListener('mouseleave', () => {
+            timelineHoverIndicator.style.display = 'none';
+            timelineHoverBadge.style.display = 'none';
+        });
+
+        timelineContainer.addEventListener('click', (e) => {
+            const rect = timelineTrackBounding();
+            let posX = e.clientX - rect.left;
+            posX = Math.max(0, Math.min(rect.width, posX));
+            video.currentTime = (posX / rect.width) * (video.duration || 1);
+            limparCanvas();
+        });
+
+        function timelineTrackBounding() {
+            return document.getElementById('timeline-track').getBoundingClientRect();
+        }
+
+        /* ========================================================
+           7. MARCAÇÕES RETANGULARES (FLUIDEZ COM INTERSEÇÃO)
+        ======================================================== */
+        function configurarRedimensionamentoCanvas() {
+            function ajustar() {
+                const rect = video.getBoundingClientRect();
+                canvas.width = rect.width;
+                canvas.height = rect.height;
+            }
+            window.addEventListener('resize', ajustar);
+            video.addEventListener('loadedmetadata', ajustar);
+        }
+
+        let startX, startY, isDraggingBox = false;
+
+        canvas.addEventListener('mousedown', (e) => {
+            if (!modoDesenhoAtivo) return;
+            const rect = canvas.getBoundingClientRect();
+            startX = e.clientX - rect.left;
+            startY = e.clientY - rect.top;
+            isDraggingBox = true;
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (!isDraggingBox || !modoDesenhoAtivo || !formEstado) return;
+            const rect = canvas.getBoundingClientRect();
+            const currentX = e.clientX - rect.left;
+            const currentY = e.clientY - rect.top;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            (formEstado.shapes || []).forEach(b => renderizarBoxNoCanvas(b));
+
+            renderizarBoxNoCanvas({
+                x: Math.min(startX, currentX),
+                y: Math.min(startY, currentY),
+                w: Math.abs(currentX - startX),
+                h: Math.abs(currentY - startY),
+                cor: corDesenhoAtual
+            });
+        });
+
+        window.addEventListener('mouseup', (e) => {
+            if (isDraggingBox && modoDesenhoAtivo && formEstado) {
+                isDraggingBox = false;
+                const rect = canvas.getBoundingClientRect();
+                const endX = e.clientX - rect.left;
+                const endY = e.clientY - rect.top;
+                const w = Math.abs(endX - startX);
+                const h = Math.abs(endY - startY);
+
+                if (w > 10 && h > 10 && formEstado.shapes.length < 4) {
+                    formEstado.shapes.push({
+                        id: Date.now(),
+                        x: Math.min(startX, endX),
+                        y: Math.min(startY, endY),
+                        w: w,
+                        h: h,
+                        cor: corDesenhoAtual
+                    });
+                }
+
+                desativarModoDesenho();
+                atualizarBadgesMarcaçõesFormulario();
+                desenharTodasMarcacoesInterativas(formEstado.shapes);
+            }
+        });
+
+        function renderizarBoxNoCanvas(box) {
+            ctx.fillStyle = hexToRgba(box.cor, 0.2);
+            ctx.fillRect(box.x, box.y, box.w, box.h);
+            ctx.strokeStyle = box.cor;
+            ctx.lineWidth = 2;
+            ctx.strokeRect(box.x, box.y, box.w, box.h);
+        }
+
+        function desenharTodasMarcacoesInterativas(shapes = []) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            shapesDomLayer.innerHTML = '';
+
+            shapes.forEach(box => {
+                renderizarBoxNoCanvas(box);
+
+                const div = document.createElement('div');
+                div.className = 'interactive-shape-wrapper pointer-events-auto';
+                div.style.left = `${box.x}px`;
+                div.style.top = `${box.y}px`;
+                div.style.width = `${box.w}px`;
+                div.style.height = `${box.h}px`;
+
+                const btnDel = document.createElement('button');
+                btnDel.className = 'interactive-shape-delete-btn';
+                btnDel.style.backgroundColor = box.cor;
+                btnDel.textContent = 'Excluir marcação ✕';
+                btnDel.onclick = (e) => {
+                    e.stopPropagation();
+                    if (formEstado) {
+                        formEstado.shapes = formEstado.shapes.filter(b => b.id !== box.id);
+                        atualizarBadgesMarcaçõesFormulario();
+                        desenharTodasMarcacoesInterativas(formEstado.shapes);
+                    }
+                };
+
+                div.appendChild(btnDel);
+                shapesDomLayer.appendChild(div);
+            });
+        }
+
+        function desativarModoDesenho() {
+            modoDesenhoAtivo = false;
+            canvas.classList.remove('drawing-active');
+            shapesDomLayer.style.pointerEvents = 'auto';
+            if (formEstado && formEstado.btnBoxDraw) {
+                formEstado.btnBoxDraw.classList.remove('bg-blue-600', 'text-white');
+            }
+        }
+
+        function limparCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            shapesDomLayer.innerHTML = '';
+        }
+
+        function hexToRgba(hex, alpha) {
+            const r = parseInt(hex.slice(1, 3), 16);
+            const g = parseInt(hex.slice(3, 5), 16);
+            const b = parseInt(hex.slice(5, 7), 16);
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        }
+
+        /* ========================================================
+           8. AUTO-EXPANSÃO DE TEXTAREAS
+        ======================================================== */
+        function aplicarAutoExpansaoTextarea(el) {
+            el.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = this.scrollHeight + 'px';
+            });
+            setTimeout(() => {
+                el.style.height = 'auto';
+                el.style.height = el.scrollHeight + 'px';
+            }, 10);
+        }
+
+        /* ========================================================
+           9. FORMULÁRIO DINÂMICO POSICIONADO E CENTRALIZADO
+        ======================================================== */
+        btnOpenNewComment.addEventListener('click', () => {
+            abrirFormularioComentario(null);
+        });
+
+        function abrirFormularioComentario(comentarioExistente = null) {
+            fecharFormularioAtivo();
+
+            const timeSecAtual = comentarioExistente ? comentarioExistente.timeSec : video.currentTime;
+            
+            const template = document.getElementById('comment-form-template');
+            const clone = template.content.cloneNode(true);
+            const formBox = clone.querySelector('.comment-box-form');
+
+            formEstado = {
+                boxElement: formBox,
+                idEdicao: comentarioExistente ? comentarioExistente.id : null,
+                tipo: comentarioExistente ? comentarioExistente.type : 'point',
+                pontoIn: timeSecAtual,
+                pontoOut: comentarioExistente ? comentarioExistente.timeOutSec : null,
+                shapes: comentarioExistente && comentarioExistente.shapes ? [...comentarioExistente.shapes] : [],
+                avatar: formBox.querySelector('.form-creator-avatar'),
+                badgeTime: formBox.querySelector('.form-timecode-badge'),
+                badgesContainer: formBox.querySelector('.form-boxes-badges'),
+                btnOptPoint: formBox.querySelector('.btn-opt-point'),
+                btnOptRange: formBox.querySelector('.btn-opt-range'),
+                btnBoxDraw: formBox.querySelector('.btn-opt-box-draw'),
+                palettePicker: formBox.querySelector('.form-palette-picker'),
+                validationMsg: formBox.querySelector('.form-validation-msg'),
+                textarea: formBox.querySelector('.form-textarea'),
+                btnCancel: formBox.querySelector('.btn-form-cancel'),
+                btnSubmit: formBox.querySelector('.btn-form-submit')
+            };
+
+            const autorAtual = comentarioExistente 
+                ? (perfisCadastrados.find(p => p.nome === comentarioExistente.author) || usuarioAtivo) 
+                : usuarioAtivo;
+            formEstado.avatar.style.backgroundColor = autorAtual.cor;
+            formEstado.avatar.textContent = autorAtual.inicial;
+
+            aplicarAutoExpansaoTextarea(formEstado.textarea);
+
+            if (comentarioExistente) {
+                formEstado.textarea.value = comentarioExistente.text;
+                const cardAlvo = document.getElementById(`comment-card-${comentarioExistente.id}`);
+                if (cardAlvo) cardAlvo.classList.add('hidden');
+            }
+
+            inserirFormularioNaOrdemCorreta(formBox, timeSecAtual, comentarioExistente ? comentarioExistente.id : null);
+
+            conectarEventosFormulario();
+            atualizarControlesTipoFormulario();
+            atualizarBadgesMarcaçõesFormulario();
+            desenharTodasMarcacoesInterativas(formEstado.shapes);
+            renderizarMarcadoresTimeline();
+
+            setTimeout(() => {
+                formBox.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                formEstado.textarea.focus();
+            }, 50);
+        }
+
+        function inserirFormularioNaOrdemCorreta(formEl, timeSec, idEdicao = null) {
+            if (idEdicao) {
+                const card = document.getElementById(`comment-card-${idEdicao}`);
+                if (card) {
+                    card.parentNode.insertBefore(formEl, card);
+                    return;
+                }
+            }
+
+            const cards = Array.from(renderedCommentsList.children);
+            let inserido = false;
+
+            for (let card of cards) {
+                const tSec = parseFloat(card.dataset.timeSec);
+                if (!isNaN(tSec) && tSec > timeSec) {
+                    renderedCommentsList.insertBefore(formEl, card);
+                    inserido = true;
+                    break;
+                }
+            }
+
+            if (!inserido) {
+                renderedCommentsList.appendChild(formEl);
+            }
+        }
+
+        function fecharFormularioAtivo() {
+            if (!formEstado) return;
+            if (formEstado.idEdicao) {
+                const card = document.getElementById(`comment-card-${formEstado.idEdicao}`);
+                if (card) card.classList.remove('hidden');
+            }
+            if (formEstado.boxElement && formEstado.boxElement.parentNode) {
+                formEstado.boxElement.parentNode.removeChild(formEstado.boxElement);
+            }
+            desativarModoDesenho();
+            formEstado = null;
+            limparCanvas();
+            renderizarMarcadoresTimeline();
+        }
+
+        function conectarEventosFormulario() {
+            if (!formEstado) return;
+
+            formEstado.btnOptPoint.onclick = () => {
+                formEstado.tipo = 'point';
+                formEstado.pontoOut = null;
+                formEstado.validationMsg.classList.add('hidden');
+                atualizarControlesTipoFormulario();
+                renderizarMarcadoresTimeline();
+            };
+
+            formEstado.btnOptRange.onclick = () => {
+                formEstado.tipo = 'range';
+                formEstado.pontoIn = video.currentTime;
+                formEstado.pontoOut = null;
+                atualizarControlesTipoFormulario();
+                renderizarMarcadoresTimeline();
+            };
+
+            formEstado.btnBoxDraw.onclick = (e) => {
+                e.stopPropagation();
+                if (formEstado.shapes.length >= 4) {
+                    exibirAvisoValidacaoFormulario("Limite de 4 marcações por comentário atingido.");
+                    return;
+                }
+
+                const coresUsadas = formEstado.shapes.map(s => s.cor);
+                const corLivre = CORES_MARCACAO.find(c => !coresUsadas.includes(c)) || CORES_MARCACAO[0];
+
+                corDesenhoAtual = corLivre;
+                ativarModoDesenhoMarcação();
+                renderizarPopoverCoresLivres();
+            };
+
+            formEstado.btnCancel.onclick = fecharFormularioAtivo;
+            formEstado.btnSubmit.onclick = submeterFormularioAtivo;
+
+            formEstado.textarea.onmouseup = () => verificarSelecaoTexto(formEstado.textarea);
+            formEstado.textarea.onkeyup = (e) => {
+                verificarSelecaoTexto(formEstado.textarea);
+                if (e.key === '@') abrirMenuMencao(formEstado.textarea);
+            };
+            formEstado.textarea.onkeydown = (e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                    e.preventDefault();
+                    submeterFormularioAtivo();
+                }
+            };
+        }
+
+        function renderizarPopoverCoresLivres() {
+            if (!formEstado) return;
+            const coresUsadas = formEstado.shapes.map(s => s.cor);
+            formEstado.palettePicker.innerHTML = '';
+
+            CORES_MARCACAO.forEach(cor => {
+                if (!coresUsadas.includes(cor)) {
+                    const btn = document.createElement('button');
+                    btn.className = `w-4 h-4 rounded-full transition-transform hover:scale-125 ${cor === corDesenhoAtual ? 'ring-2 ring-white scale-110' : ''}`;
+                    btn.style.backgroundColor = cor;
+                    btn.onclick = (e) => {
+                        e.stopPropagation();
+                        corDesenhoAtual = cor;
+                        formEstado.palettePicker.classList.add('hidden');
+                        ativarModoDesenhoMarcação();
+                    };
+                    formEstado.palettePicker.appendChild(btn);
+                }
+            });
+
+            formEstado.palettePicker.classList.toggle('hidden');
+        }
+
+        function ativarModoDesenhoMarcação() {
+            modoDesenhoAtivo = true;
+            video.pause();
+            btnPlayPause.textContent = "⯈";
+            canvas.classList.add('drawing-active');
+            shapesDomLayer.style.pointerEvents = 'none';
+            if (formEstado && formEstado.btnBoxDraw) {
+                formEstado.btnBoxDraw.classList.add('bg-blue-600', 'text-white');
+            }
+        }
+
+        function atualizarControlesTipoFormulario() {
+            if (!formEstado) return;
+
+            if (formEstado.tipo === 'point') {
+                formEstado.btnOptPoint.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-blue-600 text-white";
+                formEstado.btnOptRange.className = "px-2 py-0.5 rounded text-[10px] font-bold text-gray-400 hover:text-white";
+                formEstado.badgeTime.className = "form-timecode-badge bg-blue-600/10 text-blue-300 border border-blue-300/80 text-[10px] font-mono px-1.5 py-0.5 rounded whitespace-nowrap";
+                formEstado.badgeTime.textContent = formatTimecode(formEstado.pontoIn || video.currentTime);
+                formEstado.validationMsg.classList.add('hidden');
+            } else {
+                formEstado.btnOptRange.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-blue-600 text-white";
+                formEstado.btnOptPoint.className = "px-2 py-0.5 rounded text-[10px] font-bold text-gray-400 hover:text-white";
+                formEstado.badgeTime.className = "form-timecode-badge bg-blue-800/10 text-blue-500 border border-blue-500/80 text-[10px] font-mono px-1.5 py-0.5 rounded whitespace-nowrap";
+                atualizarExibicaoTimecodeFormulario();
+            }
+        }
+
+        function atualizarExibicaoTimecodeFormulario() {
+            if (!formEstado || formEstado.tipo !== 'range') return;
+            const inStr = formatTimecode(formEstado.pontoIn || 0);
+
+            if (formEstado.pontoOut !== null && formEstado.pontoOut > formEstado.pontoIn) {
+                const outStr = formatTimecode(formEstado.pontoOut);
+                formEstado.badgeTime.textContent = `${inStr} - ${outStr}`;
+                formEstado.validationMsg.classList.add('hidden');
+            } else {
+                formEstado.badgeTime.textContent = `${inStr} - --:--:--`;
+                exibirAvisoValidacaoFormulario("Avance o vídeo para definir o final do trecho.");
+            }
+        }
+
+        function exibirAvisoValidacaoFormulario(msg) {
+            if (!formEstado) return;
+            formEstado.validationMsg.textContent = msg;
+            formEstado.validationMsg.classList.remove('hidden');
+        }
+
+        function atualizarBadgesMarcaçõesFormulario() {
+            if (!formEstado) return;
+            formEstado.badgesContainer.innerHTML = '';
+            formEstado.shapes.forEach(box => {
+                const s = document.createElement('span');
+                s.className = 'text-xs font-bold leading-none';
+                s.style.color = box.cor;
+                s.textContent = '⬚';
+                formEstado.badgesContainer.appendChild(s);
+            });
+        }
+
+        async function submeterFormularioAtivo() {
+            if (!formEstado) return;
+            const texto = formEstado.textarea.value.trim();
+
+            if (!texto) {
+                exibirAvisoValidacaoFormulario("Por favor, escreva algo antes de enviar.");
+                return;
+            }
+
+            if (formEstado.tipo === 'range' && (!formEstado.pontoOut || formEstado.pontoOut <= formEstado.pontoIn)) {
+                exibirAvisoValidacaoFormulario("Avance o vídeo para definir o final do trecho antes de salvar.");
+                return;
+            }
+
+            if (formEstado.idEdicao) {
+                const com = comentarios.find(c => c.id === formEstado.idEdicao);
+                if (com) {
+                    com.text = texto;
+                    com.type = formEstado.tipo;
+                    com.timeSec = formEstado.pontoIn;
+                    com.timeOutSec = formEstado.tipo === 'range' ? formEstado.pontoOut : null;
+                    com.timecode = formEstado.tipo === 'range'
+                        ? `${formatTimecode(formEstado.pontoIn)} - ${formatTimecode(formEstado.pontoOut)}`
+                        : formatTimecode(formEstado.pontoIn);
+                    com.shapes = [...formEstado.shapes];
+                }
+            } else {
+                const novo = {
+                    id: Date.now(),
+                    versaoId: videoAtivo.id,
+                    author: usuarioAtivo.nome,
+                    authorInicial: usuarioAtivo.inicial,
+                    authorCor: usuarioAtivo.cor,
+                    type: formEstado.tipo,
+                    timeSec: formEstado.pontoIn || video.currentTime,
+                    timeOutSec: formEstado.tipo === 'range' ? formEstado.pontoOut : null,
+                    timecode: formEstado.tipo === 'range'
+                        ? `${formatTimecode(formEstado.pontoIn)} - ${formatTimecode(formEstado.pontoOut)}`
+                        : formatTimecode(formEstado.pontoIn || video.currentTime),
+                    createdAt: new Date().toISOString(),
+                    status: 'pendentes',
+                    text: texto,
+                    shapes: [...formEstado.shapes],
+                    respostas: []
+                };
+                comentarios.push(novo);
+            }
+
+            await persistirNoServidor();
+            fecharFormularioAtivo();
+            atualizarContadoresAbas();
+            renderizarComentarios();
+            renderizarMarcadoresTimeline();
+        }
+
+        /* ========================================================
+           10. POPOVER E MENÇÕES (@)
+        ======================================================== */
+        function verificarSelecaoTexto(textareaEl) {
+            textareaAlvoPopover = textareaEl;
+            const start = textareaEl.selectionStart;
+            const end = textareaEl.selectionEnd;
+
+            if (start !== end) {
+                const rect = textareaEl.getBoundingClientRect();
+                textPopover.style.left = `${rect.left + 15}px`;
+                textPopover.style.top = `${rect.top - 36}px`;
+                textPopover.style.display = 'flex';
+            } else {
+                textPopover.style.display = 'none';
+            }
+        }
+
+        btnFormatBold.onclick = () => aplicarFormatacaoMarkdown('**');
+        btnFormatItalic.onclick = () => aplicarFormatacaoMarkdown('*');
+
+        function aplicarFormatacaoMarkdown(tag) {
+            if (!textareaAlvoPopover) return;
+            const start = textareaAlvoPopover.selectionStart;
+            const end = textareaAlvoPopover.selectionEnd;
+            const val = textareaAlvoPopover.value;
+            const sel = val.substring(start, end);
+
+            textareaAlvoPopover.value = val.substring(0, start) + tag + sel + tag + val.substring(end);
+            textPopover.style.display = 'none';
+            textareaAlvoPopover.focus();
+        }
+
+        btnFormatMention.onclick = () => {
+            if (textareaAlvoPopover) abrirMenuMencao(textareaAlvoPopover);
+        };
+
+        function abrirMenuMencao(textareaEl) {
+            textareaAlvoPopover = textareaEl;
+            const rect = textareaEl.getBoundingClientRect();
+            mentionMenu.style.left = `${rect.left + 10}px`;
+            mentionMenu.style.top = `${rect.bottom - 20}px`;
+            mentionMenu.classList.remove('hidden');
+            exibirSubmenuMencao('root');
+        }
+
+        window.exibirSubmenuMencao = function(tipo) {
+            const root = document.getElementById('mention-menu-root');
+            const versions = document.getElementById('mention-menu-versions');
+            const comms = document.getElementById('mention-menu-comments');
+
+            root.classList.add('hidden');
+            versions.classList.add('hidden');
+            comms.classList.add('hidden');
+
+            if (tipo === 'root') {
+                root.classList.remove('hidden');
+            } else if (tipo === 'versao') {
+                versions.classList.remove('hidden');
+                versions.innerHTML = '<div class="text-[10px] text-zinc-400 mb-1">Mencionar Versão:</div>';
+                LISTA_VIDEOS.forEach(v => {
+                    const b = document.createElement('button');
+                    b.className = 'w-full text-left px-2 py-1 rounded hover:bg-zinc-700 text-gray-200';
+                    b.textContent = `@ ${v.id} (${v.nome})`;
+                    b.onclick = () => {
+                        inserirTextoMencaoSemDuplicar(`@ ${v.id} `);
+                        mentionMenu.classList.add('hidden');
+                    };
+                    versions.appendChild(b);
+                });
+            } else if (tipo === 'comentario') {
+                comms.classList.remove('hidden');
+                comms.innerHTML = '<div class="text-[10px] text-zinc-400 mb-1">Mencionar Comentário:</div>';
+                
+                const atuais = comentarios.filter(c => c.versaoId === videoAtivo.id);
+                atuais.forEach(c => {
+                    const row = document.createElement('div');
+                    row.className = 'flex items-center justify-between p-1 hover:bg-zinc-700 rounded cursor-pointer gap-2';
+                    row.innerHTML = `
+                        <div class="flex items-center gap-1.5 truncate" title="${c.text}">
+                            <span class="w-4 h-4 rounded-full flex items-center justify-center text-[9px] text-white font-bold" style="background-color: ${c.authorCor}">
+                                ${c.authorInicial}
+                            </span>
+                            <span class="font-mono text-[10px] text-blue-400">${c.timecode}</span>
+                        </div>
+                    `;
+                    row.onclick = () => {
+                        inserirTextoMencaoSemDuplicar(`@${c.author} - ${c.timecode} `);
+                        mentionMenu.classList.add('hidden');
+                    };
+                    comms.appendChild(row);
+                });
+            }
+        };
+
+        function inserirTextoMencaoSemDuplicar(textoMencao) {
+            if (!textareaAlvoPopover) return;
+            const pos = textareaAlvoPopover.selectionStart;
+            let val = textareaAlvoPopover.value;
+            if (pos > 0 && val.charAt(pos - 1) === '@') {
+                textareaAlvoPopover.value = val.substring(0, pos - 1) + textoMencao + val.substring(pos);
+            } else {
+                textareaAlvoPopover.value += textoMencao;
+            }
+            textareaAlvoPopover.focus();
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!mentionMenu.contains(e.target) && e.target !== btnFormatMention) {
+                mentionMenu.classList.add('hidden');
+            }
+        });
+
+        /* ========================================================
+           11. COMUNICAÇÃO COM O SERVIDOR (HOSTINGER VIA CORS)
+        ======================================================== */
+        async function carregarComentariosDoServidor() {
+            try {
+                const res = await fetch(URL_SALVAR_PHP);
+                if (res.ok) {
+                    comentarios = await res.json();
+                    atualizarContadoresAbas();
+                    renderizarComentarios();
+                    renderizarMarcadoresTimeline();
+                }
+            } catch (e) {
+                console.log("Comentários locais ou novo servidor.");
+            }
+        }
+
+        async function persistirNoServidor() {
+            try {
+                await fetch(URL_SALVAR_PHP, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(comentarios)
+                });
+            } catch (e) {
+                console.log("Erro ao persistir comentários.");
+            }
+        }
+
+        async function carregarLogsDoServidor() {
+            try {
+                const res = await fetch(URL_LOG_PHP);
+                if (res.ok) {
+                    logsExclusao = await res.json();
+                    atualizarContadoresAbas();
+                    if (filtroAtivo === 'log') renderizarComentarios();
+                }
+            } catch (e) {
+                console.log("Log vazio ou inicializando.");
+            }
+        }
+
+        async function registrarExclusaoNoLog(comentarioExcluido) {
+            const registroLog = {
+                id: Date.now(),
+                tipo: 'exclusao',
+                usuario: usuarioAtivo.nome,
+                usuarioCor: usuarioAtivo.cor,
+                comentarioId: comentarioExcluido.id,
+                versaoId: comentarioExcluido.versaoId,
+                timecode: comentarioExcluido.timecode,
+                autorOriginal: comentarioExcluido.author,
+                textoOriginal: comentarioExcluido.text,
+                dataExclusao: new Date().toISOString()
+            };
+
+            logsExclusao.unshift(registroLog);
+
+            try {
+                await fetch(URL_LOG_PHP, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(registroLog)
+                });
+            } catch (e) {
+                console.log("Erro ao registrar log.");
+            }
+        }
+
+        document.getElementById('btn-reload-comments').addEventListener('click', () => {
+            carregarComentariosDoServidor();
+            carregarLogsDoServidor();
+        });
+
+        /* ========================================================
+           12. ABAS DE FILTRAGEM (PENDENTES, FEITOS E LOG)
+        ======================================================== */
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                filtroAtivo = btn.dataset.filter;
+                atualizarVisualAbas();
+                renderizarComentarios();
+            });
+        });
+
+        function atualizarVisualAbas() {
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                if (b.dataset.filter === filtroAtivo) {
+                    b.classList.add('text-blue-400', 'border-b-2', 'border-blue-500');
+                    b.classList.remove('text-gray-400');
+                } else {
+                    b.classList.remove('text-blue-400', 'border-b-2', 'border-blue-500');
+                    b.classList.add('text-gray-400');
+                }
+            });
+        }
+
+        function atualizarContadoresAbas() {
+            const doVideo = comentarios.filter(c => c.versaoId === videoAtivo.id);
+            const pendentes = doVideo.filter(c => c.status === 'pendentes').length;
+            const feitos = doVideo.filter(c => c.status === 'feitos').length;
+            const totalLogs = logsExclusao.filter(l => l.versaoId === videoAtivo.id).length;
+
+            document.getElementById('count-pendentes').textContent = pendentes > 0 ? `[${pendentes}]` : '';
+            document.getElementById('count-feitos').textContent = feitos > 0 ? `[${feitos}]` : '';
+            document.getElementById('count-log').textContent = totalLogs > 0 ? `[${totalLogs}]` : '';
+        }
+
+        /* ========================================================
+           13. RENDERIZAÇÃO DOS CARTÕES DE COMENTÁRIO
+        ======================================================== */
+        function renderizarComentarios() {
+            renderedCommentsList.innerHTML = '';
+
+            // ABA LOG (Pedro)
+            if (filtroAtivo === 'log') {
+                const logsDoVideo = logsExclusao.filter(l => l.versaoId === videoAtivo.id);
+                if (logsDoVideo.length === 0) {
+                    renderedCommentsList.innerHTML = '<div class="text-xs text-zinc-500 text-center py-8">Nenhuma exclusão registrada nesta versão.</div>';
+                    return;
+                }
+
+                logsDoVideo.forEach(log => {
+                    const card = document.createElement('div');
+                    card.className = "p-3 rounded-xl bg-cardbg border border-zinc-800 flex flex-col gap-1.5 opacity-80 text-xs";
+                    card.innerHTML = `
+                        <div class="flex items-center justify-between text-[10px] text-zinc-400">
+                            <span class="font-bold text-red-400">🗑 Excluído por ${log.usuario}</span>
+                            <span class="font-mono">${formatDateTime(log.dataExclusao)}</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-[10px]">
+                            <span class="bg-zinc-800 text-zinc-400 px-1.5 py-0.5 rounded font-mono">${log.timecode}</span>
+                            <span class="text-zinc-400">Autor original: ${log.autorOriginal}</span>
+                        </div>
+                        <p class="text-gray-300 italic">"${log.textoOriginal}"</p>
+                    `;
+                    renderedCommentsList.appendChild(card);
+                });
+                return;
+            }
+
+            // PENDENTES OU FEITOS
+            const listaFiltrada = comentarios.filter(c => {
+                if (c.versaoId !== videoAtivo.id) return false;
+                return c.status === filtroAtivo;
+            });
+
+            listaFiltrada.sort((a, b) => a.timeSec - b.timeSec);
+
+            if (listaFiltrada.length === 0) {
+                renderedCommentsList.innerHTML = '<div class="text-xs text-zinc-500 text-center py-8">Nenhum comentário nesta aba.</div>';
+                return;
+            }
+
+            listaFiltrada.forEach(com => {
+                const card = document.createElement('div');
+                card.id = `comment-card-${com.id}`;
+                card.dataset.timeSec = com.timeSec;
+                card.className = "p-3 rounded-xl bg-cardbg border border-bordercolor transition-all cursor-pointer flex flex-col gap-2 shadow-sm";
+
+                const badgeTimeClass = com.type === 'range' 
+                    ? 'bg-blue-800/10 text-blue-500 border border-blue-500/80' 
+                    : 'bg-blue-600/10 text-blue-300 border border-blue-300/80';
+
+                let boxesBadgesHtml = '';
+                if (com.shapes && com.shapes.length > 0) {
+                    boxesBadgesHtml = com.shapes.map(b => `<span class="text-xs font-bold leading-none" style="color: ${b.cor};">⬚</span>`).join(' ');
+                }
+
+                const isChecked = com.status === 'feitos' ? 'checked' : '';
+                const podeEditar = usuarioAtivo && usuarioAtivo.nome === com.author;
+                const totalRespostas = (com.respostas || []).length;
+                const temRespostas = totalRespostas > 0;
+
+                const labelToggleRespostas = `[ - ] ${totalRespostas} resposta${totalRespostas > 1 ? 's' : ''}`;
+
+                card.innerHTML = `
+                    <!-- 1ª LINHA: Identificador + Timecode + ⬚ à esquerda / Data + Checkbox à direita -->
+                    <div class="flex items-center justify-between text-xs">
+                        <div class="flex items-center gap-2">
+                            <div class="w-5 h-5 rounded-full flex items-center justify-center font-bold text-[10px] text-white shrink-0" style="background-color: ${com.authorCor}">
+                                ${com.authorInicial}
+                            </div>
+                            <span class="${badgeTimeClass} text-[10px] font-mono px-1.5 py-0.5 rounded whitespace-nowrap">
+                                ${com.timecode}
+                            </span>
+                            <div class="flex items-center gap-2 ml-1">
+                                ${boxesBadgesHtml}
+                            </div>
+                        </div>
+
+                        <!-- Data e Checkbox estilizado -->
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] font-mono text-zinc-500">
+                                ${formatDateTime(com.createdAt)}
+                            </span>
+                            <input type="checkbox" ${isChecked} onchange="alternarStatusComentario(${com.id}, this.checked)" 
+                                   class="w-3.5 h-3.5 rounded bg-darkbg border-zinc-700 text-blue-600 focus:ring-0 cursor-pointer" title="Marcar como Concluído">
+                        </div>
+                    </div>
+
+                    <!-- CORPO DO TEXTO -->
+                    <div class="text-xs text-gray-200 leading-relaxed break-words">
+                        ${formatarTextoComentario(com.text)}
+                    </div>
+
+                    <!-- 2ª LINHA: Responder à esquerda (se não houver respostas) / Feito, Editar, Excluir à direita -->
+                    <div class="flex items-center justify-between pt-1 border-t border-bordercolor/60 text-xs text-zinc-400">
+                        <div class="flex items-center gap-2">
+                            ${temRespostas ? `
+                                <button id="btn-toggle-replies-${com.id}" onclick="event.stopPropagation(); alternarVisibilidadeRespostas(${com.id})" class="text-zinc-400 hover:text-blue-400 text-xs font-medium transition-colors">
+                                    ${labelToggleRespostas}
+                                </button>
+                            ` : `
+                                <button onclick="event.stopPropagation(); abrirFormularioResposta(${com.id})" class="text-zinc-400 hover:text-blue-400 text-xs font-medium transition-colors">
+                                    💬 Responder
+                                </button>
+                            `}
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            ${podeEditar ? `
+                                <button onclick="event.stopPropagation(); editarComentario(${com.id})" class="hover:text-blue-400 text-xs flex items-center gap-1 transition-colors" title="Editar">
+                                    <span>✎</span> <span>Editar</span>
+                                </button>
+                            ` : ''}
+
+                            <button onclick="event.stopPropagation(); excluirComentario(${com.id})" class="hover:text-red-400 text-xs flex items-center gap-1 transition-colors" title="Excluir">
+                                <span>🗑</span> <span>Excluir</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- ÁREA DE RESPOSTAS -->
+                    <div id="reply-container-${com.id}" class="${temRespostas ? '' : 'hidden'} flex flex-col gap-2 pt-2 border-t border-zinc-800">
+                        <div class="space-y-1.5" id="replies-list-${com.id}">
+                            ${(com.respostas || []).map(r => {
+                                const podeEditarResposta = usuarioAtivo && usuarioAtivo.nome === r.author;
+                                return `
+                                    <div id="reply-card-${com.id}-${r.id}" class="bg-darkbg p-2 rounded-lg text-xs border border-bordercolor flex flex-col gap-1">
+                                        <div class="flex items-center justify-between text-[10px]">
+                                            <span class="font-bold" style="color: ${r.authorCor}">${r.author}</span>
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-zinc-500 font-mono">${formatDateTime(r.createdAt)}</span>${podeEditarResposta ? `
+                                                    <button onclick="event.stopPropagation(); abrirEdicaoInlineResposta(${com.id}, ${r.id})" class="hover:text-blue-400 text-zinc-400" title="Editar">✎</button>
+                                                ` : ''}
+                                                <button onclick="event.stopPropagation(); excluirResposta(${com.id},${r.id})" class="hover:text-red-400 text-zinc-400" title="Excluir">🗑</button>
+                                            </div>
+                                        </div>
+                                        <div id="reply-text-${com.id}-${r.id}" class="text-gray-200">
+                                            ${formatarTextoComentario(r.text)}
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                        
+                        <!-- Botão Responder abaixo da última resposta (Item 6) -->
+                        <div class="flex items-center justify-start pt-1">
+                            <button onclick="event.stopPropagation(); abrirFormularioResposta(${com.id})" class="text-zinc-400 hover:text-blue-400 text-xs font-semibold flex items-center gap-1 transition-colors">
+                                <span>💬</span> <span>Responder</span>
+                            </button>
+                        </div>
+
+                        <!-- Caixa de Redigir Nova Resposta -->
+                        <div id="reply-input-box-${com.id}" class="hidden flex flex-col gap-2 mt-1 bg-panelbg p-2.5 rounded-lg border border-bordercolor">
+                            <textarea id="input-reply-${com.id}" rows="2" placeholder="Escreva uma resposta... (Ctrl+Enter para enviar)"
+                                      class="w-full bg-darkbg border border-bordercolor rounded-lg p-2 text-xs text-white focus:outline-none focus:border-blue-500 resize-none overflow-hidden transition-all"></textarea>
+                            <div class="flex items-center justify-end gap-2">
+                                <button onclick="event.stopPropagation(); fecharFormularioResposta(${com.id})" class="text-[11px] text-gray-400 hover:text-white px-2 py-1">
+                                    Cancelar
+                                </button>
+                                <button onclick="event.stopPropagation(); submeterResposta(${com.id})" class="bg-blue-600 hover:bg-blue-700 text-white font-bold w-6 h-6 rounded flex items-center justify-center text-xs">
+                                    ⯈
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                card.onclick = () => {
+                    video.currentTime = com.timeSec;
+                    limparCanvas();
+
+                    if (com.shapes && com.shapes.length > 0) {
+                        desenharTodasMarcacoesInterativas(com.shapes);
+                    }
+
+                    if (autoplayAtivo) {
+                        video.play();
+                        btnPlayPause.textContent = "⏸︎";
+
+                        if (com.type === 'range' && com.timeOutSec) {
+                            const pararNoOut = () => {
+                                if (video.currentTime >= com.timeOutSec) {
+                                    video.pause();
+                                    btnPlayPause.textContent = "⯈";
+                                    video.removeEventListener('timeupdate', pararNoOut);
+                                }
+                            };
+                            video.addEventListener('timeupdate', pararNoOut);
+                        }
+                    } else {
+                        video.pause();
+                        btnPlayPause.textContent = "⯈";
+                    }
+                };
+
+                renderedCommentsList.appendChild(card);
+            });
+        }
+
+        /* ========================================================
+           14. MENÇÕES (@) E FORMATAÇÃO
+        ======================================================== */
+        function formatarTextoComentario(raw) {
+            if (!raw) return '';
+            let html = raw
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/\n/g, '<br>');
+
+            // Menção de Versão: "@ 02" (Azul padrão #3b82f6)
+            html = html.replace(/@\s*(\d{2})/g, '<span class="text-blue-500 font-bold hover:underline cursor-pointer" onclick="event.stopPropagation(); pularParaVersaoMencionada(\'$1\')">@ $1</span>');
+
+            // Menção de Comentário: "@Pedro - 01:42:18" (Cor do perfil)
+            html = html.replace(/@([A-Za-z0-9_]+)\s*-\s*(\d{2}:\d{2}:\d{2}(?::\d{2})?)/g, (match, autorNome, tcStr) => {
+                const autor = perfisCadastrados.find(p => p.nome.toLowerCase() === autorNome.toLowerCase());
+                const corBadge = autor ? autor.cor : '#a855f7';
+                return `<span class="font-bold hover:underline cursor-pointer" style="color: ${corBadge};" onclick="event.stopPropagation(); pularParaTimecodeMencionado('${tcStr}')">@${autorNome} - ${tcStr}</span>`;
+            });
+
+            return html;
+        }
+
+        window.pularParaVersaoMencionada = function(versaoId) {
+            const v = LISTA_VIDEOS.find(item => item.id === versaoId);
+            if (v) trocarVersaoVideo(v);
+        };
+
+        window.pularParaTimecodeMencionado = function(tcStr) {
+            const partes = tcStr.split(':').map(Number);
+            let segundos = partes[0] * 60 + partes[1];
+            if (partes.length === 3) {
+                segundos += (partes[2] / FPS);
+            }
+            video.currentTime = segundos;
+            if (autoplayAtivo) video.play();
+        };
+
+        /* ========================================================
+           15. AÇÕES: STATUS, EXCLUSÃO, RESPOSTAS E EDIÇÃO
+        ======================================================== */
+        window.alternarStatusComentario = async function(id, isChecked) {
+            const com = comentarios.find(c => c.id === id);
+            if (!com) return;
+            com.status = isChecked ? 'feitos' : 'pendentes';
+            await persistirNoServidor();
+            atualizarContadoresAbas();
+            renderizarComentarios();
+            renderizarMarcadoresTimeline();
+        };
+
+        window.editarComentario = function(id) {
+            const com = comentarios.find(c => c.id === id);
+            if (!com) return;
+            abrirFormularioComentario(com);
+        };
+
+        window.excluirComentario = async function(id) {
+            const idx = comentarios.findIndex(c => c.id === id);
+            if (idx === -1) return;
+
+            const comExcluido = comentarios[idx];
+            comentarios.splice(idx, 1);
+
+            await registrarExclusaoNoLog(comExcluido);
+            await persistirNoServidor();
+
+            atualizarContadoresAbas();
+            renderizarComentarios();
+            renderizarMarcadoresTimeline();
+        };
+
+        window.alternarVisibilidadeRespostas = function(id) {
+            const cont = document.getElementById(`reply-container-${id}`);
+            const btnToggle = document.getElementById(`btn-toggle-replies-${id}`);
+            const com = comentarios.find(c => c.id === id);
+            if (!cont || !btnToggle || !com) return;
+
+            const total = (com.respostas || []).length;
+            const aberto = !cont.classList.contains('hidden');
+
+            if (aberto) {
+                cont.classList.add('hidden');
+                btnToggle.textContent = `[ + ] ${total} resposta${total > 1 ? 's' : ''}`;
+            } else {
+                cont.classList.remove('hidden');
+                btnToggle.textContent = `[ - ] ${total} resposta${total > 1 ? 's' : ''}`;
+            }
+        };
+
+        window.abrirFormularioResposta = function(id) {
+            const cont = document.getElementById(`reply-container-${id}`);
+            const box = document.getElementById(`reply-input-box-${id}`);
+            if (cont) cont.classList.remove('hidden');
+            if (box) {
+                box.classList.remove('hidden');
+                const ta = document.getElementById(`input-reply-${id}`);
+                aplicarAutoExpansaoTextarea(ta);
+                ta.focus();
+                ta.onmouseup = () => verificarSelecaoTexto(ta);
+                ta.onkeyup = (e) => {
+                    verificarSelecaoTexto(ta);
+                    if (e.key === '@') abrirMenuMencao(ta);
+                };
+                ta.onkeydown = (e) => {
+                    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                        e.preventDefault();
+                        submeterResposta(id);
+                    }
+                };
+            }
+        };
+
+        window.fecharFormularioResposta = function(id) {
+            const box = document.getElementById(`reply-input-box-${id}`);
+            if (box) box.classList.add('hidden');
+        };
+
+        window.submeterResposta = async function(id) {
+            const ta = document.getElementById(`input-reply-${id}`);
+            const texto = ta.value.trim();
+            if (!texto) return;
+
+            const com = comentarios.find(c => c.id === id);
+            if (!com) return;
+
+            if (!com.respostas) com.respostas = [];
+            com.respostas.push({
+                id: Date.now(),
+                author: usuarioAtivo.nome,
+                authorCor: usuarioAtivo.cor,
+                text: texto,
+                createdAt: new Date().toISOString()
+            });
+
+            ta.value = '';
+            await persistirNoServidor();
+            renderizarComentarios();
+        };
+
+        window.abrirEdicaoInlineResposta = function(comId, replyId) {
+            const com = comentarios.find(c => c.id === comId);
+            if (!com || !com.respostas) return;
+            const r = com.respostas.find(item => item.id === replyId);
+            if (!r) return;
+
+            const containerTexto = document.getElementById(`reply-text-${comId}-${replyId}`);
+            if (!containerTexto) return;
+
+            containerTexto.innerHTML = `
+                <div class="flex flex-col gap-2 mt-1">
+                    <textarea id="edit-reply-ta-${replyId}" rows="2" class="w-full bg-panelbg border border-blue-500 rounded p-2 text-xs text-white resize-none overflow-hidden">${r.text}</textarea>
+                    <div class="flex justify-end gap-2">
+                        <button onclick="event.stopPropagation(); renderizarComentarios()" class="text-[10px] text-zinc-400 hover:text-white px-2 py-0.5">Cancelar</button>
+                        <button onclick="event.stopPropagation(); salvarEdicaoInlineResposta(${comId}, ${replyId})" class="bg-blue-600 text-white text-[10px] px-2.5 py-0.5 rounded font-bold">⯈</button>
+                    </div>
+                </div>
+            `;
+
+            const ta = document.getElementById(`edit-reply-ta-${replyId}`);
+            aplicarAutoExpansaoTextarea(ta);
+            ta.focus();
+            ta.onmouseup = () => verificarSelecaoTexto(ta);
+            ta.onkeyup = (e) => {
+                verificarSelecaoTexto(ta);
+                if (e.key === '@') abrirMenuMencao(ta);
+            };
+            ta.onkeydown = (e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                    e.preventDefault();
+                    salvarEdicaoInlineResposta(comId, replyId);
+                }
+            };
+        };
+
+        window.salvarEdicaoInlineResposta = async function(comId, replyId) {
+            const com = comentarios.find(c => c.id === comId);
+            if (!com || !com.respostas) return;
+            const r = com.respostas.find(item => item.id === replyId);
+            if (!r) return;
+
+            const ta = document.getElementById(`edit-reply-ta-${replyId}`);
+            const novoTexto = ta.value.trim();
+            if (novoTexto) {
+                r.text = novoTexto;
+                await persistirNoServidor();
+            }
+            renderizarComentarios();
+        };
+
+        window.excluirResposta = async function(comId, replyId) {
+            const com = comentarios.find(c => c.id === comId);
+            if (!com || !com.respostas) return;
+            com.respostas = com.respostas.filter(item => item.id !== replyId);
+            await persistirNoServidor();
+            renderizarComentarios();
+        };
+
+        /* ========================================================
+           16. MARCADORES VISUAIS NA TIMELINE E HIGHLIGHTS
+        ======================================================== */
+        function renderizarMarcadoresTimeline() {
+            markersLayer.innerHTML = '';
+            const duration = video.duration || 1;
+            const doVideo = comentarios.filter(c => c.versaoId === videoAtivo.id);
+
+            doVideo.forEach(com => {
+                const percStart = (com.timeSec / duration) * 100;
+
+                if (com.type === 'range' && com.timeOutSec) {
+                    const percWidth = ((com.timeOutSec - com.timeSec) / duration) * 100;
+                    const rangeEl = document.createElement('div');
+                    rangeEl.className = "timeline-marker-range pointer-events-auto";
+                    rangeEl.style.left = `${percStart}%`;
+                    rangeEl.style.width = `${percWidth}%`;
+                    rangeEl.style.backgroundColor = hexToRgba(com.authorCor, 0.35);
+                    rangeEl.style.borderColor = com.authorCor;
+                    rangeEl.onclick = (e) => {
+                        e.stopPropagation();
+                        video.currentTime = com.timeSec;
+                        if (autoplayAtivo) video.play();
+                    };
+                    markersLayer.appendChild(rangeEl);
+                } else {
+                    const dot = document.createElement('div');
+                    dot.className = "timeline-marker-point pointer-events-auto";
+                    dot.style.left = `${percStart}%`;
+                    dot.style.backgroundColor = com.authorCor;
+                    dot.textContent = com.authorInicial;
+                    dot.title = `[${com.timecode}] ${com.author}: ${com.text}`;
+                    dot.onclick = (e) => {
+                        e.stopPropagation();
+                        video.currentTime = com.timeSec;
+                        if (autoplayAtivo) video.play();
+                    };
+                    markersLayer.appendChild(dot);
+                }
+            });
+
+            // Marcador provisório translúcido ao criar novo comentário
+            if (formEstado && formEstado.pontoIn !== null) {
+                const percStart = (formEstado.pontoIn / duration) * 100;
+                const cor = usuarioAtivo ? usuarioAtivo.cor : '#3b82f6';
+
+                if (formEstado.tipo === 'range' && formEstado.pontoOut !== null) {
+                    const percWidth = Math.max(0.5, ((formEstado.pontoOut - formEstado.pontoIn) / duration) * 100);
+                    const rangeProv = document.createElement('div');
+                    rangeProv.className = "timeline-marker-range pointer-events-none";
+                    rangeProv.style.left = `${percStart}%`;
+                    rangeProv.style.width = `${percWidth}%`;
+                    rangeProv.style.backgroundColor = hexToRgba(cor, 0.2);
+                    rangeProv.style.borderColor = cor;
+                    rangeProv.style.borderStyle = 'dashed';
+                    markersLayer.appendChild(rangeProv);
+                } else {
+                    const dotProv = document.createElement('div');
+                    dotProv.className = "timeline-marker-point pointer-events-none opacity-50";
+                    dotProv.style.left = `${percStart}%`;
+                    dotProv.style.backgroundColor = cor;
+                    dotProv.textContent = usuarioAtivo ? usuarioAtivo.inicial : '+';
+                    markersLayer.appendChild(dotProv);
+                }
+            }
+        }
+
+        function destacarComentariosAtivosNaTimeline(currentSec) {
+            comentarios.forEach(com => {
+                if (com.versaoId !== videoAtivo.id) return;
+                const card = document.getElementById(`comment-card-${com.id}`);
+                if (!card) return;
+
+                let isActive = false;
+                if (com.type === 'range' && com.timeOutSec) {
+                    isActive = currentSec >= com.timeSec && currentSec <= com.timeOutSec;
+                } else {
+                    isActive = Math.abs(currentSec - com.timeSec) < 0.35;
+                }
+
+                if (isActive) {
+                    card.classList.add('comment-highlight');
+                } else {
+                    card.classList.remove('comment-highlight');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
