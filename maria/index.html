@@ -162,8 +162,8 @@
 
         /* Modo Fullscreen Real */
         #video-wrapper:fullscreen {
-            width: 100vw;
-            height: 100vh;
+            width: 100vw !important;
+            height: 100vh !important;
             background-color: #000000;
         }
         #video-wrapper:fullscreen #floating-controls {
@@ -171,7 +171,7 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background: linear-gradient(to top, rgba(0,0,0,0.85), transparent);
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
             z-index: 50;
             transition: opacity 0.3s ease;
         }
@@ -207,7 +207,7 @@
         </div>
     </div>
 
-    <!-- POPOVER DE FORMATAÇÃO E MENÇÃO (ESTILO KIRBY) -->
+    <!-- POPOVER DE FORMATAÇÃO E MENÇÃO -->
     <div id="text-popover" class="flex items-center p-1 gap-1">
         <button id="btn-format-bold" class="px-2 py-1 text-xs font-bold text-gray-200 hover:bg-zinc-700 rounded transition-colors" title="Negrito (Ctrl+B)">B</button>
         <button id="btn-format-italic" class="px-2 py-1 text-xs italic font-serif text-gray-200 hover:bg-zinc-700 rounded transition-colors" title="Itálico (Ctrl+I)">I</button>
@@ -229,23 +229,31 @@
         <div id="mention-menu-comments" class="hidden space-y-1 max-h-48 overflow-y-auto"></div>
     </div>
 
-    <!-- ESTRUTURA PRINCIPAL -->
+    <!-- CORPO PRINCIPAL -->
     <div class="flex-1 flex w-full h-screen overflow-hidden">
 
-        <!-- LADO ESQUERDO: PLAYER E CONTROLES (OCUPAÇÃO PLENA SEM BORDAS) -->
+        <!-- LADO ESQUERDO: REPRODUTOR DE VÍDEO E CONTROLOS -->
         <div class="flex-1 flex flex-col bg-black overflow-hidden relative" id="left-column-wrapper">
             
-            <!-- ÁREA DO REPRODUTOR -->
-            <div class="flex-1 min-h-0 w-full h-full relative flex items-center justify-center bg-black overflow-hidden" id="video-wrapper">
-                <div class="relative w-full h-full flex items-center justify-center bg-black" id="video-inner-box">
-                    
-                    <video id="video-player" class="w-full h-full object-contain" preload="metadata" crossorigin="anonymous"></video>
+            <!-- CONTAINER CENTRAL DO VÍDEO COM DIMENSÃO GARANTIDA -->
+            <div class="flex-1 w-full h-full relative flex items-center justify-center bg-black overflow-hidden" id="video-wrapper">
+                
+                <!-- Caixa de Vídeo Plena sem Bordas ou Arredondamentos -->
+                <div class="absolute inset-0 flex items-center justify-center bg-black" id="video-inner-box">
+                    <video id="video-player" class="w-full h-full object-contain" preload="metadata"></video>
                     
                     <!-- Camada de Canvas para Retângulos -->
                     <canvas id="video-canvas-overlay" class="absolute inset-0 w-full h-full z-20"></canvas>
 
                     <!-- Elementos Interativos de Marcações -->
                     <div id="shapes-dom-layer" class="absolute inset-0 pointer-events-none z-25"></div>
+
+                    <!-- Mensagem de Erro de Conexão com o Vídeo -->
+                    <div id="video-error-msg" class="absolute inset-0 bg-black/90 flex flex-col items-center justify-center p-6 text-center z-30 hidden">
+                        <span class="text-3xl mb-2">⚠️</span>
+                        <p class="text-sm font-semibold text-white mb-1">Não foi possível carregar o vídeo da Hostinger</p>
+                        <p class="text-xs text-gray-400 max-w-md">Verifique se o ficheiro está publicado na pasta da Hostinger com o nome correto.</p>
+                    </div>
                 </div>
 
                 <!-- CONTROLES FLUTUANTES / INFERIORES -->
@@ -273,15 +281,15 @@
                             <span id="display-timecode" class="font-mono text-blue-400 font-semibold tracking-wider">00:00:00:00 / 00:00:00:00</span>
                         </div>
 
-                        <!-- Seletor de Versão (Dropup), Google Drive, Fullscreen e Autoplay -->
+                        <!-- Dropup de Versão, Link do Drive, Fullscreen e Autoplay -->
                         <div class="flex items-center gap-2">
                             
-                            <!-- Seletor de Versão (Dropup Compacto na Base) -->
+                            <!-- Seletor de Versão (Dropup na Base) -->
                             <div class="relative">
                                 <button id="btn-version-dropdown" class="bg-zinc-800 hover:bg-zinc-700 px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-200 flex items-center gap-1.5 transition-colors">
                                     <span id="current-version-label">Versão</span> <span>▴</span>
                                 </button>
-                                <div id="version-dropup-menu" class="hidden absolute bottom-full mb-1 left-0 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl p-1 min-w-[150px] z-50 space-y-0.5"></div>
+                                <div id="version-dropup-menu" class="hidden absolute bottom-full mb-1 left-0 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl p-1 min-w-[160px] z-50 space-y-0.5"></div>
                             </div>
 
                             <!-- Botão de Contingência para o Google Drive -->
@@ -307,7 +315,7 @@
 
         </div>
 
-        <!-- LADO DIREITO: ABAS, LISTAGEM E FORMULÁRIO DE COMENTÁRIOS (LARGURA: 420px) -->
+        <!-- LADO DIREITO: ABAS, LISTAGEM E FORMULÁRIO (LARGURA: 420px) -->
         <div class="w-[420px] h-full bg-darkbg flex flex-col shrink-0 border-l border-bordercolor">
             
             <!-- CABEÇALHO LATERAL -->
@@ -315,12 +323,12 @@
                 <button id="btn-open-new-comment" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2 px-3 rounded-xl transition-colors shadow flex items-center justify-center gap-1.5">
                     <span>+</span> <span>ADICIONAR COMENTÁRIO</span>
                 </button>
-                <button id="btn-reload-comments" class="w-8 h-8 rounded-xl bg-cardbg border border-bordercolor hover:border-zinc-700 flex items-center justify-center text-xs text-gray-300 transition-colors" title="Atualizar dados do servidor sem recarregar o vídeo">
+                <button id="btn-reload-comments" class="w-8 h-8 rounded-xl bg-cardbg border border-bordercolor hover:border-zinc-700 flex items-center justify-center text-xs text-gray-300 transition-colors" title="Atualizar comentários sem reiniciar o vídeo">
                     🔄
                 </button>
             </div>
 
-            <!-- ABAS HORIZONTAIS: PENDENTES, FEITOS E LOG (LOG EXCLUSIVO DO PEDRO) -->
+            <!-- ABAS HORIZONTAIS NA MESMA LINHA: PENDENTES, FEITOS E LOG -->
             <div class="flex border-b border-bordercolor bg-panelbg text-center text-[10px] font-bold uppercase tracking-wider shrink-0" id="filter-tabs">
                 <button class="flex-1 py-2.5 text-blue-400 border-b-2 border-blue-500 tab-btn transition-colors" data-filter="pendentes">
                     PENDENTES <span id="count-pendentes" class="ml-0.5"></span>
@@ -333,7 +341,7 @@
                 </button>
             </div>
 
-            <!-- CONTAINER DE ROLAGEM COM COMENTÁRIOS E FORMULÁRIO POSICIONADO -->
+            <!-- CONTAINER DE COMENTÁRIOS E FORMULÁRIO DINÂMICO -->
             <div id="comments-container" class="flex-1 overflow-y-auto p-3 space-y-3">
                 <div id="rendered-comments-list" class="space-y-2.5"></div>
             </div>
@@ -342,11 +350,10 @@
 
     </div>
 
-    <!-- TEMPLATE DO FORMULÁRIO DE COMENTÁRIO (INLINE E AUTO-EXPANSÍVEL) -->
+    <!-- TEMPLATE DO FORMULÁRIO DE COMENTÁRIO -->
     <template id="comment-form-template">
         <div class="comment-box-form bg-cardbg border border-blue-500/80 rounded-xl p-3 flex flex-col gap-2.5 shadow-xl transition-all my-2">
             
-            <!-- LINHA SUPERIOR DO FORMULÁRIO -->
             <div class="flex items-center justify-between text-xs">
                 <div class="flex items-center gap-2">
                     <span class="form-creator-avatar w-5 h-5 rounded-full flex items-center justify-center font-bold text-[10px] text-white shrink-0"></span>
@@ -354,11 +361,9 @@
                         00:00:00:00
                     </span>
                     
-                    <!-- Badges de Marcações Criadas -->
                     <div class="form-boxes-badges flex items-center gap-2 ml-1"></div>
                 </div>
                 
-                <!-- Botões Pontual / Trecho / Marcação -->
                 <div class="flex items-center gap-1.5">
                     <div class="flex items-center bg-darkbg border border-bordercolor p-0.5 rounded-lg">
                         <button class="btn-opt-point px-2 py-0.5 rounded text-[10px] font-bold bg-blue-600 text-white">
@@ -379,7 +384,7 @@
                 </div>
             </div>
 
-            <!-- Aviso Integrado de Trecho (In/Out) -->
+            <!-- Aviso Integrado de Trecho -->
             <div class="form-validation-msg hidden text-[11px] text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2.5 py-1.5 rounded-lg leading-snug"></div>
 
             <!-- Campo de Texto Auto-expansível -->
@@ -388,7 +393,6 @@
                           class="form-textarea w-full bg-darkbg border border-bordercolor rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-blue-500 resize-none overflow-hidden transition-all"></textarea>
             </div>
 
-            <!-- Rodapé do Formulário -->
             <div class="flex items-center justify-end gap-2 pt-1">
                 <button class="btn-form-cancel text-xs text-gray-400 hover:text-red-400 px-2 py-1">
                     Cancelar
@@ -400,10 +404,10 @@
         </div>
     </template>
 
-    <!-- JAVASCRIPT DA APLICAÇÃO -->
+    <!-- JAVASCRIPT PRINCIPAL -->
     <script>
         /* ========================================================
-           0. CONFIGURAÇÃO DE ROTAS E ENDPOINTS (HOSTINGER)
+           0. CONFIGURAÇÃO DE ROTAS (HOSTINGER VIA HTTPS)
         ======================================================== */
         const ENDPOINT_HOSTINGER = "https://firebrick-mallard-266745.hostingersite.com/check/";
         const URL_SALVAR_PHP = ENDPOINT_HOSTINGER + "salvar.php";
@@ -421,7 +425,7 @@
         const FPS = 23.976;
 
         /* ========================================================
-           1. PERFIS E AUTENTICAÇÃO SECRETA COM HASH SHA-256
+           1. PERFIS E AUTENTICAÇÃO SECRETA (SHA-256)
         ======================================================== */
         const HASH_PEDRO_SECRETO = "8cb7b63b3d35a84b1f6057ba0a38085606f485b02bc34fe9004b65c3f182fe0c";
 
@@ -430,12 +434,10 @@
 
         let perfisCadastrados = [PERFIL_PEDRO, PERFIL_MARIA];
         
-        // Inicializa por padrão como Maria, a menos que Pedro já esteja autenticado no localStorage
         let usuarioAtivo = (localStorage.getItem('review_role_authenticated') === 'pedro') 
             ? PERFIL_PEDRO 
             : PERFIL_MARIA;
 
-        // 4 Cores Exclusivas para Marcações (Retângulos)
         const CORES_MARCACAO = ["#fbbf24", "#2dd4bf", "#f43f5e", "#38bdf8"];
 
         /* ========================================================
@@ -450,9 +452,10 @@
         let modoDesenhoAtivo = false;
         let corDesenhoAtual = null;
 
-        // Elementos DOM
         const video = document.getElementById('video-player');
         const videoWrapper = document.getElementById('video-wrapper');
+        const videoInnerBox = document.getElementById('video-inner-box');
+        const videoErrorMsg = document.getElementById('video-error-msg');
         const canvas = document.getElementById('video-canvas-overlay');
         const ctx = canvas.getContext('2d');
         const shapesDomLayer = document.getElementById('shapes-dom-layer');
@@ -484,7 +487,6 @@
         const mentionMenu = document.getElementById('mention-menu');
         let textareaAlvoPopover = null;
 
-        // Modal Secreto
         const modalAuthPedro = document.getElementById('modal-auth-pedro');
         const inputPedroPass = document.getElementById('input-pedro-pass');
         const authErrorMsg = document.getElementById('auth-error-msg');
@@ -502,6 +504,14 @@
             configurarRedimensionamentoCanvas();
             configurarFullscreenComControlesFlutuantes();
             configurarAtalhoSecretoPedro();
+
+            video.addEventListener('error', () => {
+                videoErrorMsg.classList.remove('hidden');
+            });
+            video.addEventListener('loadeddata', () => {
+                videoErrorMsg.classList.add('hidden');
+                configurarRedimensionamentoCanvas();
+            });
         });
 
         function aplicarPermissoesUsuario() {
@@ -538,7 +548,6 @@
             });
         }
 
-        // Cálculo SHA-256 no navegador
         async function sha256(str) {
             const buffer = new TextEncoder().encode(str);
             const digest = await crypto.subtle.digest('SHA-256', buffer);
@@ -686,7 +695,7 @@
                     controls.style.bottom = '0';
                     controls.style.left = '0';
                     controls.style.right = '0';
-                    controls.style.background = 'linear-gradient(to top, rgba(0,0,0,0.85), transparent)';
+                    controls.style.background = 'linear-gradient(to top, rgba(0,0,0,0.9), transparent)';
                     controls.style.zIndex = '50';
                 } else {
                     controls.style.position = 'relative';
@@ -695,6 +704,7 @@
                     videoWrapper.classList.remove('fullscreen-hide-cursor');
                     clearTimeout(timerOcultar);
                 }
+                configurarRedimensionamentoCanvas();
             });
 
             videoWrapper.addEventListener('mousemove', () => {
@@ -765,17 +775,25 @@
         }
 
         /* ========================================================
-           7. MARCAÇÕES RETANGULARES (FLUIDEZ COM INTERSEÇÃO)
+           7. MARCAÇÕES RETANGULARES (FLUIDEZ E INTERSEÇÃO)
         ======================================================== */
         function configurarRedimensionamentoCanvas() {
-            function ajustar() {
-                const rect = video.getBoundingClientRect();
+            const rect = video.getBoundingClientRect();
+            if (rect.width > 0 && rect.height > 0) {
                 canvas.width = rect.width;
                 canvas.height = rect.height;
+                canvas.style.width = rect.width + 'px';
+                canvas.style.height = rect.height + 'px';
+                canvas.style.left = (video.offsetLeft) + 'px';
+                canvas.style.top = (video.offsetTop) + 'px';
+
+                shapesDomLayer.style.width = rect.width + 'px';
+                shapesDomLayer.style.height = rect.height + 'px';
+                shapesDomLayer.style.left = (video.offsetLeft) + 'px';
+                shapesDomLayer.style.top = (video.offsetTop) + 'px';
             }
-            window.addEventListener('resize', ajustar);
-            video.addEventListener('loadedmetadata', ajustar);
         }
+        window.addEventListener('resize', configurarRedimensionamentoCanvas);
 
         let startX, startY, isDraggingBox = false;
 
@@ -907,7 +925,7 @@
         }
 
         /* ========================================================
-           9. FORMULÁRIO DINÂMICO POSICIONADO E CENTRALIZADO
+           9. FORMULÁRIO DINÂMICO POSICIONADO
         ======================================================== */
         btnOpenNewComment.addEventListener('click', () => {
             abrirFormularioComentario(null);
@@ -1030,6 +1048,7 @@
                 renderizarMarcadoresTimeline();
             };
 
+            // Ativa imediatamente a primeira cor livre da paleta
             formEstado.btnBoxDraw.onclick = (e) => {
                 e.stopPropagation();
                 if (formEstado.shapes.length >= 4) {
@@ -1313,7 +1332,7 @@
         });
 
         /* ========================================================
-           11. COMUNICAÇÃO COM O SERVIDOR (HOSTINGER VIA CORS)
+           11. COMUNICAÇÃO COM O SERVIDOR (HOSTINGER VIA HTTPS)
         ======================================================== */
         async function carregarComentariosDoServidor() {
             try {
@@ -1518,7 +1537,7 @@
                         ${formatarTextoComentario(com.text)}
                     </div>
 
-                    <!-- 2ª LINHA: Responder à esquerda (se não houver respostas) / Feito, Editar, Excluir à direita -->
+                    <!-- 2ª LINHA: Responder / Toggle Respostas à esquerda / Editar e Excluir à direita -->
                     <div class="flex items-center justify-between pt-1 border-t border-bordercolor/60 text-xs text-zinc-400">
                         <div class="flex items-center gap-2">
                             ${temRespostas ? `
@@ -1569,7 +1588,7 @@
                             }).join('')}
                         </div>
                         
-                        <!-- Botão Responder abaixo da última resposta (Item 6) -->
+                        <!-- Botão Responder abaixo da última resposta -->
                         <div class="flex items-center justify-start pt-1">
                             <button onclick="event.stopPropagation(); abrirFormularioResposta(${com.id})" class="text-zinc-400 hover:text-blue-400 text-xs font-semibold flex items-center gap-1 transition-colors">
                                 <span>💬</span> <span>Responder</span>
