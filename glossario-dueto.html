@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>glossário-dueto v1.0</title>
+<style>
+/* ===== Base estilo preview markdown do VS Code (tema escuro) ===== */
+html { background: #1f1f1f; }
+body {
+  background: #1f1f1f;
+  color: #cccccc;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", system-ui, "Ubuntu", "Droid Sans", sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px 26px 64px;
+  word-wrap: break-word;
+}
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  color: #e2e8f0;
+  margin-top: 24px;
+  margin-bottom: 16px;
+  line-height: 1.25;
+}
+h1 {
+  font-size: 2em;
+  margin-top: 0;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid rgba(255,255,255,0.18);
+}
+h2 {
+  font-size: 1.5em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid rgba(255,255,255,0.18);
+}
+h3 { font-size: 1.25em; }
+p { margin: 0 0 16px; }
+a { color: #4daafc; text-decoration: none; }
+a:hover { text-decoration: underline; }
+strong { color: #e2e8f0; }
+hr {
+  border: 0;
+  height: 1px;
+  border-bottom: 1px solid rgba(255,255,255,0.18);
+  margin: 24px 0;
+}
+ul, ol { margin: 0 0 16px; padding-left: 2em; }
+li { margin: 0.25em 0; }
+li p { margin-bottom: 0.7em; }
+blockquote {
+  margin: 0 0 16px;
+  padding: 0 16px 0 10px;
+  border-left: 5px solid #616161;
+  background: #2b2b2b;
+  border-radius: 2px;
+  color: #9d9d9d;
+}
+blockquote p { margin: 8px 0; }
+code {
+  font-family: "SF Mono", Monaco, Menlo, Consolas, "Ubuntu Mono", "Liberation Mono", "DejaVu Sans Mono", "Courier New", monospace;
+  font-size: 0.95em;
+  color: #e2e8f0;
+}
+p > code, li > code, td > code {
+  background: rgba(255,255,255,0.08);
+  border-radius: 3px;
+  padding: 1px 5px;
+}
+pre {
+  background: #2b2b2b;
+  border: 1px solid #313131;
+  border-radius: 3px;
+  padding: 16px;
+  overflow: auto;
+  margin: 0 0 16px;
+}
+pre code {
+  display: block;
+  color: #cccccc;
+  background: none;
+  white-space: pre;
+  line-height: 1.35;
+  font-size: 0.9em;
+}
+table {
+  border-collapse: collapse;
+  margin: 0 0 16px;
+  display: block;
+  overflow: auto;
+}
+th, td {
+  padding: 5px 10px;
+  border: 1px solid rgba(255,255,255,0.18);
+  text-align: left;
+}
+th {
+  font-weight: 600;
+  color: #e2e8f0;
+  border-bottom: 1px solid rgba(255,255,255,0.4);
+}
+tbody tr:nth-child(even) td { background: rgba(255,255,255,0.03); }
+
+/* ===== Estilos customizados (style-md.css) ===== */
+red    { color: #f87171; font-weight: 600; }
+green  { color: #4ade80; font-weight: 600; }
+blue   { color: #60a5fa; font-weight: 600; }
+yellow { color: #facc15; font-weight: 600; }
+purple { color: #c084fc; font-weight: 600; }
+cyan   { color: #22d3ee; font-weight: 600; }
+
+badge, warn, ok, err {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 0.75em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  vertical-align: middle;
+}
+badge { background-color: #1e293b; color: #38bdf8; border: 1px solid #0284c7; }
+ok    { background-color: #064e3b; color: #34d399; border: 1px solid #059669; }
+warn  { background-color: #451a03; color: #f59e0b; border: 1px solid #b45309; }
+err   { background-color: #4c0519; color: #fb7185; border: 1px solid #e11d48; }
+
+box-ok, box-warn, box-err {
+  display: block;
+  padding: 12px 16px;
+  margin: 14px 0;
+  border-radius: 0 6px 6px 0;
+}
+box-ok   { border-left: 4px solid #3b82f6; background-color: rgba(59, 130, 246, 0.08); }
+box-warn { border-left: 4px solid #f59e0b; background-color: rgba(245, 158, 11, 0.08); }
+box-err  { border-left: 4px solid #ef4444; background-color: rgba(239, 68, 68, 0.08); }
+
+cat-title {
+  display: inline;
+  font-size: 1.15em;
+  font-weight: 700;
+  color: #e2e8f0;
+  letter-spacing: 0.02em;
+}
+</style>
+</head>
+<body>
+
+<h1><badge><cat-title>glossário-dueto <purple>v1.0</purple></cat-title></badge></h1>
+<h1>Ponte de consulta entre a Sessão de Planejamento e o usuário</h1>
+
+<blockquote>
+<p><strong>Propósito:</strong> alinhar vocabulário. Escrito para quem cria com <em>vibe coding</em> — cada termo vem com <em>o que é</em>, <em>onde vive no voCOVER</em> e <em>um exemplo prático</em>. É o documento que a gente consulta antes de discutir qualquer decisão técnica daqui pra frente.</p>
+<p><strong>Convencões deste arquivo:</strong> <ok>verde = conceito seguro/positivo</ok> · <warn>amarelo = cuidado</warn> · <err>vermelho = armadilha/erro comum</err> · <badge>azul = termo-cabeçalho</badge></p>
+</blockquote>
+
+<hr>
+
+<h2><cat-title>0. O mapa grande — onde cada termo vive</cat-title></h2>
+
+<p>Todo o áudio do voCOVER percorre <strong>um caminho só</strong>, de ponta a ponta. Este é o mapa com os termos no lugar exato deles:</p>
+
+<pre><code>                         ┌─────────────── A ENTRADA (mic) ───────────────┐
+ mic ──► [callback] ──► push ──► [in_queue] ──► worker pega (timeout) ──┐
+                          └─ se enche: drop-oldest                      │
+                                                                        ▼
+ ┌────────────────────────── O WORKER (thread única) ──────────────────────────────┐
+ │  [pending] ──► resample (se preciso) ──► corta em [blocos] de 512               │
+ │                                                                      │           │
+ │   ┌─────────────────────── [render_block] (1 bloco = 11,6 ms) ───────┴────┐      │
+ │   │  gate (attack/hold) ──► mix ──► grãos (ITD, pan) ──► _trigger_event   │      │
+ │   │                                              │                       │      │
+ │   │                         [buses] somam ────────┤                       │      │
+ │   │                                              ▼                       │      │
+ │   │                    [soft limit] (knee + tanh) = [limiter]             │      │
+ │   └──────────────────────────────────────┬───────────────────────────────┘      │
+ │                                          ▼                                       │
+ │                          [push_output] + checagem de [profundidade]              │
+ │                             └─ se funda: [drop] (descarta o bloco)               │
+ └──────────────────────────────────────────┬───────────────────────────────────────┘
+                                            ▼
+                             [out_queue] (profundidade máx. 16)
+                                            ▼
+              ┌─────────────── A SAÍDA (fones/caixas) ───────────────┐
+              │ [callback] de saída: tem bloco? ──não──► [fill(0)]   │
+              │                                    (buraco = clique)│
+              └──────────────────────────────────────────────────────┘
+
+  FORA do caminho:  [render_sink]  = modo render offline (pula filas, grava direto)
+  CULPADOS DE SISTEMA:  C-states, core parking, drift, streams/duplex
+  FERRAMENTAS:  CLI, baseline, re-baselinar, headroom</code></pre>
+
+<hr>
+
+<h2><cat-title>1. Transporte e filas (o correio do áudio)</cat-title></h2>
+
+<h3><badge>callback</badge></h3>
+<p><strong>O que é:</strong> uma função que você <strong>escreve</strong> mas que o <strong>sistema operacional chama sozinho</strong>, no momento exato em que precisa — sem você pedir. No áudio, o driver chama o callback a cada poucos milissegundos dizendo "dá um bloco de áudio agora" ou "aqui tem um bloco que chegou do mic".</p>
+<ul>
+<li><ok>Vive fora do seu controle de fluxo normal — ele interrompe o que a thread estava fazendo.</ok></li>
+<li><strong>No voCOVER:</strong> <code>_input_callback</code> (<code>engine.py:2562</code>) e <code>_output_callback</code> (<code>engine.py:2591</code>).</li>
+<li><strong>Exemplo:</strong> o Windows toca a campainha: <em>"callback, quero 512 samples AGORA"</em> — se você demorar, ele toca <strong>silêncio</strong>. É por isso que callbacks têm regra de ouro: <strong>serem rápidos e nunca travar</strong>.</li>
+</ul>
+
+<h3><badge>thread</badge> <badge>thread única</badge></h3>
+<p><strong>O que é:</strong> uma linha de execução do programa. <strong>Thread única</strong> = o programa faz <strong>uma coisa por vez</strong>, em fila, na ordem.</p>
+<ul>
+<li><strong>No voCOVER:</strong> o <code>worker</code> é uma <em>thread única</em> que faz <strong>tudo</strong> do áudio em sequência: pegar mic → preparar → renderizar → entregar.</li>
+<li><warn>Se <strong>uma etapa demora</strong> (ex.: um evento de 80 ms), <strong>todas as seguintes atrasam</strong> — é o efeito dominó. Isso é a causa raiz de vários problemas de P7.</warn></li>
+</ul>
+
+<h3><badge>worker</badge> <badge>worker loop</badge> <strong><code>VocoolderWorker</code></strong></h3>
+<p><strong>O que é:</strong> a thread de trabalho. O <em>loop</em> é o <code>while</code> que ela roda para sempre enquanto o motor está ligado: pega mic → processa → entrega → repete. (<code>engine.py:2638</code>)</p>
+<ul>
+<li><strong>Relação:</strong> o <strong>callback</strong> é o garçom urgente do sistema; o <strong>worker</strong> é a cozinha. O garçom entrega o pedido (mic) na fila e volta depois — a cozinha cozinha no próprio ritmo.</li>
+</ul>
+
+<h3><badge>push</badge></h3>
+<p><strong>O que é:</strong> "empurrar" um dado <strong>para dentro</strong> de uma fila. Operação de <strong>produção</strong> (colocar).</p>
+<ul>
+<li><strong>No voCOVER:</strong> <code>_input_callback</code> faz <code>push</code> do áudio do mic no <code>in_queue</code>; <code>_push_output</code> faz <code>push</code> do bloco pronto no <code>out_queue</code>.</li>
+</ul>
+
+<h3><badge>in_queue</badge> <badge>out_queue</badge> (fila)</h3>
+<p><strong>O que é:</strong> um <strong>tubão temporário</strong> entre quem produz e quem consome áudio — desacopla os dois ritmos. <code>in_queue</code> = mic esperando processamento; <code>out_queue</code> = áudio pronto esperando a saída.</p>
+<ul>
+<li><strong>No voCOVER:</strong> <code>in_queue</code> guarda até <strong>8 blocos (~93 ms)</strong>; <code>out_queue</code> até <strong>16 (~186 ms)</strong>.</li>
+<li><strong>Por que existe:</strong> o mic chega no <strong>ritmo do Windows</strong>; o worker processa no <strong>ritmo do CPU</strong>; a saída consome no <strong>ritmo da placa de som</strong>. As três velocidades nunca são idênticas.</li>
+</ul>
+
+<h3><badge>profundidade</badge> (depth / <code>max_depth</code>)</h3>
+<p><strong>O que é:</strong> <strong>quantos blocos estão acumulados</strong> na fila naquele instante.</p>
+<ul>
+<li><strong>No voCOVER:</strong> <code>_push_output(out, max_depth=12 ...)</code> = "só aceita empurrar se tiver <strong>menos de 12 blocos</strong> na fila".</li>
+<li><strong>Exemplo do seu código:</strong> <em>"o gravador recebe o bloco antes da checagem de profundidade"</em> = o gravador ouve o áudio <strong>mesmo que depois o bloco seja descartado</strong> por causa da profundidade.</li>
+</ul>
+
+<h3><badge>drop</badge> <badge>drop-oldest</badge></h3>
+<p><strong><code>drop</code></strong> = descartar um bloco quando a fila está cheia (<code>engine.py:2631</code>).<br>
+<strong><code>drop-oldest</code></strong> = quando a fila de ENTRADA enche, <strong>joga fora o bloco MAIS VELHO</strong> para caber o novo (<code>engine.py:2581</code>) — porque mic velho já não adianta nada.</p>
+<ul>
+<li><err>Armadiilha: um <code>drop</code> = um buraco de 11,6 ms no som = <strong>clique</strong>. Dois caminhos de drop existem: descartar o que sai (2631) e descartar o que entra (2581).</err></li>
+</ul>
+
+<h3><badge>underrun</badge></h3>
+<p><strong>O que é:</strong> o <strong>consumidor queria</strong> um bloco e <strong>a fila estava vazia</strong>. A saída não recebeu nada a tempo. No voCOVER: <code>_output_callback</code> faz <code>fill(0)</code> → <err>buraco de silêncio no meio do som = clique clássico</err>.</p>
+<ul>
+<li><warn>No voCOVER, underrun <strong>não aparece na gravação</strong> (o gravador grava antes, na fila) — por isso seu relato "só no ao vivo, exportado belíssimo" aponta pra cá.</warn></li>
+<li><strong>Sinônimo prático:</strong> falha de entrega.</li>
+</ul>
+
+<h3><badge>fill(0)</badge></h3>
+<p><strong>O que é:</strong> "preencher com zeros" = <strong>silêncio digital</strong>. É o que o callback de saída faz quando a fila está vazia (<code>engine.py:2596</code>) — em vez de travar, entrega silêncio. O ouvido percebe o zero como um <strong>clique de ida e volta</strong>.</p>
+
+<h3><badge>timeout</badge></h3>
+<p><strong>O que é:</strong> "espero até X; se não vier, sigo sozinho".</p>
+<ul>
+<li><strong>No voCOVER:</strong> <code>_in_queue.get(timeout=0.15)</code> = worker espera <strong>150 ms</strong> por mic novo; se nada chegar, ele <strong>empurra um bloco de silêncio</strong> e segue (<code>engine.py:2647-2649</code>).</li>
+</ul>
+
+<h3><badge>push_output</badge></h3>
+<p><strong>O que é:</strong> o <code>push</code> específico do bloco <strong>já renderizado e já limitado</strong> para a <code>out_queue</code> (<code>engine.py:2623</code>). Decide: manda pro render offline (<code>render_sink</code>), manda pro gravador, e só então tenta enfileirar — <strong>respeitando a profundidade</strong>.</p>
+
+<hr>
+
+<h2><cat-title>2. Tempo e blocos (o relógio do áudio)</cat-title></h2>
+
+<h3><badge>bloco</badge></h3>
+<p><strong>O que é:</strong> o <strong>lote de amostras</strong> processado de uma vez — a unidade mínima de trabalho. No voCOVER: <strong>512 samples @ 44,1 kHz = 11,6 ms</strong>.</p>
+<ul>
+<li><strong>Exemplo:</strong> é como um ônibus: você não processa passageiro por passageiro, processa <strong>um ônibus cheio</strong>. Tudo no motor (gate, mix, limitador) acontece <strong>uma vez por ônibus</strong>, e a menor sujeira possível que você pode causar dura <strong>11,6 ms</strong> — um ônibus inteiro.</li>
+</ul>
+
+<h3><badge>pending</badge></h3>
+<p><strong>O que é:</strong> o "resto esperando" na mão. Quando o worker recebe mic num tamanho que <strong>não é múltiplo exato de 512</strong>, ele concatena num buffer (<code>pending</code>) e vai pegando pedaços de 512 daí quando dá (<code>engine.py:2641,2654</code>).</p>
+<ul>
+<li><strong>Analogia:</strong> sobrou massa de pão; junta com a próxima fornada até dar um pão inteiro.</li>
+</ul>
+
+<h3><badge>resample</badge></h3>
+<p><strong>O que é:</strong> <strong>mudar a taxa de amostragem</strong> (44,1 kHz → 48 kHz, etc.) — redesenhar o áudio em outra velocidade. No voCOVER usa <code>resample_poly</code> só se <code>input_samplerate ≠ output_samplerate</code> (<code>engine.py:2652-2653</code>).</p>
+<ul>
+<li><warn>Custo de CPU extra <strong>por bloco</strong> — se o seu mic e sua caixa têm taxas diferentes, o worker paga pedágio o tempo todo.</warn></li>
+</ul>
+
+<hr>
+
+<h2><cat-title>3. O motor de render (a cozinha)</cat-title></h2>
+
+<h3><badge>engine</badge> <badge>_render_block</badge></h3>
+<p><strong><code>engine</code></strong> = o coração do programa (<code>src/engine.py</code>): corpus, seleção de grãos, saída de áudio.<br>
+<strong><code>_render_block</code></strong> = o método que transforma <strong>um bloco de mic em um bloco de som pronto</strong> (<code>engine.py:2663</code>): gate → mix → grãos → somas → limitador → push.</p>
+<ul>
+<li><strong>Relação:</strong> <code>engine</code> é a <strong>fábrica inteira</strong>; <code>_render_block</code> é a <strong>esteira que roda uma vez por bloco de 11,6 ms</strong>.</li>
+</ul>
+
+<h3><badge>gate</badge> (aberto/fechado)</h3>
+<p><strong>O que é:</strong> um portão automático por <strong>RMS</strong> (volume medido). Se você está falando alto o suficiente, o gate <strong>abre</strong> (deixa passar/dispara eventos); se para, <strong>fecha</strong>.</p>
+<ul>
+<li><strong>No voCOVER:</strong> <code>GATE_ATTACK_BLOCKS=2</code> e <code>GATE_HOLD_BLOCKS=3</code> (<code>engine.py:207-208</code>).</li>
+<li><err>Corte seco: hoje o mic é cortado de <strong>um bloco pro outro</strong> quando o gate fecha (<code>2693</code>) — sem fade — e isso <strong>cliqueia</strong>. (candidato D do P7)</err></li>
+</ul>
+
+<h3><badge>attack</badge> <badge>hold</badge></h3>
+<ul>
+<li><strong>attack</strong> = por quantos <strong>blocos consecutivos</strong> o som precisa estar acima do limiar <strong>para abrir</strong> (no voCOVER: 2 blocos ≈ 23 ms — evita abrir com um estalo isolado).</li>
+<li><strong>hold</strong> = por quantos blocos o gate <strong>fica aberto depois</strong> do som cair (3 blocos ≈ 35 ms — evita ficar tremendo abrindo/fechando entre sílabas).</li>
+</ul>
+
+<h3><badge>_trigger_event</badge></h3>
+<p><strong>O que é:</strong> o momento em que o motor <strong>escolhe e dispara grãos</strong> — similaridade, mutação, pan, pitch, seleção (<code>engine.py:2867</code>). É o cérebro criativo, e roda <strong>dentro</strong> do worker, a cada <code>EVENT_INTERVAL = 170 ms</code> enquanto o gate está aberto.</p>
+<ul>
+<li><warn>Se demora, a esteira trava. Ver <code>event_time_warn</code>.</warn></li>
+</ul>
+
+<h3><badge>event_time_warn</badge></h3>
+<p><strong>O que é:</strong> o termômetro do trigger. Mede quanto tempo cada evento levou; se passar de <strong>80 ms</strong>, conta um aviso (<code>engine.py:2742-2745</code>). 80 ms ≈ <strong>7 blocos</strong> — ou seja: um evento lento poderia esvaziar a fila inteira se a folga fosse menor.</p>
+<ul>
+<li><badge>referência de alerta</badge> É o <strong>indicador número 1</strong> de que o worker vai causar underrun.</li>
+</ul>
+
+<h3><badge>buses</badge> (barramento)</h3>
+<p><strong>O que é:</strong> um "trilho" onde vários sinais são <strong>somados num canal só</strong> antes de seguir.</p>
+<ul>
+<li><strong>No voCOVER:</strong> <code>grain_bus</code> = trilho estéreo onde <strong>todos os grãos daquele bloco somam</strong> (<code>engine.py:2697</code>); depois ele é somado ao <code>out</code> junto com o mic.</li>
+<li><strong>Exemplo:</strong> 30 grãos = 30 vozes somando no mesmo trilho → a soma fica alta → é aí que aparece o problema do <blue>soft limit</blue>.</li>
+</ul>
+
+<h3><badge>ITD</badge></h3>
+<p><strong>O que é:</strong> <em>Interaural Time Difference</em> — <strong>diferença de tempo</strong> entre o que chega na orelha esquerda e na direita. O cérebro usa isso pra localizar de onde vem o som.</p>
+<ul>
+<li><strong>No voCOVER:</strong> delay de até <strong>0,7 ms</strong> (efeito Haas) aplicado por grão (<code>ITD_MAX_MS</code>, <code>engine.py:188</code>, em <code>_write_grain</code>). Um grão chega <strong>levemente antes</strong> numa orelha → o cérebro ouve ele <strong>de lado</strong>.</li>
+</ul>
+
+<h3><badge>soft limit</badge> <badge>limiter</badge></h3>
+<p><strong><code>limiter</code></strong> = qualquer coisa que <strong>segura o volume pra não estourar</strong>. <strong><code>soft limit</code></strong> = o limiter <strong>gradativo</strong> do voCOVER: abaixo do <code>knee</code> não mexe nada; acima, comprime cada vez mais forte com uma curva <code>tanh</code> (<code>engine.py:1695-1710</code>).</p>
+<ul>
+<li><strong>No voCOVER:</strong> aplicado no <strong>fim</strong> de todo bloco, antes do push (<code>2747</code>). Teto: <strong>0,891 (−1 dBFS)</strong>.</li>
+</ul>
+
+<h3><badge>knee</badge></h3>
+<p><strong>O que é:</strong> o <strong>joelho</strong> — o ponto onde o limitador <strong>começa a agir</strong>. VoCOVER: <code>KNEE = 0,70</code>.</p>
+<ul>
+<li>Abaixo de 0,70: áudio passa <strong>intocadinho</strong>. Acima: começa a apertar.</li>
+<li><warn>Se a soma dos <code>buses</code> (mic + grãos) fica sempre acima de 0,70, o limitador está <strong>trabalhando o tempo todo</strong> = distorção contínua = "clipping" que você ouve. É o candidato E do P7.</warn></li>
+</ul>
+
+<h3><badge>tanh</badge></h3>
+<p><strong>O que é:</strong> <em>hyperbolic tangent</em> — uma <strong>curva matemática em S</strong>. Zero → zero; sobe → cresce devagar e <strong>se achata</strong> perto de 1. Serve pra "amassar" picos sem deixar passar de um teto.</p>
+<ul>
+<li><strong>Exemplo visual:</strong>
+  <pre><code>saída │        ──────── teto (0,891)
+      │      /
+      │    /  ← zona tanh: começa a esmagar
+      │  /
+      │ / ← zona linear (abaixo do knee)
+      └──────────────── entrada</code></pre>
+</li>
+<li><err>Armadilha: tanh <strong>não é transparente</strong> — quando ela trabalha forte, você ouve <strong>saturação áspera</strong>, não "limpeza". Exportado sai limpo porque o som renderizado não passa dessa luta.</err></li>
+</ul>
+
+<hr>
+
+<h2><cat-title>4. Sistemas e Windows (os culpados de fora)</cat-title></h2>
+
+<h3><badge>C-states</badge></h3>
+<p><strong>O que é:</strong> estados de <strong>hibernação parcial</strong> da CPU. Ociosa, a CPU "dorme" (C6, C10...); pra acordar leva microssegundos.</p>
+<ul>
+<li><warn>Hipótese do P7: com o PC <strong>ocioso</strong>, o thread de áudio acorda <strong>atrasado</strong> → underrun → clique. Com o PC <strong>cheio</strong>, a CPU dorme menos → menos clique. Bate com o seu relato invertido!</warn></li>
+</ul>
+
+<h3><badge>core parking</badge></h3>
+<p><strong>O que é:</strong> o Windows <strong>desliga núcleos</strong> da CPU quando não precisa deles (começa nos mais rápidos). Efeito prático igual aos C-states: o motor de áudio pode ficar num núcleo <strong>desligado</strong> no momento do callback.</p>
+
+<h3><badge>drift</badge> (de relógio)</h3>
+<p><strong>O que é:</strong> dois aparelhos de áudio <strong>discordam levemente</strong> de quanto tempo é um segundo (relógios de cristais imperfeitos). Ex.: seu mic entrega 44.100,03 samples/s e sua placa consome 44.099,97/s.</p>
+<ul>
+<li><strong>Efeito:</strong> aos poucos, um lado acumula atraso → <code>in_queue</code> <strong>enche devagar</strong> → <code>drop-oldest</code> → clique periódico, "de vez em quando, sem explicação".</li>
+</ul>
+
+<h3><badge>streams</badge> <badge>duplex</badge></h3>
+<ul>
+<li><strong>stream</strong> = um <strong>fluxo</strong> de áudio aberto (entrada é um stream, saída é outro).</li>
+<li><strong>duplex</strong> = <strong>um único stream</strong> que faz entrada E saída <strong>sincronizados pelo mesmo relógio</strong>.</li>
+<li><strong>No voCOVER:</strong> streams <strong>separados</strong> (<code>InputStream</code> + <code>OutputStream</code>, <code>engine.py:2366-2381</code>) — dois relógios independentes, sem duplex. <warn>É a porta de entrada do <strong>drift</strong> e de dessincronias entre o que você fala e o que sai.</warn></li>
+</ul>
+
+<h3><badge>headroom</badge></h3>
+<p><strong>O que é:</strong> a <strong>folga</strong> entre o pico normal do seu som e o teto (0 dBFS). É o espaço onde os grãos e o mic podem somar <strong>sem bater no limiter</strong>.</p>
+<ul>
+<li><strong>Exemplo:</strong> se o som vive em −6 dB e o teto é 0, você tem <strong>6 dB de headroom</strong>.</li>
+<li><ok>Projeto correto: <strong>ganhar headroom no pontapé</strong> (reduzir ganho por polifonia, ganho do mic disciplinado) em vez de deixar o <code>tanh</code> apagar incêndio. É o plano de P6+P7.</ok></li>
+</ul>
+
+<hr>
+
+<h2><cat-title>5. Ferramentas e fluxo de trabalho</cat-title></h2>
+
+<h3><badge>CLI</badge></h3>
+<p><strong>O que é:</strong> <em>Command Line Interface</em> — rodar o programa <strong>por comando de terminal</strong> em vez da janela gráfica.</p>
+<ul>
+<li><strong>No voCOVER:</strong> <code>python main.py --render entrada.wav -o saida.wav</code>, <code>--selftest</code>, <code>--list-devices</code>.</li>
+<li><ok>Vantagem: parâmetros <strong>explícitos e repetíveis</strong> — ideal pra testes comparáveis.</ok></li>
+</ul>
+
+<h3><badge>baseline</badge> <badge>re-baselinar</badge></h3>
+<ul>
+<li><strong>baseline</strong> = o <strong>árbitro antigo</strong>: um arquivo de referência gerado com o código de uma data (<code>renders/ref_granular_2026-10-22.wav</code>). Qualquer mudança futura se compara com ele.</li>
+<li><strong>re-baselinar</strong> = <strong>gerar um novo árbitro</strong>, porque a mudança foi proposital e o antigo não representa mais o comportamento desejado.</li>
+<li><warn>Exemplo do P6: se mudarmos o <code>mix</code> pra "volume do mic", o <strong>mesmo comando CLI</strong> passa a gerar som diferente → o ref de 22/10 perde o valor de comparação → precisa de decisão: re-baselinar <strong>ou</strong> manter o comportamento antigo no offline.</warn></li>
+</ul>
+
+<hr>
+
+<h2><cat-title>6. Relação-rápida: termo ─ causa ─ efeito no seu ouvido</cat-title></h2>
+
+<table>
+<thead>
+<tr><th>Se você ouve...</th><th>Provém de...</th><th>Termo-chave</th></tr>
+</thead>
+<tbody>
+<tr><td>clique seco, tipo "tac"</td><td>fila vazia na saída</td><td><red>underrun → fill(0)</red></td></tr>
+<tr><td>clique no <strong>fim das frases</strong></td><td>fila estoura com gate fechado (só 3 folga)</td><td><red>drop em push_output</red></td></tr>
+<tr><td>clique "de vez em quando, aleatório"</td><td>worker atrasado pelo evento</td><td><yellow>event_time_warn &gt; 80 ms</yellow></td></tr>
+<tr><td>clique no mic entre palavras</td><td>gate corta sem fade</td><td><yellow>gate attack/hold</yellow></td></tr>
+<tr><td>chiado/granulado "saturado", pior com mic no meio</td><td>buses somando acima do knee</td><td><red>soft limit / tanh</red></td></tr>
+<tr><td>piora só com PC ocioso</td><td>CPU dormindo</td><td><purple>C-states / core parking</purple></td></tr>
+<tr><td>piora com mais programas abertos</td><td>CPU sem folga pro worker</td><td><purple>thread única</purple></td></tr>
+</tbody>
+</table>
+
+<hr>
+
+<box-ok>
+<p style="margin:0"><strong>Como usar este glossário:</strong> em qualquer discussão, se eu usar um termo daqui sem contexto, mande "› glossário" com a palavra — e eu reformulo com o exemplo prático. A meta é que a gente discuta <strong>decisões</strong>, não vocabulário.</p>
+</box-ok>
+
+<box-warn>
+<p style="margin:0"><strong>Limites do documento:</strong> este glossário explica <strong>como o código está hoje</strong>. Quando a semântica do mix (P6) e o transporte (P7) mudarem, os itens <code>mix</code>, <code>soft limit</code>, <code>drop</code> e a tabela §6 são os primeiros a atualizar — este arquivo entra na convenção de docs vivos do ORCHESTRA.</p>
+</box-warn>
+
+</body>
+</html>
