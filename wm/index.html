@@ -59,16 +59,31 @@
     }
     #start-overlay h1:hover { color: var(--bg-dark); opacity: 0.24; filter: blur(8px); letter-spacing: -0.024em; font-weight: 800; }
 
-/* Grid de Letreiros (Centralizado e Snap) */
-    #grid-screen {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background-color: var(--bg-dark); z-index: 20;
-      display: none; flex-direction: column;
-      overflow-y: auto; scroll-snap-type: y mandatory; scroll-behavior: smooth;
-      scrollbar-width: none; 
-      padding: 33.33vh 0; /* Permite que o topo e a base parem no centro exato */
-    }
-    #grid-screen::-webkit-scrollbar { display: none; }
+/* Grid de Letreiros (Centralizado e Snap) *//* Grid de Letreiros (Centralizado e Snap) */
+#grid-screen {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  z-index: 20;
+  display: none; flex-direction: column;
+  overflow-y: auto; scroll-snap-type: y mandatory; scroll-behavior: smooth;
+  scrollbar-width: none; 
+  padding: 33.33vh 0; /* Permite que o topo e a base parem no centro exato */
+  
+  /* IMPORTANTE: Removemos o background-color e o mix-blend-mode daqui */
+}
+
+/* Camada isolada apenas para a cor de fundo com Multiply */
+#grid-screen::before {
+  content: "";
+  position: fixed; /* fixo para cobrir a tela mesmo ao scrollar o grid */
+  top: 0; left: 0; width: 100%; height: 100%;
+  background-color: rgba(0, 36, 36, 0.397);
+  mix-blend-mode: multiply;
+  z-index: -1; /* joga para trás das letras (.grid-item) */
+  pointer-events: none; /* garante que não vai travar cliques ou scroll */
+}
+
+#grid-screen::-webkit-scrollbar { display: none; }
+
     
     .grid-item {
       display: flex; justify-content: space-between; align-items: baseline;
