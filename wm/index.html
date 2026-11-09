@@ -529,6 +529,7 @@
   </script>
 
 <!-- ATALHOS DIRETOS (MODO ABERTO / TECLA B) -->
+ <!-- ATALHOS DIRETOS (MODO ABERTO / TECLA B) -->
   <script>
     (function() {
       const mapaObras = {
@@ -550,11 +551,21 @@
 
       document.addEventListener('keydown', (e) => {
         if (e.ctrlKey || e.altKey || e.metaKey) return;
-
-        // Só executa se o modo manual estiver ativo (mouse visível)
         if (!document.body.classList.contains('modo-manual')) return;
 
         const tecla = e.key.toLowerCase();
+
+        // 1. Tecla I: volta direto para a tela inicial
+        if (tecla === 'i') {
+          e.preventDefault();
+          window.forcarPlayerCompleto = false;
+          if (typeof retornarAoInicio === 'function') {
+            retornarAoInicio();
+          }
+          return;
+        }
+
+        // 2. Atalhos diretos das obras
         const termoBusca = mapaObras[tecla];
 
         if (termoBusca && typeof APRESENTACAO !== 'undefined') {
@@ -565,8 +576,22 @@
 
           if (indexAlvo !== -1) {
             e.preventDefault();
+            window.forcarPlayerCompleto = (tecla === 'f');
+
             indexAtual = indexAlvo;
             iniciarTransicaoObra();
+
+            if (tecla === 'f') {
+              const checarVideo = setInterval(() => {
+                const vid = document.querySelector('#media-container video');
+                if (vid) {
+                  vid.controls = true;
+                  vid.style.pointerEvents = 'auto';
+                  clearInterval(checarVideo);
+                }
+              }, 100);
+              setTimeout(() => clearInterval(checarVideo), 4000);
+            }
           }
         }
       });
