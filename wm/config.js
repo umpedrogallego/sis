@@ -1,5 +1,5 @@
 /**
- * CONFIGURAÇÃO DA APRESENTAÇÃO (Final)
+ * CONFREEG
  */
 const APRESENTACAO = [
   {
