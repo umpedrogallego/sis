@@ -1,0 +1,2466 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Impressão &amp; Exportação A4 — Casa de Criadores 58</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Bibliotecas para download direto de PDF vetorial A4 com margens exatas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        /* =====================================================================
+           1. DESIGN TOKENS — BARRA DE CONTROLE (DARK) & FOLHA A4 (INK-ECONOMY)
+           ===================================================================== */
+        :root {
+            /* Tema escuro grafite-petróleo (idêntico a _ref_ui_v2.html) */
+            --ui-bg-base: #0c1114;
+            --ui-bg-canvas: #090d10;
+            --ui-bg-surface: #12181c;
+            --ui-bg-elevated: #171f24;
+            --ui-bg-hover: #1d272e;
+            --ui-border: rgba(255, 255, 255, 0.09);
+            --ui-border-strong: rgba(255, 255, 255, 0.22);
+            --ui-text-primary: #eef2f4;
+            --ui-text-secondary: #8b98a1;
+            --ui-text-muted: #5a6872;
+            --ui-alert-warn: #f0b429;
+            --ui-alert-warn-bg: rgba(240, 180, 41, 0.12);
+
+            /* Cores das 4 equipes (indicador discreto na barra de controle) */
+            --team-maxima: #e85d9e;
+            --team-lema: #e5a93c;
+            --team-staff: #4fb3d9;
+            --team-estagio: #4ec28c;
+
+            /* Tokens da Folha A4 (Fundo branco puro + tinta preta econômica) */
+            --paper-bg: #ffffff;
+            --ink-black: #111111;
+            --ink-dark: #262a2e;
+            --ink-muted: #525960;
+            --rule-strong: #111111;
+            --rule-light: #d0d5d9;
+            --tint-subtle: #f4f5f6;
+
+            --font-sans: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+            --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+            --radius: 4px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            background: var(--ui-bg-canvas);
+            color: var(--ui-text-primary);
+            font-family: var(--font-sans);
+            line-height: 1.4;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        button, select, input {
+            font-family: inherit;
+            color: inherit;
+        }
+
+        :focus-visible {
+            outline: 2px solid var(--ui-text-primary);
+            outline-offset: 2px;
+        }
+
+        .mono {
+            font-family: var(--font-mono);
+        }
+
+        /* =====================================================================
+           2. BARRA DE CONTROLE SUPERIOR (.no-print)
+           ===================================================================== */
+        .control-bar {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(12, 17, 20, 0.96);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--ui-border);
+        }
+
+        .control-bar-inner {
+            max-width: 1360px;
+            margin: 0 auto;
+            padding: 10px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* Linha 1: Marca + Seletor de Preset + Ações de Exportação */
+        .control-top-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .brand-cluster {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .brand-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: var(--ui-text-primary);
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .brand-circle {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 1.5px solid var(--ui-text-primary);
+            font-family: var(--font-mono);
+            font-size: 0.74rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .preset-tabs {
+            display: inline-flex;
+            background: var(--ui-bg-surface);
+            border: 1px solid var(--ui-border);
+            border-radius: var(--radius);
+            padding: 2px;
+            overflow-x: auto;
+            max-width: 100%;
+        }
+
+        .preset-tab {
+            background: transparent;
+            border: none;
+            padding: 6px 12px;
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: var(--ui-text-secondary);
+            border-radius: 3px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background 0.12s, color 0.12s;
+        }
+
+        .preset-tab:hover {
+            color: var(--ui-text-primary);
+        }
+
+        .preset-tab[aria-selected="true"] {
+            background: var(--ui-bg-elevated);
+            color: var(--ui-text-primary);
+            font-weight: 600;
+        }
+
+        .export-cluster {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            height: 34px;
+            padding: 0 12px;
+            border-radius: var(--radius);
+            border: 1px solid var(--ui-border);
+            background: var(--ui-bg-surface);
+            color: var(--ui-text-primary);
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background 0.12s, border-color 0.12s;
+        }
+
+        .btn:hover {
+            background: var(--ui-bg-elevated);
+            border-color: var(--ui-border-strong);
+        }
+
+        .btn-primary {
+            background: var(--ui-text-primary);
+            color: var(--ui-bg-base);
+            border-color: var(--ui-text-primary);
+            font-weight: 600;
+        }
+
+        .btn-primary:hover {
+            background: #dce4e8;
+            border-color: #dce4e8;
+        }
+
+        /* Grupo segmentado: BAIXAR: PDF / CSV */
+        .download-group {
+            display: inline-flex;
+            align-items: center;
+            height: 34px;
+            background: var(--ui-bg-surface);
+            border: 1px solid var(--ui-border-strong);
+            border-radius: var(--radius);
+            padding: 0 4px 0 10px;
+            gap: 4px;
+        }
+
+        .download-group-label {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            color: var(--ui-text-secondary);
+            margin-right: 4px;
+            user-select: none;
+        }
+
+        .download-sub-btn {
+            height: 26px;
+            padding: 0 9px;
+            border: none;
+            border-radius: 3px;
+            background: transparent;
+            color: var(--ui-text-primary);
+            font-family: var(--font-mono);
+            font-size: 0.76rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.12s, color 0.12s;
+        }
+
+        .download-sub-btn:hover {
+            background: var(--ui-bg-elevated);
+        }
+
+        .download-sub-btn.is-pdf {
+            background: var(--ui-text-primary);
+            color: var(--ui-bg-base);
+        }
+
+        .download-sub-btn.is-pdf:hover {
+            background: #dce4e8;
+        }
+
+        .download-sep {
+            color: var(--ui-text-muted);
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            user-select: none;
+        }
+
+        .col-count-pill {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            color: var(--ui-text-secondary);
+            background: var(--ui-bg-elevated);
+            border: 1px solid var(--ui-border);
+            padding: 1px 6px;
+            border-radius: 3px;
+        }
+
+        /* Linha 2: Filtros Contextuais (Dia, Equipe, Turno, Toggle específico do Preset) */
+        .control-filter-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding-top: 8px;
+            border-top: 1px solid var(--ui-border);
+            flex-wrap: wrap;
+        }
+
+        .filter-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .field-inline {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.76rem;
+            color: var(--ui-text-secondary);
+        }
+
+        .ui-select {
+            height: 30px;
+            padding: 0 10px;
+            border-radius: var(--radius);
+            border: 1px solid var(--ui-border);
+            background: var(--ui-bg-surface);
+            color: var(--ui-text-primary);
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        .ui-select:hover {
+            border-color: var(--ui-border-strong);
+        }
+
+        .team-pills {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+
+        .team-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            height: 30px;
+            padding: 0 10px;
+            border-radius: var(--radius);
+            border: 1px solid var(--ui-border);
+            background: var(--ui-bg-surface);
+            color: var(--ui-text-secondary);
+            font-size: 0.78rem;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .team-pill:hover {
+            color: var(--ui-text-primary);
+            border-color: var(--ui-border-strong);
+        }
+
+        .team-pill.active {
+            background: var(--ui-bg-elevated);
+            color: var(--ui-text-primary);
+            border-color: var(--tc, var(--ui-text-primary));
+            font-weight: 600;
+        }
+
+        .team-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--tc);
+            display: inline-block;
+        }
+
+        /* Toggle contextual do preset */
+        .preset-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            height: 30px;
+            padding: 0 10px;
+            border-radius: var(--radius);
+            border: 1px solid var(--ui-border);
+            background: var(--ui-bg-surface);
+            font-size: 0.78rem;
+            color: var(--ui-text-primary);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .preset-toggle:hover {
+            border-color: var(--ui-border-strong);
+        }
+
+        .preset-toggle input[type="checkbox"] {
+            accent-color: var(--ui-text-primary);
+            width: 14px;
+            height: 14px;
+            cursor: pointer;
+        }
+
+        .preset-toggle.is-lgpd-active {
+            border-color: rgba(240, 180, 41, 0.55);
+            background: var(--ui-alert-warn-bg);
+            color: var(--ui-alert-warn);
+        }
+
+        /* Seletor de Orientação Retrato / Paisagem */
+        .orient-group {
+            display: inline-flex;
+            align-items: center;
+            height: 30px;
+            background: var(--ui-bg-surface);
+            border: 1px solid var(--ui-border);
+            border-radius: var(--radius);
+            padding: 2px;
+            gap: 2px;
+        }
+
+        .orient-btn {
+            height: 24px;
+            padding: 0 9px;
+            border: none;
+            border-radius: 3px;
+            background: transparent;
+            color: var(--ui-text-secondary);
+            font-size: 0.76rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+            transition: background 0.12s, color 0.12s;
+        }
+
+        .orient-btn:hover {
+            color: var(--ui-text-primary);
+        }
+
+        .orient-btn[aria-pressed="true"] {
+            background: var(--ui-bg-elevated);
+            color: var(--ui-text-primary);
+            font-weight: 600;
+        }
+
+        .orient-icon {
+            display: inline-block;
+            border: 1.2px solid currentColor;
+            border-radius: 1px;
+            flex-shrink: 0;
+        }
+
+        .orient-icon.is-portrait {
+            width: 8px;
+            height: 11px;
+        }
+
+        .orient-icon.is-landscape {
+            width: 11px;
+            height: 8px;
+        }
+
+        .orient-badge {
+            font-family: var(--font-mono);
+            font-size: 0.66rem;
+            color: var(--ui-alert-warn);
+            padding-left: 2px;
+        }
+
+        /* =====================================================================
+           3. PALCO DE PREVIEW E FOLHA A4 SIMULADA EM TELA
+           ===================================================================== */
+        .preview-stage {
+            padding: 24px 16px 64px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .stage-hint {
+            width: 100%;
+            max-width: 210mm;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            font-family: var(--font-mono);
+            font-size: 0.73rem;
+            color: var(--ui-text-secondary);
+            transition: max-width 0.16s ease;
+        }
+
+        .stage-hint.is-landscape {
+            max-width: 297mm;
+        }
+
+        .a4-sheet {
+            width: 210mm;
+            min-width: 210mm;
+            min-height: 297mm;
+            background: var(--paper-bg);
+            color: var(--ink-black);
+            border: 1px solid #2b343b;
+            /* Espelha 1:1 as margens definidas em @page (14mm 14mm 16mm 14mm) */
+            padding: 14mm 14mm 16mm 14mm;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            flex-shrink: 0;
+            transition: width 0.16s ease, min-width 0.16s ease;
+        }
+
+        .a4-sheet.is-landscape {
+            width: 297mm;
+            min-width: 297mm;
+            min-height: 210mm;
+        }
+
+        /* =====================================================================
+           4. TIPOGRAFIA E COMPONENTES DA FOLHA A4 (ECONÔMICOS DE TINTA)
+           ===================================================================== */
+        .doc-header {
+            border-bottom: 1.5px solid var(--rule-strong);
+            padding-bottom: 4mm;
+            margin-bottom: 5mm;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 6mm;
+        }
+
+        .doc-brand-row {
+            display: flex;
+            align-items: center;
+            gap: 3.5mm;
+        }
+
+        .doc-logo-58 {
+            width: 10.5mm;
+            height: 10.5mm;
+            border-radius: 50%;
+            border: 1.5px solid var(--ink-black);
+            font-family: var(--font-mono);
+            font-size: 10.5pt;
+            font-weight: 700;
+            color: var(--ink-black);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .doc-kicker {
+            font-family: var(--font-mono);
+            font-size: 7.5pt;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--ink-muted);
+        }
+
+        .doc-title {
+            font-size: 13.5pt;
+            font-weight: 700;
+            letter-spacing: -0.015em;
+            line-height: 1.15;
+            color: var(--ink-black);
+            margin-top: 0.5mm;
+        }
+
+        .doc-meta-box {
+            text-align: right;
+            font-family: var(--font-mono);
+            font-size: 7.5pt;
+            line-height: 1.45;
+            color: var(--ink-dark);
+            flex-shrink: 0;
+        }
+
+        .doc-meta-box strong {
+            font-weight: 700;
+            color: var(--ink-black);
+        }
+
+        .lgpd-stamp {
+            display: inline-block;
+            margin-top: 1.5mm;
+            padding: 0.6mm 2mm;
+            border: 1px solid var(--ink-black);
+            font-family: var(--font-mono);
+            font-size: 6.8pt;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: var(--ink-black);
+            background: var(--tint-subtle);
+        }
+
+        /* Faixa de resumo do recorte */
+        .doc-context-strip {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 4mm;
+            padding: 2mm 2.5mm;
+            margin-bottom: 4.5mm;
+            border: 1px solid var(--rule-light);
+            background: var(--tint-subtle);
+            font-size: 8pt;
+            color: var(--ink-dark);
+        }
+
+        .doc-context-strip .mono {
+            font-size: 7.5pt;
+        }
+
+        /* Quadro de Contagem de Catering */
+        .catering-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            border: 1px solid var(--rule-strong);
+            margin-bottom: 5mm;
+        }
+
+        .cat-stat {
+            padding: 2.5mm 3mm;
+            border-right: 1px solid var(--rule-light);
+            display: flex;
+            flex-direction: column;
+            gap: 0.8mm;
+        }
+
+        .cat-stat:last-child {
+            border-right: none;
+        }
+
+        .cat-stat.is-highlight {
+            background: var(--tint-subtle);
+        }
+
+        .cat-stat-label {
+            font-size: 7pt;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--ink-muted);
+        }
+
+        .cat-stat-val {
+            font-family: var(--font-mono);
+            font-size: 13pt;
+            font-weight: 700;
+            line-height: 1.1;
+            color: var(--ink-black);
+        }
+
+        .cat-stat-sub {
+            font-family: var(--font-mono);
+            font-size: 6.8pt;
+            color: var(--ink-muted);
+        }
+
+        /* Blocos de Equipe (Ficha Técnica) */
+        .team-section {
+            margin-bottom: 5mm;
+        }
+
+        .team-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .team-section-header {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            padding-bottom: 1.2mm;
+            margin-bottom: 1.5mm;
+            border-bottom: 1px solid var(--rule-strong);
+        }
+
+        .team-section-title {
+            font-size: 9.5pt;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--ink-black);
+        }
+
+        .team-section-count {
+            font-family: var(--font-mono);
+            font-size: 7.5pt;
+            color: var(--ink-muted);
+        }
+
+        /* Tabelas A4 econômicas de tinta */
+        .print-table {
+            width: 100%;
+            table-layout: auto;
+            border-collapse: collapse;
+            font-size: 8pt;
+            line-height: 1.32;
+        }
+
+        .print-table.is-dense {
+            font-size: 7.4pt;
+            line-height: 1.28;
+        }
+
+        .print-table thead {
+            display: table-header-group;
+        }
+
+        .print-table tr {
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
+        .print-table th {
+            text-align: left;
+            font-size: 6.8pt;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            color: var(--ink-black);
+            padding: 1.6mm 1.8mm;
+            border-top: 1px solid var(--rule-strong);
+            border-bottom: 1px solid var(--rule-strong);
+            background: transparent;
+            white-space: nowrap;
+        }
+
+        .print-table td {
+            padding: 1.6mm 1.8mm;
+            border-bottom: 1px solid var(--rule-light);
+            color: var(--ink-dark);
+            vertical-align: middle;
+            word-break: normal;
+            overflow-wrap: break-word;
+        }
+
+        .print-table.is-dense th,
+        .print-table.is-dense td {
+            padding: 1.4mm 1.4mm;
+        }
+
+        .print-table tbody tr:last-child td {
+            border-bottom: 1px solid var(--rule-strong);
+        }
+
+        .td-strong {
+            font-weight: 600;
+            color: var(--ink-black);
+        }
+
+        .td-nowrap {
+            white-space: nowrap;
+        }
+
+        .td-sub {
+            display: block;
+            font-size: 7.2pt;
+            color: var(--ink-muted);
+            margin-top: 0.3mm;
+        }
+
+        .td-mono {
+            font-family: var(--font-mono);
+            font-size: 7.4pt;
+            white-space: nowrap;
+        }
+
+        .print-table.is-dense .td-mono {
+            font-size: 7pt;
+        }
+
+        /* Badges em contorno fino (zero preenchimento pesado) */
+        .print-badge {
+            display: inline-block;
+            padding: 0.4mm 1.6mm;
+            border: 1px solid var(--ink-black);
+            border-radius: 2px;
+            font-size: 7pt;
+            font-weight: 600;
+            color: var(--ink-black);
+            background: transparent;
+            white-space: nowrap;
+        }
+
+        .print-badge.is-diet {
+            background: var(--tint-subtle);
+            font-weight: 700;
+        }
+
+        .visto-box {
+            display: inline-block;
+            width: 100%;
+            min-width: 22mm;
+            height: 4.5mm;
+            border-bottom: 1px solid #8c939a;
+        }
+
+        .empty-sheet-msg {
+            padding: 14mm 6mm;
+            text-align: center;
+            border: 1px dashed var(--rule-light);
+            font-size: 9pt;
+            color: var(--ink-muted);
+        }
+
+        /* Rodapé Técnico da Folha A4 */
+        .doc-footer {
+            margin-top: 6mm;
+            padding-top: 2.5mm;
+            border-top: 1px solid var(--rule-strong);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 4mm;
+            font-family: var(--font-mono);
+            font-size: 6.8pt;
+            color: var(--ink-muted);
+        }
+
+        /* =====================================================================
+           5. MODAL DE SELEÇÃO DE CAMPOS / COLUNAS (<dialog>)
+           ===================================================================== */
+        dialog.cols-dialog {
+            margin: auto;
+            width: min(460px, calc(100vw - 24px));
+            background: var(--ui-bg-surface);
+            color: var(--ui-text-primary);
+            border: 1px solid var(--ui-border-strong);
+            border-radius: 6px;
+            padding: 0;
+        }
+
+        dialog.cols-dialog::backdrop {
+            background: rgba(5, 8, 10, 0.74);
+            backdrop-filter: blur(3px);
+        }
+
+        .dialog-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 13px 16px;
+            border-bottom: 1px solid var(--ui-border);
+        }
+
+        .dialog-title {
+            font-size: 0.92rem;
+            font-weight: 600;
+        }
+
+        .dialog-subtitle {
+            font-size: 0.76rem;
+            color: var(--ui-text-secondary);
+            margin-top: 2px;
+        }
+
+        .dialog-close-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: var(--radius);
+            border: 1px solid transparent;
+            background: transparent;
+            color: var(--ui-text-secondary);
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dialog-close-btn:hover {
+            background: var(--ui-bg-elevated);
+            color: var(--ui-text-primary);
+        }
+
+        .dialog-body {
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .dialog-quick-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            font-size: 0.76rem;
+            color: var(--ui-text-secondary);
+        }
+
+        .dialog-links {
+            display: inline-flex;
+            gap: 10px;
+        }
+
+        .link-btn {
+            background: transparent;
+            border: none;
+            color: var(--ui-text-primary);
+            font-family: var(--font-mono);
+            font-size: 0.74rem;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            cursor: pointer;
+            padding: 2px 0;
+        }
+
+        .link-btn:hover {
+            color: #ffffff;
+        }
+
+        .cols-checklist {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .col-check-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 9px 12px;
+            background: var(--ui-bg-elevated);
+            border: 1px solid var(--ui-border);
+            border-radius: var(--radius);
+            cursor: pointer;
+            user-select: none;
+            transition: border-color 0.12s, background 0.12s;
+        }
+
+        .col-check-item:hover {
+            border-color: var(--ui-border-strong);
+            background: var(--ui-bg-hover);
+        }
+
+        .col-check-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .col-check-left input[type="checkbox"] {
+            width: 15px;
+            height: 15px;
+            accent-color: var(--ui-text-primary);
+            cursor: pointer;
+        }
+
+        .col-check-name {
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .col-check-key {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--ui-text-muted);
+        }
+
+        .dialog-foot {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 12px 16px;
+            border-top: 1px solid var(--ui-border);
+            background: var(--ui-bg-base);
+            border-radius: 0 0 6px 6px;
+        }
+
+        .dialog-foot-note {
+            font-size: 0.74rem;
+            color: var(--ui-text-secondary);
+        }
+
+        /* =====================================================================
+           6. TOAST DISCRETO (UI)
+           ===================================================================== */
+        .toast-stack {
+            position: fixed;
+            bottom: 18px;
+            right: 18px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: var(--ui-bg-elevated);
+            color: var(--ui-text-primary);
+            border: 1px solid var(--ui-border-strong);
+            padding: 9px 13px;
+            border-radius: var(--radius);
+            font-size: 0.8rem;
+        }
+
+        /* =====================================================================
+           6. RESPONSIVIDADE EM TELA (MOBILE / TABLET)
+           ===================================================================== */
+        @media (max-width: 840px) {
+            .preview-stage {
+                padding: 14px 10px 48px;
+                align-items: flex-start;
+            }
+
+            .stage-hint {
+                max-width: 100%;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 4px;
+            }
+
+            .doc-header {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .doc-meta-box {
+                text-align: left;
+            }
+
+            .catering-summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .cat-stat {
+                border-bottom: 1px solid var(--rule-light);
+            }
+        }
+
+        /* =====================================================================
+           8. REGRAS RIGOROSAS DE IMPRESSÃO A4 (@media print)
+           ===================================================================== */
+        @media print {
+            html, body {
+                background: #ffffff !important;
+                color: #111111 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .preview-stage {
+                padding: 0 !important;
+                margin: 0 !important;
+                display: block !important;
+                width: 100% !important;
+                overflow: visible !important;
+            }
+
+            .a4-sheet,
+            .a4-sheet.is-landscape {
+                width: 100% !important;
+                min-width: 0 !important;
+                max-width: none !important;
+                min-height: auto !important;
+                border: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                box-shadow: none !important;
+                background: #ffffff !important;
+            }
+
+            .table-scroll-wrap {
+                overflow: visible !important;
+            }
+
+            .team-section {
+                break-inside: auto;
+            }
+
+            .team-section-header {
+                break-after: avoid;
+                page-break-after: avoid;
+            }
+
+            .print-table tr,
+            .catering-summary-grid {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+    <!-- Regra @page injetada dinamicamente conforme orientação Retrato / Paisagem -->
+    <style id="dynamic-page-style">
+        @page {
+            size: A4 portrait;
+            margin: 14mm 14mm 16mm 14mm;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- =======================================================================
+         BARRA DE CONTROLE SUPERIOR (OCULTA NA IMPRESSÃO)
+         ======================================================================= -->
+    <header class="control-bar no-print">
+        <div class="control-bar-inner">
+            <!-- Linha 1: Identidade + Tabs de Preset + Ações de Exportação -->
+            <div class="control-top-row">
+                <div class="brand-cluster">
+                    <div class="brand-badge">
+                        <span class="brand-circle">58</span>
+                        <span>Templates de Saída</span>
+                    </div>
+
+                    <nav class="preset-tabs" role="tablist" aria-label="Preset de documento">
+                        <button type="button" class="preset-tab" role="tab" data-preset="ficha" aria-selected="true">
+                            1. Ficha Técnica Geral
+                        </button>
+                        <button type="button" class="preset-tab" role="tab" data-preset="portaria" aria-selected="false">
+                            2. Portaria / Segurança
+                        </button>
+                        <button type="button" class="preset-tab" role="tab" data-preset="catering" aria-selected="false">
+                            3. Mapa de Catering
+                        </button>
+                    </nav>
+                </div>
+
+                <!-- Botões exatos: Copiar Texto | BAIXAR: PDF / CSV | IMPRIMIR -->
+                <div class="export-cluster">
+                    <button type="button" class="btn" id="btn-copy-text" title="Copiar texto limpo para Word, Google Docs ou vinheta">
+                        Copiar Texto
+                    </button>
+
+                    <div class="download-group" role="group" aria-label="Baixar arquivo">
+                        <span class="download-group-label">BAIXAR:</span>
+                        <button type="button" class="download-sub-btn is-pdf" id="btn-download-pdf" title="Baixar arquivo PDF A4 com margens de 14mm">
+                            PDF
+                        </button>
+                        <span class="download-sep">/</span>
+                        <button type="button" class="download-sub-btn" id="btn-download-csv" title="Baixar planilha CSV UTF-8 com as colunas selecionadas">
+                            CSV
+                        </button>
+                    </div>
+
+                    <button type="button" class="btn btn-primary" id="btn-print-native" title="Abrir diálogo de impressão A4 do navegador">
+                        IMPRIMIR
+                    </button>
+                </div>
+            </div>
+
+            <!-- Linha 2: Filtros Contextuais + Botão Modal de Seleção de Campos/Colunas -->
+            <div class="control-filter-row">
+                <div class="filter-left">
+                    <label class="field-inline" for="filter-day">
+                        <span>Dia:</span>
+                        <select id="filter-day" class="ui-select"></select>
+                    </label>
+
+                    <label class="field-inline" for="filter-turn" id="wrap-filter-turn">
+                        <span>Turno:</span>
+                        <select id="filter-turn" class="ui-select"></select>
+                    </label>
+
+                    <div class="team-pills" id="filter-teams" role="group" aria-label="Filtrar equipe"></div>
+                </div>
+
+                <div class="filter-left">
+                    <div id="preset-contextual-toggle"></div>
+
+                    <div class="orient-group" role="group" aria-label="Orientação da folha A4">
+                        <button type="button" class="orient-btn" id="btn-orient-portrait" data-orient="portrait" aria-pressed="true" title="A4 Retrato (210 × 297 mm)">
+                            <span class="orient-icon is-portrait"></span>
+                            <span>Retrato</span>
+                        </button>
+                        <button type="button" class="orient-btn" id="btn-orient-landscape" data-orient="landscape" aria-pressed="false" title="A4 Paisagem (297 × 210 mm)">
+                            <span class="orient-icon is-landscape"></span>
+                            <span>Paisagem</span>
+                            <span class="orient-badge" id="orient-rec-badge" hidden>Rec.</span>
+                        </button>
+                    </div>
+
+                    <button type="button" class="btn" id="btn-open-columns" style="height:30px;font-size:0.78rem;">
+                        <span>Campos / Colunas</span>
+                        <span class="col-count-pill" id="col-count-badge">4/6</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- =======================================================================
+         PALCO DE PREVIEW & FOLHA A4 SIMULADA
+         ======================================================================= -->
+    <main class="preview-stage">
+        <div class="stage-hint no-print" id="stage-hint">
+            <span id="hint-left">Preview A4 (210 × 297 mm) · Economia de tinta</span>
+            <span id="hint-right">Margens A4: 14mm laterais/topo · 16mm base</span>
+        </div>
+
+        <article class="a4-sheet" id="a4-sheet" aria-label="Documento A4 para impressão"></article>
+    </main>
+
+    <!-- =======================================================================
+         MODAL DE SELEÇÃO DE CAMPOS / COLUNAS POR PRESET
+         ======================================================================= -->
+    <dialog class="cols-dialog no-print" id="columns-dialog" aria-labelledby="cols-dialog-title">
+        <div class="dialog-head">
+            <div>
+                <div class="dialog-title" id="cols-dialog-title">Campos / Colunas da Saída</div>
+                <div class="dialog-subtitle" id="cols-dialog-subtitle">Preset: Ficha Técnica Geral</div>
+            </div>
+            <button type="button" class="dialog-close-btn" id="btn-close-columns" aria-label="Fechar modal">×</button>
+        </div>
+
+        <div class="dialog-body">
+            <div class="dialog-quick-actions">
+                <span>Selecione as colunas incluídas na tabela, PDF e CSV:</span>
+                <div class="dialog-links">
+                    <button type="button" class="link-btn" id="btn-cols-all">Marcar todos</button>
+                    <button type="button" class="link-btn" id="btn-cols-reset">Padrão</button>
+                </div>
+            </div>
+
+            <div class="cols-checklist" id="cols-checklist"></div>
+        </div>
+
+        <div class="dialog-foot">
+            <span class="dialog-foot-note">Filtros de dia, turno e equipe ficam na barra principal.</span>
+            <button type="button" class="btn btn-primary" id="btn-apply-columns" style="height:30px;">Concluir</button>
+        </div>
+    </dialog>
+
+    <!-- TOASTS -->
+    <div class="toast-stack no-print" id="toast-stack" aria-live="polite"></div>
+
+<script>
+/* ============================================================================
+   1. DADOS BASE (ESPELHO EXATO DE _ref_ui_v2.html / SQLITE `credenciados`)
+   ============================================================================ */
+const TEAMS = {
+    'maxima-weber': { id: 'maxima-weber', name: 'Máxima Weber',      short: 'Máxima Weber', color: '#e85d9e', order: 1 },
+    'lema':         { id: 'lema',         name: 'Lema+',             short: 'Lema+',        color: '#e5a93c', order: 2 },
+    'staff':        { id: 'staff',        name: 'Staff / Produção',  short: 'Staff',        color: '#4fb3d9', order: 3 },
+    'estagio':      { id: 'estagio',      name: 'Estágio',           short: 'Estágio',      color: '#4ec28c', order: 4 }
+};
+
+const DAYS = [
+    { key: '20/11', label: 'Qui, 20/11' },
+    { key: '21/11', label: 'Sex, 21/11' },
+    { key: '22/11', label: 'Sáb, 22/11' },
+    { key: '23/11', label: 'Dom, 23/11' },
+    { key: '24/11', label: 'Seg, 24/11' },
+    { key: '25/11', label: 'Ter, 25/11' },
+    { key: '26/11', label: 'Qua, 26/11' },
+    { key: '27/11', label: 'Sex, 27/11 (Pico)' },
+    { key: '28/11', label: 'Sáb, 28/11' },
+    { key: '29/11', label: 'Dom, 29/11' },
+    { key: '30/11', label: 'Seg, 30/11' }
+];
+
+const TURNS = ['Manhã', 'Tarde', 'Noite', 'Madrugada', 'Integral'];
+
+const CREDENCIADOS = [
+    // MÁXIMA WEBER (5)
+    {
+        id: 1, grupo: 'maxima-weber',
+        nome_social: 'Luna Ferreira', nome_completo: 'Lucas Henrique Ferreira', pronomes: 'Ela/dela',
+        funcao_cargo: 'Maquiadora Sênior', empresa_equipe: 'Máxima Weber',
+        instagram: '@luna.beauty', whatsapp: '(11) 98412-3301', email: 'luna.beauty@gmail.com',
+        cpf: '391.456.789-02', rg: '44.345.678-1',
+        dias_acesso: ['24/11','25/11','26/11','27/11','28/11','29/11'],
+        turnos: ['Integral'], alimentacao: 'Vegetariano',
+        observacoes: 'Maleta extra de aerógrafo no camarim 2.',
+        obs_producao: 'Chega às 11h nos dias de desfile.'
+    },
+    {
+        id: 2, grupo: 'maxima-weber',
+        nome_social: 'Dante Oliveira', nome_completo: 'Dante Oliveira', pronomes: 'Ele/dele',
+        funcao_cargo: 'Hair Stylist', empresa_equipe: 'Máxima Weber',
+        instagram: '@dantehair.sp', whatsapp: '(11) 97221-8890', email: 'dante.hair@outlook.com',
+        cpf: '284.119.503-44', rg: '39.882.104-5',
+        dias_acesso: ['24/11','25/11','26/11','27/11','28/11'],
+        turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição',
+        observacoes: '', obs_producao: ''
+    },
+    {
+        id: 3, grupo: 'maxima-weber',
+        nome_social: 'Kira Sato', nome_completo: 'Camila Sato Nogueira', pronomes: 'Elu/delu',
+        funcao_cargo: 'Assistente de Beleza', empresa_equipe: 'Máxima Weber',
+        instagram: '@kirasato.mua', whatsapp: '(11) 99304-1127', email: 'kirasato@gmail.com',
+        cpf: '452.908.312-19', rg: '51.209.443-8',
+        dias_acesso: ['25/11','26/11','27/11','28/11','29/11'],
+        turnos: ['Tarde','Noite'], alimentacao: 'Vegano',
+        observacoes: 'Alergia leve a amendoim.',
+        obs_producao: 'Marmita vegana sem oleaginosas.'
+    },
+    {
+        id: 4, grupo: 'maxima-weber',
+        nome_social: 'Marina Teles', nome_completo: 'Marina Teles Vasconcelos', pronomes: 'Ela/dela',
+        funcao_cargo: 'Coordenação de Beleza', empresa_equipe: 'Máxima Weber',
+        instagram: '@marinateles.beleza', whatsapp: '(11) 98110-4452', email: 'marina@maximaweber.com.br',
+        cpf: '312.667.890-71', rg: '41.903.221-0',
+        dias_acesso: ['23/11','24/11','25/11','26/11','27/11','28/11','29/11'],
+        turnos: ['Integral'], alimentacao: 'Sem restrição',
+        observacoes: 'Montagem das bancadas dia 23.',
+        obs_producao: 'Ponto focal da beleza.'
+    },
+    {
+        id: 5, grupo: 'maxima-weber',
+        nome_social: 'Caio Veríssimo', nome_completo: 'Caio Veríssimo Prado', pronomes: 'Ele/dele',
+        funcao_cargo: 'Maquiador', empresa_equipe: 'Máxima Weber',
+        instagram: '@caioverissimo.mua', whatsapp: '(11) 99104-7782', email: 'caio.mua@gmail.com',
+        cpf: '364.882.104-15', rg: '46.110.298-4',
+        dias_acesso: ['24/11','26/11','27/11','28/11','29/11'],
+        turnos: ['Tarde','Noite'], alimentacao: 'Vegetariano',
+        observacoes: '', obs_producao: ''
+    },
+
+    // LEMA+ (3)
+    {
+        id: 6, grupo: 'lema',
+        nome_social: 'Beatriz Lima', nome_completo: 'Beatriz Lima Coutinho', pronomes: 'Ela/dela',
+        funcao_cargo: 'Assessoria de Imprensa', empresa_equipe: 'Lema+',
+        instagram: '@bialima.pr', whatsapp: '(11) 99543-7721', email: 'beatriz@agencialema.com.br',
+        cpf: '378.112.334-55', rg: '43.998.776-2',
+        dias_acesso: ['24/11','25/11','26/11','27/11','28/11','29/11'],
+        turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição',
+        observacoes: 'Credenciamento de imprensa.',
+        obs_producao: 'Mesa hall principal.'
+    },
+    {
+        id: 7, grupo: 'lema',
+        nome_social: 'Thiago Mendes', nome_completo: 'Thiago Mendes Rocha', pronomes: 'Ele/dele',
+        funcao_cargo: 'Atendimento & VIPs', empresa_equipe: 'Lema+',
+        instagram: '@thiagomendes', whatsapp: '(11) 98872-1904', email: 'thiago@agencialema.com.br',
+        cpf: '405.774.219-80', rg: '47.310.882-9',
+        dias_acesso: ['24/11','26/11','27/11','28/11','29/11'],
+        turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição',
+        observacoes: '', obs_producao: ''
+    },
+    {
+        id: 8, grupo: 'lema',
+        nome_social: 'Renata Queiroz', nome_completo: 'Renata Queiroz Dias', pronomes: 'Ela/dela',
+        funcao_cargo: 'Conteúdo & Redes', empresa_equipe: 'Lema+',
+        instagram: '@requeiroz', whatsapp: '(11) 97654-3318', email: 'renata@agencialema.com.br',
+        cpf: '419.332.108-63', rg: '49.115.602-4',
+        dias_acesso: ['24/11','25/11','26/11','27/11','28/11','29/11'],
+        turnos: ['Tarde','Noite'], alimentacao: 'Vegetariano',
+        observacoes: 'Acesso pit de fotógrafos.',
+        obs_producao: 'Pulseira pit + backstage.'
+    },
+
+    // STAFF / PRODUÇÃO (5)
+    {
+        id: 9, grupo: 'staff',
+        nome_social: 'Rafael Costa', nome_completo: 'Rafael Henrique da Costa', pronomes: 'Ele/dele',
+        funcao_cargo: 'Técnico de Som', empresa_equipe: 'Áudio Live SP',
+        instagram: '@rafasom', whatsapp: '(11) 99123-4500', email: 'rafael@audiolivesp.com.br',
+        cpf: '356.891.234-11', rg: '38.456.789-3',
+        dias_acesso: ['20/11','21/11','22/11','23/11','24/11','25/11','26/11','27/11','28/11','29/11','30/11'],
+        turnos: ['Noite','Madrugada'], alimentacao: 'Sem restrição',
+        observacoes: 'Descarga de PA dia 20 às 14h.',
+        obs_producao: 'Rádio canal 2.'
+    },
+    {
+        id: 10, grupo: 'staff',
+        nome_social: 'Carla Nogueira', nome_completo: 'Carla Nogueira Prado', pronomes: 'Ela/dela',
+        funcao_cargo: 'Direção de Palco', empresa_equipe: 'Casa de Criadores',
+        instagram: '@carlanogueira.prod', whatsapp: '(11) 98234-9901', email: 'carla@casadecriadores.com.br',
+        cpf: '267.440.918-22', rg: '33.771.209-6',
+        dias_acesso: ['20/11','21/11','22/11','23/11','24/11','25/11','26/11','27/11','28/11','29/11','30/11'],
+        turnos: ['Integral'], alimentacao: 'Sem restrição',
+        observacoes: '', obs_producao: 'Rádio canal 1.'
+    },
+    {
+        id: 11, grupo: 'staff',
+        nome_social: 'Marcos Viana', nome_completo: 'Marcos Antônio Viana', pronomes: 'Prefiro não informar',
+        funcao_cargo: 'Operador de Iluminação', empresa_equipe: 'Luz & Cena',
+        instagram: '@vianaluz', whatsapp: '(11) 97409-6622', email: 'marcos@luzecena.com.br',
+        cpf: '309.512.887-04', rg: '36.229.118-7',
+        dias_acesso: ['21/11','22/11','23/11','24/11','25/11','26/11','27/11','28/11','29/11','30/11'],
+        turnos: ['Tarde','Noite','Madrugada'], alimentacao: 'Sem restrição',
+        observacoes: 'Montagem de grid dia 21.',
+        obs_producao: 'House mix sala de desfile.'
+    },
+    {
+        id: 12, grupo: 'staff',
+        nome_social: 'Soraia Batista', nome_completo: 'Soraia Batista Ramos', pronomes: 'Ela/dela',
+        funcao_cargo: 'Coordenação de Backstage', empresa_equipe: 'Casa de Criadores',
+        instagram: '@soraiabatista', whatsapp: '(11) 96883-1209', email: 'soraia@casadecriadores.com.br',
+        cpf: '298.601.445-39', rg: '35.118.902-0',
+        dias_acesso: ['20/11','22/11','23/11','24/11','25/11','26/11','27/11','28/11','29/11','30/11'],
+        turnos: ['Manhã','Tarde'], alimentacao: 'Sem restrição',
+        observacoes: '', obs_producao: ''
+    },
+    {
+        id: 13, grupo: 'staff',
+        nome_social: 'Bruno Alencar', nome_completo: 'Bruno Alencar Moura', pronomes: 'Ele/dele',
+        funcao_cargo: 'Produtor Executivo', empresa_equipe: 'Casa de Criadores',
+        instagram: '@brunoalencar.prod', whatsapp: '(11) 99711-0842', email: 'bruno@casadecriadores.com.br',
+        cpf: '334.720.195-08', rg: '40.551.832-1',
+        dias_acesso: ['20/11','21/11','22/11','23/11','24/11','25/11','26/11','27/11','28/11','29/11','30/11'],
+        turnos: ['Integral'], alimentacao: 'Sem restrição',
+        observacoes: '', obs_producao: 'Acesso total ao prédio.'
+    },
+
+    // ESTÁGIO (3)
+    {
+        id: 14, grupo: 'estagio',
+        nome_social: 'Enzo Martins', nome_completo: 'Enzo Gabriel Martins', pronomes: 'Ele/dele',
+        funcao_cargo: 'Assistência de Backstage', empresa_equipe: 'Santa Marcelina',
+        instagram: '@enzom.moda', whatsapp: '(11) 99410-2287', email: 'enzo.martins@gmail.com',
+        cpf: '489.554.321-07', rg: '54.112.233-9',
+        dias_acesso: ['24/11','25/11','26/11','27/11','28/11'],
+        turnos: ['Manhã','Tarde'], alimentacao: 'Vegano',
+        observacoes: 'Apoio em araras e passadoria.',
+        obs_producao: 'Camarim B.'
+    },
+    {
+        id: 15, grupo: 'estagio',
+        nome_social: 'Maya Rocha', nome_completo: 'Matheus Rocha da Silva', pronomes: 'Ela/dela',
+        funcao_cargo: 'Apoio de Produção', empresa_equipe: 'Anhembi Morumbi',
+        instagram: '@mayarocha_', whatsapp: '(11) 98765-0041', email: 'maya.rocha@hotmail.com',
+        cpf: '476.229.814-60', rg: '53.884.190-2',
+        dias_acesso: ['23/11','24/11','25/11','27/11','28/11','29/11'],
+        turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição',
+        observacoes: '', obs_producao: 'Recepção de marcas.'
+    },
+    {
+        id: 16, grupo: 'estagio',
+        nome_social: 'Júlia Pires', nome_completo: 'Júlia Alencar Pires', pronomes: 'Ela/dela',
+        funcao_cargo: 'Recepção & Credenciamento', empresa_equipe: 'Senac Moda',
+        instagram: '@juliapires.m', whatsapp: '(11) 99201-5534', email: 'julia.pires@gmail.com',
+        cpf: '495.103.672-88', rg: '55.409.711-5',
+        dias_acesso: ['24/11','26/11','27/11','28/11','29/11'],
+        turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição',
+        observacoes: '', obs_producao: 'Fila convidados.'
+    }
+];
+
+/* ============================================================================
+   2. DEFINIÇÃO DE COLUNAS CONFIGURÁVEIS POR PRESET (MODAL DE CAMPOS)
+   ============================================================================ */
+const PRESET_COLUMNS = {
+    ficha: [
+        { key: 'nome',      label: 'Nome (Social / Civil)',   db: 'nome_social',     defaultOn: true,  weight: 28, nowrap: false },
+        { key: 'funcao',    label: 'Função / Cargo',          db: 'funcao_cargo',    defaultOn: true,  weight: 26, nowrap: false },
+        { key: 'empresa',   label: 'Empresa / Equipe',        db: 'empresa_equipe',  defaultOn: true,  weight: 22, nowrap: false },
+        { key: 'instagram', label: '@Instagram',              db: 'instagram',       defaultOn: true,  weight: 18, nowrap: true  },
+        { key: 'pronomes',  label: 'Pronomes',                db: 'pronomes',        defaultOn: false, weight: 14, nowrap: true  },
+        { key: 'dias',      label: 'Dias de Acesso',          db: 'dias_acesso',     defaultOn: false, weight: 18, nowrap: false }
+    ],
+    portaria: [
+        { key: 'nome_civil',  label: 'Nome Civil (Documento)', db: 'nome_completo',  defaultOn: true,  weight: 26, nowrap: false },
+        { key: 'nome_social', label: 'Nome Social',            db: 'nome_social',    defaultOn: true,  weight: 18, nowrap: false },
+        { key: 'cpf',         label: 'CPF',                    db: 'cpf',            defaultOn: true,  weight: 15, nowrap: true  },
+        { key: 'rg',          label: 'RG',                     db: 'rg',             defaultOn: true,  weight: 13, nowrap: true  },
+        { key: 'empresa',     label: 'Empresa',                db: 'empresa_equipe', defaultOn: true,  weight: 16, nowrap: false },
+        { key: 'grupo',       label: 'Equipe (Grupo)',         db: 'grupo',          defaultOn: false, weight: 13, nowrap: false },
+        { key: 'turnos',      label: 'Turnos',                 db: 'turnos',         defaultOn: true,  weight: 13, nowrap: false },
+        { key: 'dias',        label: 'Dias de Acesso',         db: 'dias_acesso',    defaultOn: false, weight: 15, nowrap: false },
+        { key: 'assinatura',  label: 'Assinatura',             db: 'visto_manual',   defaultOn: true,  weight: 12, nowrap: true  }
+    ],
+    catering: [
+        { key: 'nome',        label: 'Nome (Social)',                        db: 'nome_social',   defaultOn: true,  weight: 22, nowrap: false },
+        { key: 'grupo',       label: 'Equipe',                               db: 'grupo',         defaultOn: true,  weight: 15, nowrap: false },
+        { key: 'funcao',      label: 'Função',                               db: 'funcao_cargo',  defaultOn: false, weight: 18, nowrap: false },
+        { key: 'alimentacao', label: 'Alimentação / Restrição',              db: 'alimentacao',   defaultOn: true,  weight: 18, nowrap: true  },
+        { key: 'turnos',      label: 'Turnos',                               db: 'turnos',        defaultOn: true,  weight: 14, nowrap: false },
+        { key: 'obs',         label: 'Observações / Alergias (Forms+Prod)',  db: 'observacoes',   defaultOn: true,  weight: 30, nowrap: false }
+    ]
+};
+
+function getDefaultColumnsMap() {
+    const map = {};
+    Object.keys(PRESET_COLUMNS).forEach(presetKey => {
+        map[presetKey] = PRESET_COLUMNS[presetKey]
+            .filter(c => c.defaultOn)
+            .map(c => c.key);
+    });
+    return map;
+}
+
+/* ============================================================================
+   3. ESTADO DO GERADOR DE SAÍDA
+   ============================================================================ */
+const state = {
+    preset: 'ficha',          // 'ficha' | 'portaria' | 'catering'
+    day: 'all',               // 'all' | '20/11'..'30/11'
+    team: 'all',              // 'all' | 'maxima-weber' | 'lema' | 'staff' | 'estagio'
+    turn: 'all',              // 'all' | 'Manhã'..'Integral'
+    orientation: 'portrait',  // 'portrait' | 'landscape'
+    manualOrientation: false, // true quando o usuário escolheu manualmente
+    groupByTeam: true,        // Preset Ficha: true = agrupado por equipe | false = A-Z
+    revealDocs: false,        // Preset Portaria: false = mascarado LGPD | true = revelado
+    onlyDiet: false,          // Preset Catering: false = todos | true = apenas restrições
+    selectedCols: getDefaultColumnsMap()
+};
+
+function getActiveColumnDefs(presetKey = state.preset) {
+    const selectedSet = new Set(state.selectedCols[presetKey] || []);
+    return PRESET_COLUMNS[presetKey].filter(col => selectedSet.has(col.key));
+}
+
+function shouldRecommendLandscape(presetKey = state.preset) {
+    const activeCols = getActiveColumnDefs(presetKey);
+    return activeCols.length >= 6 || (presetKey === 'portaria' && activeCols.length >= 5);
+}
+
+function applyOrientationRules(autoAdapt = false) {
+    const recLandscape = shouldRecommendLandscape(state.preset);
+    if (autoAdapt && !state.manualOrientation) {
+        state.orientation = recLandscape ? 'landscape' : 'portrait';
+    }
+
+    const isLand = state.orientation === 'landscape';
+    const sheet = document.getElementById('a4-sheet');
+    const hint = document.getElementById('stage-hint');
+    sheet.classList.toggle('is-landscape', isLand);
+    hint.classList.toggle('is-landscape', isLand);
+
+    document.getElementById('btn-orient-portrait').setAttribute('aria-pressed', !isLand ? 'true' : 'false');
+    document.getElementById('btn-orient-landscape').setAttribute('aria-pressed', isLand ? 'true' : 'false');
+
+    const recBadge = document.getElementById('orient-rec-badge');
+    recBadge.hidden = !(recLandscape && !isLand);
+
+    const pageStyle = document.getElementById('dynamic-page-style');
+    if (pageStyle) {
+        pageStyle.textContent = `@page { size: A4 ${state.orientation}; margin: 14mm 14mm 16mm 14mm; }`;
+    }
+}
+
+/* ============================================================================
+   4. FUNÇÕES AUXILIARES & FORMATAÇÃO DE CÉLULAS
+   ============================================================================ */
+function esc(str) {
+    return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+function getCreditName(p) {
+    return (p.nome_social && p.nome_social.trim()) ? p.nome_social.trim() : p.nome_completo.trim();
+}
+
+function hasDiet(p) {
+    return p.alimentacao && p.alimentacao !== 'Sem restrição';
+}
+
+function maskCPF(cpf) {
+    const parts = String(cpf || '').split('.');
+    return parts.length === 3 ? `***.${parts[1]}.${parts[2].split('-')[0]}-**` : '***.***.***-**';
+}
+
+function maskRG(rg) {
+    const parts = String(rg || '').split('.');
+    return parts.length === 3 ? `**.${parts[1]}.${parts[2].split('-')[0]}-*` : '**.***.***-*';
+}
+
+function formatTimestamp() {
+    const now = new Date();
+    const dd = String(now.getDate()).padStart(2, '0');
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const yyyy = now.getFullYear();
+    const hh = String(now.getHours()).padStart(2, '0');
+    const min = String(now.getMinutes()).padStart(2, '0');
+    return `${dd}/${mm}/${yyyy} às ${hh}:${min}`;
+}
+
+function showToast(msg) {
+    const stack = document.getElementById('toast-stack');
+    const el = document.createElement('div');
+    el.className = 'toast';
+    el.textContent = msg;
+    stack.appendChild(el);
+    setTimeout(() => {
+        el.style.opacity = '0';
+        el.style.transition = 'opacity 0.16s';
+        setTimeout(() => el.remove(), 170);
+    }, 2600);
+}
+
+function getFilteredRecords() {
+    return CREDENCIADOS.filter(p => {
+        if (state.day !== 'all' && !p.dias_acesso.includes(state.day)) return false;
+        if (state.team !== 'all' && p.grupo !== state.team) return false;
+        if (state.preset !== 'ficha' && state.turn !== 'all' && !p.turnos.includes(state.turn)) return false;
+        if (state.preset === 'catering' && state.onlyDiet && !hasDiet(p)) return false;
+        return true;
+    }).sort((a, b) => getCreditName(a).localeCompare(getCreditName(b), 'pt-BR'));
+}
+
+// Agrupa dias consecutivos (ex: ['24/11','25/11','26/11','27/11'] -> '24 a 27/11') para evitar quebra excessiva
+function formatDaysCompact(dias) {
+    if (!dias || !dias.length) return '—';
+    if (dias.length === DAYS.length) return 'Todos (20 a 30/11)';
+
+    const nums = [...new Set(dias.map(d => parseInt(d.split('/')[0], 10)))]
+        .filter(n => !isNaN(n))
+        .sort((a, b) => a - b);
+
+    const ranges = [];
+    let start = nums[0];
+    let prev = nums[0];
+
+    for (let i = 1; i < nums.length; i++) {
+        if (nums[i] === prev + 1) {
+            prev = nums[i];
+        } else {
+            ranges.push(start === prev ? `${start}` : (prev - start === 1 ? `${start}, ${prev}` : `${start} a ${prev}`));
+            start = nums[i];
+            prev = nums[i];
+        }
+    }
+    ranges.push(start === prev ? `${start}` : (prev - start === 1 ? `${start}, ${prev}` : `${start} a ${prev}`));
+    return `${ranges.join(', ')}/11`;
+}
+
+/* ============================================================================
+   5. RENDERIZAÇÃO DA BARRA DE CONTROLE & MODAL DE COLUNAS
+   ============================================================================ */
+function initControlFilters() {
+    const daySelect = document.getElementById('filter-day');
+    daySelect.innerHTML = `<option value="all">Todos os dias (20/11 a 30/11)</option>` +
+        DAYS.map(d => `<option value="${d.key}">${d.label}</option>`).join('');
+
+    const turnSelect = document.getElementById('filter-turn');
+    turnSelect.innerHTML = `<option value="all">Todos os turnos</option>` +
+        TURNS.map(t => `<option value="${t}">${t}</option>`).join('');
+
+    const teamWrap = document.getElementById('filter-teams');
+    teamWrap.innerHTML = `
+        <button type="button" class="team-pill active" data-team="all">Todas equipes</button>
+        ${Object.values(TEAMS).map(t => `
+            <button type="button" class="team-pill" style="--tc:${t.color}" data-team="${t.id}">
+                <span class="team-dot" style="--tc:${t.color}"></span>${t.short}
+            </button>
+        `).join('')}
+    `;
+}
+
+function syncControlBarUI() {
+    document.querySelectorAll('.preset-tab').forEach(btn => {
+        btn.setAttribute('aria-selected', btn.dataset.preset === state.preset ? 'true' : 'false');
+    });
+
+    document.getElementById('filter-day').value = state.day;
+    document.getElementById('filter-turn').value = state.turn;
+
+    // Turno só faz sentido em Portaria e Catering
+    const turnWrap = document.getElementById('wrap-filter-turn');
+    turnWrap.style.display = state.preset === 'ficha' ? 'none' : 'inline-flex';
+
+    document.querySelectorAll('#filter-teams .team-pill').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.team === state.team);
+    });
+
+    // Atualiza contador do botão Campos / Colunas
+    const totalDefs = PRESET_COLUMNS[state.preset].length;
+    const activeCount = getActiveColumnDefs(state.preset).length;
+    document.getElementById('col-count-badge').textContent = `${activeCount}/${totalDefs}`;
+
+    // Toggle específico de cada preset
+    const ctxWrap = document.getElementById('preset-contextual-toggle');
+    if (state.preset === 'ficha') {
+        ctxWrap.innerHTML = `
+            <label class="preset-toggle">
+                <input type="checkbox" id="chk-ctx" ${state.groupByTeam ? 'checked' : ''}>
+                <span>Agrupar por equipe</span>
+            </label>
+        `;
+    } else if (state.preset === 'portaria') {
+        ctxWrap.innerHTML = `
+            <label class="preset-toggle ${state.revealDocs ? 'is-lgpd-active' : ''}">
+                <input type="checkbox" id="chk-ctx" ${state.revealDocs ? 'checked' : ''}>
+                <span>${state.revealDocs ? 'CPF/RG revelados (Auditoria LGPD)' : 'Revelar CPF/RG completos'}</span>
+            </label>
+        `;
+    } else if (state.preset === 'catering') {
+        ctxWrap.innerHTML = `
+            <label class="preset-toggle">
+                <input type="checkbox" id="chk-ctx" ${state.onlyDiet ? 'checked' : ''}>
+                <span>Apenas restrições alimentares</span>
+            </label>
+        `;
+    }
+
+    const chk = document.getElementById('chk-ctx');
+    chk.addEventListener('change', (e) => {
+        if (state.preset === 'ficha') {
+            state.groupByTeam = e.target.checked;
+        } else if (state.preset === 'portaria') {
+            state.revealDocs = e.target.checked;
+            if (state.revealDocs) {
+                showToast('Acesso a CPF/RG completos registrado em log de auditoria LGPD');
+            }
+        } else if (state.preset === 'catering') {
+            state.onlyDiet = e.target.checked;
+        }
+        renderDocument();
+    });
+}
+
+function renderColumnsModal() {
+    const presetNames = {
+        ficha: '1. Ficha Técnica Geral',
+        portaria: '2. Portaria / Segurança',
+        catering: '3. Mapa de Catering'
+    };
+
+    document.getElementById('cols-dialog-subtitle').textContent = `Preset ativo: ${presetNames[state.preset]}`;
+    const listWrap = document.getElementById('cols-checklist');
+    const defs = PRESET_COLUMNS[state.preset];
+    const activeKeys = new Set(state.selectedCols[state.preset]);
+
+    listWrap.innerHTML = defs.map(col => {
+        const checked = activeKeys.has(col.key);
+        return `
+            <label class="col-check-item">
+                <span class="col-check-left">
+                    <input type="checkbox" data-col-key="${col.key}" ${checked ? 'checked' : ''}>
+                    <span class="col-check-name">${esc(col.label)}</span>
+                </span>
+                <span class="col-check-key">${esc(col.db)}</span>
+            </label>
+        `;
+    }).join('');
+
+    listWrap.querySelectorAll('input[type="checkbox"]').forEach(box => {
+        box.addEventListener('change', (e) => {
+            const key = e.target.dataset.colKey;
+            const current = new Set(state.selectedCols[state.preset]);
+
+            if (e.target.checked) {
+                current.add(key);
+            } else {
+                if (current.size <= 1) {
+                    e.target.checked = true;
+                    showToast('Mantenha pelo menos 1 coluna selecionada na saída');
+                    return;
+                }
+                current.delete(key);
+            }
+
+            // Preserva a ordem canônica definida em PRESET_COLUMNS
+            state.selectedCols[state.preset] = defs
+                .filter(c => current.has(c.key))
+                .map(c => c.key);
+
+            applyOrientationRules(true);
+            renderDocument();
+        });
+    });
+}
+
+/* ============================================================================
+   6. RENDERIZAÇÃO DINÂMICA DAS TABELAS A4 (RESPEITANDO COLUNAS DO MODAL)
+   ============================================================================ */
+function renderDynamicTable(records, presetKey = state.preset) {
+    const cols = getActiveColumnDefs(presetKey);
+    const totalWeight = cols.reduce((sum, c) => sum + c.weight, 0) || 100;
+    const isDense = cols.length >= 7 || (cols.length >= 6 && state.orientation === 'portrait');
+
+    const theadHtml = `
+        <thead>
+            <tr>
+                ${cols.map(c => {
+                    const pct = ((c.weight / totalWeight) * 100).toFixed(1);
+                    return `<th style="width:${pct}%;">${esc(c.label)}</th>`;
+                }).join('')}
+            </tr>
+        </thead>
+    `;
+
+    const tbodyHtml = `
+        <tbody>
+            ${records.map(p => `
+                <tr>
+                    ${cols.map(c => renderCellHtml(p, presetKey, c.key)).join('')}
+                </tr>
+            `).join('')}
+        </tbody>
+    `;
+
+    return `
+        <div class="table-scroll-wrap">
+            <table class="print-table ${isDense ? 'is-dense' : ''}">
+                ${theadHtml}
+                ${tbodyHtml}
+            </table>
+        </div>
+    `;
+}
+
+function renderCellHtml(p, presetKey, colKey) {
+    if (presetKey === 'ficha') {
+        switch (colKey) {
+            case 'nome':
+                return `<td class="td-strong">${esc(getCreditName(p))}</td>`;
+            case 'funcao':
+                return `<td>${esc(p.funcao_cargo)}</td>`;
+            case 'empresa':
+                return `<td>${esc(p.empresa_equipe)}</td>`;
+            case 'instagram':
+                return `<td class="td-mono">${esc(p.instagram || '—')}</td>`;
+            case 'pronomes':
+                return `<td class="td-nowrap">${esc(p.pronomes || '—')}</td>`;
+            case 'dias':
+                return `<td class="td-mono" style="white-space:normal;">${esc(formatDaysCompact(p.dias_acesso))}</td>`;
+        }
+    }
+
+    if (presetKey === 'portaria') {
+        switch (colKey) {
+            case 'nome_civil':
+                return `<td class="td-strong">${esc(p.nome_completo)}</td>`;
+            case 'nome_social': {
+                const hasDiff = p.nome_social && p.nome_social.trim() !== p.nome_completo.trim();
+                return `<td>${hasDiff ? esc(p.nome_social) : '<span style="color:#6c737a;">—</span>'}</td>`;
+            }
+            case 'cpf':
+                return `<td class="td-mono">${esc(state.revealDocs ? p.cpf : maskCPF(p.cpf))}</td>`;
+            case 'rg':
+                return `<td class="td-mono">${esc(state.revealDocs ? p.rg : maskRG(p.rg))}</td>`;
+            case 'empresa':
+                return `<td>${esc(p.empresa_equipe)}</td>`;
+            case 'grupo':
+                return `<td>${esc(TEAMS[p.grupo].short)}</td>`;
+            case 'turnos':
+                return `<td>${esc(p.turnos.join(' / '))}</td>`;
+            case 'dias':
+                return `<td class="td-mono" style="white-space:normal;">${esc(formatDaysCompact(p.dias_acesso))}</td>`;
+            case 'assinatura':
+                return `<td class="td-nowrap"><span class="visto-box"></span></td>`;
+        }
+    }
+
+    if (presetKey === 'catering') {
+        switch (colKey) {
+            case 'nome':
+                return `<td class="td-strong">${esc(getCreditName(p))}</td>`;
+            case 'grupo':
+                return `<td>${esc(TEAMS[p.grupo].short)}</td>`;
+            case 'funcao':
+                return `<td>${esc(p.funcao_cargo)}</td>`;
+            case 'alimentacao':
+                return `<td class="td-nowrap">${hasDiet(p)
+                    ? `<span class="print-badge is-diet">${esc(p.alimentacao)}</span>`
+                    : `<span>Sem restrição</span>`
+                }</td>`;
+            case 'turnos':
+                return `<td>${esc(p.turnos.join(' · '))}</td>`;
+            case 'obs': {
+                const notes = [p.observacoes, p.obs_producao].filter(Boolean).join(' · ');
+                return `<td>${notes ? esc(notes) : '<span style="color:#6c737a;">—</span>'}</td>`;
+            }
+        }
+    }
+
+    return '<td>—</td>';
+}
+
+function getRawCellValue(p, presetKey, colKey) {
+    if (presetKey === 'ficha') {
+        switch (colKey) {
+            case 'nome': return getCreditName(p);
+            case 'funcao': return p.funcao_cargo;
+            case 'empresa': return p.empresa_equipe;
+            case 'instagram': return p.instagram || '';
+            case 'pronomes': return p.pronomes || '';
+            case 'dias': return formatDaysCompact(p.dias_acesso);
+        }
+    }
+    if (presetKey === 'portaria') {
+        switch (colKey) {
+            case 'nome_civil': return p.nome_completo;
+            case 'nome_social': return p.nome_social || '';
+            case 'cpf': return state.revealDocs ? p.cpf : maskCPF(p.cpf);
+            case 'rg': return state.revealDocs ? p.rg : maskRG(p.rg);
+            case 'empresa': return p.empresa_equipe;
+            case 'grupo': return TEAMS[p.grupo].name;
+            case 'turnos': return p.turnos.join(' / ');
+            case 'dias': return formatDaysCompact(p.dias_acesso);
+            case 'assinatura': return '';
+        }
+    }
+    if (presetKey === 'catering') {
+        switch (colKey) {
+            case 'nome': return getCreditName(p);
+            case 'grupo': return TEAMS[p.grupo].name;
+            case 'funcao': return p.funcao_cargo;
+            case 'alimentacao': return p.alimentacao;
+            case 'turnos': return p.turnos.join(' / ');
+            case 'obs': return [p.observacoes, p.obs_producao].filter(Boolean).join(' · ');
+        }
+    }
+    return '';
+}
+
+function renderDocument() {
+    applyOrientationRules(false);
+    syncControlBarUI();
+
+    const records = getFilteredRecords();
+    const sheet = document.getElementById('a4-sheet');
+    const timestamp = formatTimestamp();
+    const isLand = state.orientation === 'landscape';
+
+    const dayLabel = state.day === 'all'
+        ? 'Período Completo (20/11 a 30/11)'
+        : (DAYS.find(d => d.key === state.day)?.label || state.day);
+
+    const teamLabel = state.team === 'all'
+        ? 'Todas as Equipes'
+        : TEAMS[state.team].name;
+
+    const turnLabel = (state.preset !== 'ficha' && state.turn !== 'all')
+        ? ` · Turno: ${state.turn}`
+        : '';
+
+    const presetMeta = {
+        ficha: {
+            kicker: 'CASA DE CRIADORES 58 · CREDENCIAMENTO & PRODUÇÃO',
+            title: 'FICHA TÉCNICA GERAL — CRÉDITOS OFICIAIS',
+            code: 'DOC-CDC58-FTG',
+            lgpd: false,
+            hint: 'Preset público/imprensa: zero CPF, RG, telefone ou e-mail'
+        },
+        portaria: {
+            kicker: 'CASA DE CRIADORES 58 · EDIFÍCIO GAZETA',
+            title: 'CONTROLE DE ACESSO — PORTARIA & SEGURANÇA',
+            code: 'DOC-CDC58-SEC',
+            lgpd: true,
+            hint: state.day === 'all'
+                ? 'Dica: selecione um dia específico (ex.: 27/11) para entregar na portaria'
+                : `Lista operacional de portaria para ${dayLabel}`
+        },
+        catering: {
+            kicker: 'CASA DE CRIADORES 58 · PRODUÇÃO & CAMARINS',
+            title: 'MAPA OPERACIONAL DE CATERING & ALIMENTAÇÃO',
+            code: 'DOC-CDC58-CAT',
+            lgpd: true,
+            hint: 'Quadro de contagem de refeições + alertas de alergia para cozinha'
+        }
+    }[state.preset];
+
+    const dimLabel = isLand ? 'A4 Paisagem (297×210 mm)' : 'A4 Retrato (210×297 mm)';
+    document.getElementById('hint-left').textContent = `${dimLabel} · ${presetMeta.hint}`;
+
+    // Cabeçalho Institucional CdC 58
+    const headerHtml = `
+        <header class="doc-header">
+            <div class="doc-brand-row">
+                <div class="doc-logo-58">58</div>
+                <div>
+                    <div class="doc-kicker">${presetMeta.kicker}</div>
+                    <h1 class="doc-title">${presetMeta.title}</h1>
+                </div>
+            </div>
+            <div class="doc-meta-box">
+                <div>Recorte: <strong>${esc(dayLabel)}</strong></div>
+                <div>Equipe: <strong>${esc(teamLabel)}${esc(turnLabel)}</strong></div>
+                <div>Total listado: <strong>${records.length} ${records.length === 1 ? 'credenciado' : 'credenciados'}</strong></div>
+                ${presetMeta.lgpd ? `<div class="lgpd-stamp">USO INTERNO · DADOS PROTEGIDOS LGPD</div>` : ''}
+            </div>
+        </header>
+    `;
+
+    // Corpo específico do preset
+    let bodyHtml = '';
+    if (records.length === 0) {
+        bodyHtml = `<div class="empty-sheet-msg">Nenhum credenciado encontrado para os filtros selecionados.</div>`;
+    } else if (state.preset === 'ficha') {
+        bodyHtml = renderFichaTecnicaBody(records);
+    } else if (state.preset === 'portaria') {
+        bodyHtml = renderPortariaBody(records);
+    } else {
+        bodyHtml = renderCateringBody(records);
+    }
+
+    // Rodapé Técnico A4
+    const footerHtml = `
+        <footer class="doc-footer">
+            <span>${presetMeta.code} · Casa de Criadores 58 (São Paulo/SP)</span>
+            <span>Emitido em ${timestamp}</span>
+        </footer>
+    `;
+
+    sheet.innerHTML = `<div>${headerHtml}${bodyHtml}</div>${footerHtml}`;
+}
+
+/* --- PRESET 1: FICHA TÉCNICA GERAL (CRÉDITOS LIMPOS) --- */
+function renderFichaTecnicaBody(records) {
+    if (!state.groupByTeam) {
+        return renderDynamicTable(records, 'ficha');
+    }
+
+    const orderedTeams = Object.values(TEAMS).sort((a, b) => a.order - b.order);
+    return orderedTeams.map(team => {
+        const members = records.filter(p => p.grupo === team.id);
+        if (!members.length) return '';
+
+        return `
+            <section class="team-section">
+                <div class="team-section-header">
+                    <h2 class="team-section-title">${esc(team.name)}</h2>
+                    <span class="team-section-count">${members.length} ${members.length === 1 ? 'integrante' : 'integrantes'}</span>
+                </div>
+                ${renderDynamicTable(members, 'ficha')}
+            </section>
+        `;
+    }).join('');
+}
+
+/* --- PRESET 2: PORTARIA / SEGURANÇA (EDIFÍCIO GAZETA) --- */
+function renderPortariaBody(records) {
+    const noticeText = state.revealDocs
+        ? 'Documentos completos exibidos para conferência presencial na portaria do Edifício Gazeta.'
+        : 'CPF e RG parcialmente mascarados no preview. Ative "Revelar CPF/RG completos" acima antes de gerar o PDF/impressão.';
+
+    return `
+        <div class="doc-context-strip">
+            <span>${noticeText}</span>
+            <span class="mono">${state.day === 'all' ? 'TODOS OS DIAS' : `DATA: ${state.day}`}</span>
+        </div>
+        ${renderDynamicTable(records, 'portaria')}
+    `;
+}
+
+/* --- PRESET 3: MAPA DE CATERING / ALIMENTAÇÃO --- */
+function renderCateringBody(records) {
+    // Contagem sobre o recorte atual de dia/equipe/turno (independente do checkbox "Apenas restrições")
+    const baseScope = CREDENCIADOS.filter(p => {
+        if (state.day !== 'all' && !p.dias_acesso.includes(state.day)) return false;
+        if (state.team !== 'all' && p.grupo !== state.team) return false;
+        if (state.turn !== 'all' && !p.turnos.includes(state.turn)) return false;
+        return true;
+    });
+
+    const total = baseScope.length;
+    const semRestricao = baseScope.filter(p => !hasDiet(p)).length;
+    const vegetariano = baseScope.filter(p => p.alimentacao === 'Vegetariano').length;
+    const vegano = baseScope.filter(p => p.alimentacao === 'Vegano').length;
+    const outras = baseScope.filter(p => hasDiet(p) && p.alimentacao !== 'Vegetariano' && p.alimentacao !== 'Vegano').length;
+
+    return `
+        <div class="catering-summary-grid">
+            <div class="cat-stat is-highlight">
+                <span class="cat-stat-label">Total Refeições</span>
+                <span class="cat-stat-val">${total}</span>
+                <span class="cat-stat-sub">100% do recorte</span>
+            </div>
+            <div class="cat-stat">
+                <span class="cat-stat-label">Sem Restrição</span>
+                <span class="cat-stat-val">${semRestricao}</span>
+                <span class="cat-stat-sub">Padrão</span>
+            </div>
+            <div class="cat-stat is-highlight">
+                <span class="cat-stat-label">Vegetariano</span>
+                <span class="cat-stat-val">${vegetariano}</span>
+                <span class="cat-stat-sub">Ovolactovegetariano</span>
+            </div>
+            <div class="cat-stat is-highlight">
+                <span class="cat-stat-label">Vegano</span>
+                <span class="cat-stat-val">${vegano}</span>
+                <span class="cat-stat-sub">100% vegetal</span>
+            </div>
+            <div class="cat-stat">
+                <span class="cat-stat-label">Outras / Alergias</span>
+                <span class="cat-stat-val">${outras}</span>
+                <span class="cat-stat-sub">Conferir notas</span>
+            </div>
+        </div>
+        ${renderDynamicTable(records, 'catering')}
+    `;
+}
+
+/* ============================================================================
+   7. EXPORTAÇÕES REAIS (COPIAR TEXTO, BAIXAR PDF A4 COM MARGENS, BAIXAR CSV)
+   ============================================================================ */
+function copyPlainTextForDocs() {
+    const records = getFilteredRecords();
+    if (!records.length) {
+        showToast('Nenhum registro para copiar');
+        return;
+    }
+
+    const cols = getActiveColumnDefs(state.preset);
+    const formatLine = (p) => cols
+        .filter(c => c.key !== 'assinatura')
+        .map(c => getRawCellValue(p, state.preset, c.key))
+        .filter(Boolean)
+        .join(' · ');
+
+    let lines = [];
+    if (state.preset === 'ficha') {
+        lines.push('CASA DE CRIADORES 58 — FICHA TÉCNICA GERAL');
+        lines.push('');
+        if (state.groupByTeam) {
+            Object.values(TEAMS).sort((a, b) => a.order - b.order).forEach(team => {
+                const members = records.filter(p => p.grupo === team.id);
+                if (!members.length) return;
+                lines.push(team.name.toUpperCase());
+                members.forEach(p => lines.push(formatLine(p)));
+                lines.push('');
+            });
+        } else {
+            records.forEach(p => lines.push(formatLine(p)));
+        }
+    } else if (state.preset === 'portaria') {
+        lines.push(`CASA DE CRIADORES 58 — PORTARIA EDIFÍCIO GAZETA (${state.day === 'all' ? 'Todos os dias' : state.day})`);
+        lines.push('');
+        records.forEach(p => lines.push(formatLine(p)));
+    } else {
+        lines.push(`CASA DE CRIADORES 58 — MAPA DE CATERING (${state.day === 'all' ? 'Todos os dias' : state.day})`);
+        lines.push('');
+        records.forEach(p => lines.push(formatLine(p)));
+    }
+
+    const ta = document.createElement('textarea');
+    ta.value = lines.join('\n');
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); } catch (e) {}
+    ta.remove();
+
+    showToast('Texto copiado respeitando as colunas selecionadas');
+}
+
+function downloadPdfA4() {
+    const records = getFilteredRecords();
+    if (!records.length) {
+        showToast('Nenhum registro para gerar PDF');
+        return;
+    }
+
+    if (!window.jspdf || !window.jspdf.jsPDF) {
+        showToast('Abrindo impressão A4 para salvar PDF');
+        window.print();
+        return;
+    }
+
+    const { jsPDF } = window.jspdf;
+    const isLand = state.orientation === 'landscape';
+    const doc = new jsPDF({ orientation: state.orientation, unit: 'mm', format: 'a4' });
+
+    // Margens A4 exatas: 14mm topo/esquerda/direita, 16mm base
+    const marginX = 14;
+    const marginTop = 14;
+    const marginBottom = 16;
+    const pageWidth = isLand ? 297 : 210;
+    const pageHeight = isLand ? 210 : 297;
+    const contentWidth = pageWidth - marginX * 2; // 182mm (retrato) ou 269mm (paisagem)
+
+    const dayLabel = state.day === 'all'
+        ? 'Período Completo (20/11 a 30/11)'
+        : (DAYS.find(d => d.key === state.day)?.label || state.day);
+    const teamLabel = state.team === 'all' ? 'Todas as Equipes' : TEAMS[state.team].name;
+    const turnLabel = (state.preset !== 'ficha' && state.turn !== 'all') ? ` | Turno: ${state.turn}` : '';
+
+    const titles = {
+        ficha: {
+            kicker: 'CASA DE CRIADORES 58 · CREDENCIAMENTO & PRODUÇÃO',
+            title: 'FICHA TÉCNICA GERAL — CRÉDITOS OFICIAIS',
+            code: 'DOC-CDC58-FTG'
+        },
+        portaria: {
+            kicker: 'CASA DE CRIADORES 58 · EDIFÍCIO GAZETA',
+            title: 'CONTROLE DE ACESSO — PORTARIA & SEGURANÇA',
+            code: 'DOC-CDC58-SEC'
+        },
+        catering: {
+            kicker: 'CASA DE CRIADORES 58 · PRODUÇÃO & CAMARINS',
+            title: 'MAPA OPERACIONAL DE CATERING & ALIMENTAÇÃO',
+            code: 'DOC-CDC58-CAT'
+        }
+    }[state.preset];
+
+    // Cabeçalho institucional na primeira página
+    doc.setDrawColor(17, 17, 17);
+    doc.setLineWidth(0.4);
+    doc.circle(marginX + 5, marginTop + 5, 5, 'S');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9.5);
+    doc.setTextColor(17, 17, 17);
+    doc.text('58', marginX + 5, marginTop + 6.3, { align: 'center' });
+
+    doc.setFontSize(7.5);
+    doc.setTextColor(90, 96, 102);
+    doc.text(titles.kicker, marginX + 13, marginTop + 3.5);
+
+    doc.setFontSize(12);
+    doc.setTextColor(17, 17, 17);
+    doc.text(titles.title, marginX + 13, marginTop + 8.8);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7.8);
+    doc.setTextColor(55, 60, 65);
+    doc.text(
+        `Recorte: ${dayLabel}   |   Equipe: ${teamLabel}${turnLabel}   |   Total: ${records.length}   |   Formato: A4 ${isLand ? 'Paisagem' : 'Retrato'}`,
+        marginX,
+        marginTop + 14.5
+    );
+
+    doc.setLineWidth(0.5);
+    doc.line(marginX, marginTop + 17, pageWidth - marginX, marginTop + 17);
+
+    let cursorY = marginTop + 21;
+    const cols = getActiveColumnDefs(state.preset);
+    const totalWeight = cols.reduce((sum, c) => sum + c.weight, 0) || 100;
+    const baseFontSize = cols.length >= 8 ? 7.2 : (cols.length >= 6 && !isLand ? 7.4 : 8.2);
+    const headFontSize = cols.length >= 8 ? 6.6 : 7.1;
+
+    // Cabeçalhos enxutos para evitar que 2 palavras criem colunas largas demais
+    const shortHeaderMap = {
+        nome_civil: 'NOME CIVIL',
+        grupo: 'EQUIPE',
+        assinatura: 'ASSINATURA',
+        alimentacao: 'ALIMENTAÇÃO',
+        obs: 'OBSERVAÇÕES / ALERGIAS'
+    };
+    const headRow = [cols.map(c => (shortHeaderMap[c.key] || c.label).toUpperCase())];
+
+    // Distribuição proporcional exata dentro da largura útil (contentWidth)
+    const columnStyles = cols.reduce((acc, c, idx) => {
+        const colWidth = (c.weight / totalWeight) * contentWidth;
+        const style = { cellWidth: colWidth };
+        if (c.key === 'nome' || c.key === 'nome_civil') {
+            style.fontStyle = 'bold';
+            style.textColor = [17, 17, 17];
+        }
+        acc[idx] = style;
+        return acc;
+    }, {});
+
+    const tableStyles = {
+        theme: 'plain',
+        tableWidth: contentWidth,
+        margin: { left: marginX, right: marginX, top: marginTop, bottom: marginBottom },
+        styles: {
+            font: 'helvetica',
+            fontSize: baseFontSize,
+            textColor: [25, 28, 32],
+            cellPadding: { top: 1.8, right: 1.6, bottom: 1.8, left: 1.6 },
+            lineColor: [210, 214, 218],
+            lineWidth: { bottom: 0.2 },
+            overflow: 'linebreak',
+            valign: 'middle'
+        },
+        headStyles: {
+            fontStyle: 'bold',
+            fontSize: headFontSize,
+            textColor: [17, 17, 17],
+            fillColor: [248, 249, 250],
+            lineColor: [17, 17, 17],
+            lineWidth: { top: 0.4, bottom: 0.4 }
+        },
+        columnStyles
+    };
+
+    if (state.preset === 'catering') {
+        const baseScope = CREDENCIADOS.filter(p => {
+            if (state.day !== 'all' && !p.dias_acesso.includes(state.day)) return false;
+            if (state.team !== 'all' && p.grupo !== state.team) return false;
+            if (state.turn !== 'all' && !p.turnos.includes(state.turn)) return false;
+            return true;
+        });
+        const sem = baseScope.filter(p => !hasDiet(p)).length;
+        const veg = baseScope.filter(p => p.alimentacao === 'Vegetariano').length;
+        const vgn = baseScope.filter(p => p.alimentacao === 'Vegano').length;
+        const out = baseScope.filter(p => hasDiet(p) && p.alimentacao !== 'Vegetariano' && p.alimentacao !== 'Vegano').length;
+
+        doc.setFillColor(244, 245, 246);
+        doc.setDrawColor(17, 17, 17);
+        doc.setLineWidth(0.3);
+        doc.rect(marginX, cursorY, contentWidth, 9, 'FD');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8);
+        doc.setTextColor(17, 17, 17);
+        doc.text(
+            `RESUMO REFEIÇÕES:  Total: ${baseScope.length}   |   Padrão: ${sem}   |   Vegetariano: ${veg}   |   Vegano: ${vgn}   |   Outras: ${out}`,
+            marginX + 3,
+            cursorY + 5.8
+        );
+        cursorY += 13;
+    }
+
+    const pageBreakLimit = pageHeight - marginBottom - 20;
+
+    if (state.preset === 'ficha' && state.groupByTeam) {
+        const orderedTeams = Object.values(TEAMS).sort((a, b) => a.order - b.order);
+        orderedTeams.forEach(team => {
+            const members = records.filter(p => p.grupo === team.id);
+            if (!members.length) return;
+
+            if (cursorY > pageBreakLimit) {
+                doc.addPage();
+                cursorY = marginTop;
+            }
+
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(9.5);
+            doc.setTextColor(17, 17, 17);
+            doc.text(`${team.name.toUpperCase()} (${members.length})`, marginX, cursorY);
+            cursorY += 2.2;
+
+            doc.autoTable({
+                ...tableStyles,
+                startY: cursorY,
+                head: headRow,
+                body: members.map(p => cols.map(c => getRawCellValue(p, 'ficha', c.key)))
+            });
+
+            cursorY = doc.lastAutoTable.finalY + 7;
+        });
+    } else {
+        doc.autoTable({
+            ...tableStyles,
+            startY: cursorY,
+            head: headRow,
+            body: records.map(p => cols.map(c => getRawCellValue(p, state.preset, c.key)))
+        });
+    }
+
+    // Rodapé paginado dentro da margem inferior
+    const totalPages = doc.getNumberOfPages();
+    const ts = formatTimestamp();
+    for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        doc.setDrawColor(17, 17, 17);
+        doc.setLineWidth(0.3);
+        doc.line(marginX, pageHeight - marginBottom + 3, pageWidth - marginX, pageHeight - marginBottom + 3);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(7);
+        doc.setTextColor(95, 100, 106);
+        doc.text(`${titles.code} · Casa de Criadores 58 · Emitido em ${ts}`, marginX, pageHeight - marginBottom + 7);
+        doc.text(`Página ${i} de ${totalPages}`, pageWidth - marginX, pageHeight - marginBottom + 7, { align: 'right' });
+    }
+
+    const daySlug = state.day === 'all' ? 'geral' : state.day.replace('/', '-');
+    const orientSlug = isLand ? 'paisagem' : 'retrato';
+    doc.save(`cdc58_${state.preset}_${daySlug}_${orientSlug}.pdf`);
+    showToast(`PDF A4 ${isLand ? 'Paisagem' : 'Retrato'} baixado com margens de 14mm`);
+}
+
+function downloadCsv() {
+    const records = getFilteredRecords();
+    if (!records.length) {
+        showToast('Nenhum registro para exportar');
+        return;
+    }
+
+    const csvEscape = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const cols = getActiveColumnDefs(state.preset);
+
+    const headers = cols.map(c => c.label);
+    const rows = records.map(p =>
+        cols.map(c => getRawCellValue(p, state.preset, c.key))
+    );
+
+    const csvContent = [headers, ...rows]
+        .map(row => row.map(csvEscape).join(';'))
+        .join('\r\n');
+
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const daySlug = state.day === 'all' ? 'geral' : state.day.replace('/', '-');
+    triggerDownload(blob, `cdc58_${state.preset}_${daySlug}.csv`);
+    showToast(`CSV (${cols.length} colunas) baixado em UTF-8`);
+}
+
+function triggerDownload(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+/* ============================================================================
+   8. BINDING DE EVENTOS E INICIALIZAÇÃO
+   ============================================================================ */
+function bindEvents() {
+    document.querySelectorAll('.preset-tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+            state.preset = btn.dataset.preset;
+            applyOrientationRules(true);
+            renderDocument();
+        });
+    });
+
+    document.querySelectorAll('.orient-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            state.orientation = btn.dataset.orient;
+            state.manualOrientation = true;
+            renderDocument();
+        });
+    });
+
+    document.getElementById('filter-day').addEventListener('change', (e) => {
+        state.day = e.target.value;
+        renderDocument();
+    });
+
+    document.getElementById('filter-turn').addEventListener('change', (e) => {
+        state.turn = e.target.value;
+        renderDocument();
+    });
+
+    document.querySelectorAll('#filter-teams .team-pill').forEach(btn => {
+        btn.addEventListener('click', () => {
+            state.team = btn.dataset.team;
+            renderDocument();
+        });
+    });
+
+    // Ações principais da barra superior
+    document.getElementById('btn-copy-text').addEventListener('click', copyPlainTextForDocs);
+    document.getElementById('btn-download-pdf').addEventListener('click', downloadPdfA4);
+    document.getElementById('btn-download-csv').addEventListener('click', downloadCsv);
+    document.getElementById('btn-print-native').addEventListener('click', () => window.print());
+
+    // Modal de Campos / Colunas
+    const colsDialog = document.getElementById('columns-dialog');
+    document.getElementById('btn-open-columns').addEventListener('click', () => {
+        renderColumnsModal();
+        if (colsDialog.showModal) colsDialog.showModal();
+    });
+    document.getElementById('btn-close-columns').addEventListener('click', () => colsDialog.close());
+    document.getElementById('btn-apply-columns').addEventListener('click', () => colsDialog.close());
+    colsDialog.addEventListener('click', (e) => {
+        if (e.target === colsDialog) colsDialog.close();
+    });
+
+    document.getElementById('btn-cols-all').addEventListener('click', () => {
+        state.selectedCols[state.preset] = PRESET_COLUMNS[state.preset].map(c => c.key);
+        applyOrientationRules(true);
+        renderColumnsModal();
+        renderDocument();
+    });
+
+    document.getElementById('btn-cols-reset').addEventListener('click', () => {
+        state.selectedCols[state.preset] = PRESET_COLUMNS[state.preset]
+            .filter(c => c.defaultOn)
+            .map(c => c.key);
+        applyOrientationRules(true);
+        renderColumnsModal();
+        renderDocument();
+    });
+}
+
+initControlFilters();
+bindEvents();
+applyOrientationRules(true);
+renderDocument();
+</script>
+</body>
+</html>

@@ -1,0 +1,2292 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Equipes — Casa de Criadores 58</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* =====================================================================
+           DESIGN TOKENS — MONOCROMIA GRAFITE-PETRÓLEO + COR FUNCIONAL
+           ===================================================================== */
+        :root {
+            --bg-base: #0c1114;
+            --bg-surface: #12181c;
+            --bg-elevated: #171f24;
+            --bg-hover: #1b242a;
+            --bg-input: #090d10;
+
+            --border: rgba(255, 255, 255, 0.09);
+            --border-strong: rgba(255, 255, 255, 0.22);
+
+            --text-primary: #eef2f4;
+            --text-secondary: #8b98a1;
+            --text-muted: #5a6872;
+
+            /* Cores das 4 equipes (único croma estrutural) */
+            --team-maxima: #e85d9e;
+            --team-lema: #e5a93c;
+            --team-staff: #4fb3d9;
+            --team-estagio: #4ec28c;
+
+            /* Sinais operacionais reais */
+            --alert-conflict: #f0b429;
+            --alert-conflict-bg: rgba(240, 180, 41, 0.12);
+            --alert-diet: #d6c5a3;
+            --alert-diet-bg: rgba(214, 197, 163, 0.11);
+
+            --radius: 4px;
+            --font-sans: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+            --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+            --header-h: 56px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            max-width: 100%;
+            overflow-x: hidden;
+            background: var(--bg-base);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            line-height: 1.4;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        button, input, select, textarea {
+            font-family: inherit;
+            color: inherit;
+        }
+
+        :focus-visible {
+            outline: 2px solid var(--text-primary);
+            outline-offset: 2px;
+        }
+
+        .mono {
+            font-family: var(--font-mono);
+        }
+
+        /* =====================================================================
+           STICKY HEADER COMPACTO
+           ===================================================================== */
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 60;
+            background: rgba(12, 17, 20, 0.94);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .topbar-inner {
+            max-width: 1280px;
+            margin: 0 auto;
+            min-height: var(--header-h);
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-shrink: 0;
+        }
+
+        .brand-mark {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 1.5px solid var(--text-primary);
+            background: transparent;
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .nav-tabs {
+            display: inline-flex;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 2px;
+        }
+
+        .nav-tab {
+            background: transparent;
+            border: none;
+            padding: 6px 12px;
+            font-size: 0.84rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            border-radius: 3px;
+            cursor: pointer;
+            transition: color 0.12s, background 0.12s;
+            white-space: nowrap;
+        }
+
+        .nav-tab:hover {
+            color: var(--text-primary);
+        }
+
+        .nav-tab[aria-selected="true"] {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            justify-content: flex-end;
+            min-width: 0;
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            max-width: 320px;
+            min-width: 140px;
+        }
+
+        .search-input {
+            width: 100%;
+            height: 34px;
+            padding: 0 28px 0 11px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 0.85rem;
+            color: var(--text-primary);
+        }
+
+        .search-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .search-input:focus {
+            border-color: var(--border-strong);
+            outline: none;
+        }
+
+        .search-clear {
+            position: absolute;
+            right: 4px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 24px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+        }
+
+        .search-clear.visible {
+            display: inline-flex;
+        }
+
+        /* =====================================================================
+           BOTÕES & PRIMITIVOS
+           ===================================================================== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            height: 34px;
+            padding: 0 12px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            background: var(--bg-surface);
+            color: var(--text-primary);
+            font-size: 0.82rem;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background 0.12s, border-color 0.12s;
+        }
+
+        .btn:hover:not(:disabled) {
+            background: var(--bg-elevated);
+            border-color: var(--border-strong);
+        }
+
+        .btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: var(--text-primary);
+            color: var(--bg-base);
+            border-color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #d7e0e5;
+            border-color: #d7e0e5;
+        }
+
+        .btn-ghost {
+            background: transparent;
+            border-color: transparent;
+            color: var(--text-secondary);
+        }
+
+        .btn-ghost:hover:not(:disabled) {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+            border-color: transparent;
+        }
+
+        .btn-icon {
+            width: 34px;
+            padding: 0;
+        }
+
+        .team-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--tc);
+            display: inline-block;
+            flex-shrink: 0;
+        }
+
+        .conflict-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 1px 6px;
+            border-radius: 3px;
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--alert-conflict);
+            background: var(--alert-conflict-bg);
+            border: 1px solid rgba(240, 180, 41, 0.35);
+            white-space: nowrap;
+        }
+
+        .diet-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 1px 7px;
+            border-radius: 3px;
+            font-size: 0.74rem;
+            color: var(--alert-diet);
+            background: var(--alert-diet-bg);
+            white-space: nowrap;
+        }
+
+        /* =====================================================================
+           MAIN CONTAINER
+           ===================================================================== */
+        .main {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 20px 16px 56px;
+        }
+
+        /* =====================================================================
+           TELA 1 — VISÃO GERAL (LAUNCHPAD RÁPIDO)
+           ===================================================================== */
+        .overview-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .block-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+
+        /* Bloco A: Faixa horizontal de 11 dias */
+        .days-strip {
+            display: grid;
+            grid-template-columns: repeat(11, minmax(74px, 1fr));
+            gap: 6px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border-strong) transparent;
+        }
+
+        .day-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 10px 10px 9px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            cursor: pointer;
+            text-align: left;
+            transition: background 0.12s, border-color 0.12s;
+        }
+
+        .day-btn:hover {
+            background: var(--bg-elevated);
+            border-color: var(--border-strong);
+        }
+
+        .day-btn.is-peak {
+            background: var(--bg-elevated);
+            border-color: var(--text-primary);
+        }
+
+        .day-btn-top {
+            font-size: 0.76rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        .day-btn.is-peak .day-btn-top {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .day-btn-num {
+            font-family: var(--font-mono);
+            font-size: 1.25rem;
+            font-weight: 600;
+            line-height: 1;
+            color: var(--text-primary);
+        }
+
+        /* Bloco B: Equipes em grade 2x2 */
+        .teams-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .team-row-btn {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 16px 18px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--tc);
+            border-radius: var(--radius);
+            cursor: pointer;
+            text-align: left;
+            transition: background 0.12s, border-color 0.12s;
+        }
+
+        .team-row-btn:hover {
+            background: var(--bg-elevated);
+            border-color: var(--border-strong);
+            border-left-color: var(--tc);
+        }
+
+        .team-row-name {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .team-row-count {
+            font-family: var(--font-mono);
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Bloco C: Atenção operacional (1 linha acionável) */
+        .attention-row {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .attention-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            height: 36px;
+            padding: 0 13px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            background: var(--bg-surface);
+            font-size: 0.84rem;
+            cursor: pointer;
+            transition: background 0.12s, border-color 0.12s;
+        }
+
+        .attention-chip:hover {
+            background: var(--bg-elevated);
+            border-color: var(--border-strong);
+        }
+
+        .attention-chip.is-conflict {
+            border-color: rgba(240, 180, 41, 0.4);
+            color: var(--alert-conflict);
+        }
+
+        .attention-chip .chip-sub {
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+            font-size: 0.76rem;
+        }
+
+        /* =====================================================================
+           TELA 2 — ESCALA / LISTA OPERACIONAL (STICKY FILTERS + TABELA DENSA)
+           ===================================================================== */
+        .sticky-filters {
+            position: sticky;
+            top: var(--header-h);
+            z-index: 40;
+            background: rgba(12, 17, 20, 0.96);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--border);
+            margin: -20px -16px 0;
+            padding: 10px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .filter-days-scroll {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .filter-days-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .day-pill {
+            height: 30px;
+            padding: 0 10px;
+            border-radius: var(--radius);
+            border: 1px solid transparent;
+            background: transparent;
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            cursor: pointer;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .day-pill:hover {
+            color: var(--text-primary);
+            background: var(--bg-surface);
+        }
+
+        .day-pill.active {
+            background: var(--bg-elevated);
+            border-color: var(--border-strong);
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .filter-controls-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .chip-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            height: 30px;
+            padding: 0 10px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            background: var(--bg-surface);
+            color: var(--text-secondary);
+            font-size: 0.79rem;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .chip-btn:hover {
+            color: var(--text-primary);
+            border-color: var(--border-strong);
+        }
+
+        .chip-btn.active {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+            border-color: var(--tc, var(--text-primary));
+            font-weight: 600;
+        }
+
+        .chip-btn.toggle-conflict.active {
+            border-color: var(--alert-conflict);
+            color: var(--alert-conflict);
+            background: var(--alert-conflict-bg);
+        }
+
+        .chip-btn.toggle-diet.active {
+            border-color: var(--alert-diet);
+            color: var(--alert-diet);
+            background: var(--alert-diet-bg);
+        }
+
+        .turn-select {
+            height: 30px;
+            padding: 0 24px 0 9px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            background: var(--bg-surface);
+            color: var(--text-primary);
+            font-size: 0.79rem;
+            cursor: pointer;
+        }
+
+        /* Barra fina de resumo + ações rápidas */
+        .list-meta-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 12px 2px 10px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .list-meta-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Tabela responsiva densa (Desktop) */
+        .roster-wrap {
+            border-top: 1px solid var(--border);
+        }
+
+        .roster-head,
+        .roster-row {
+            display: grid;
+            grid-template-columns: minmax(180px, 1.35fr) minmax(170px, 1.35fr) minmax(130px, 0.95fr) minmax(110px, 0.8fr) minmax(95px, 0.65fr) 92px;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .roster-head {
+            padding: 8px 10px 8px 13px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .roster-row {
+            position: relative;
+            padding: 10px 10px 10px 13px;
+            border-bottom: 1px solid var(--border);
+            border-left: 3px solid var(--tc);
+            background: transparent;
+            cursor: pointer;
+            transition: background 0.1s;
+        }
+
+        .roster-row:hover {
+            background: var(--bg-surface);
+        }
+
+        .roster-row.is-selected {
+            background: var(--bg-elevated);
+        }
+
+        .cell-ellipsis {
+            min-width: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .col-name {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 0;
+        }
+
+        .name-text {
+            font-size: 0.92rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .role-primary {
+            font-size: 0.85rem;
+            color: var(--text-primary);
+        }
+
+        .role-company {
+            color: var(--text-secondary);
+        }
+
+        .handle-btn {
+            display: inline-flex;
+            align-items: center;
+            max-width: 100%;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 3px;
+            padding: 2px 6px;
+            margin-left: -6px;
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .handle-btn:hover {
+            color: var(--text-primary);
+            background: var(--bg-elevated);
+            border-color: var(--border);
+        }
+
+        .handle-btn.copied {
+            color: var(--team-estagio);
+        }
+
+        .col-turns {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .col-diet {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        .col-actions {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+
+        .wa-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            height: 30px;
+            padding: 0 10px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            background: var(--bg-surface);
+            color: var(--text-primary);
+            font-size: 0.76rem;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .wa-btn:hover {
+            background: var(--bg-elevated);
+            border-color: var(--border-strong);
+        }
+
+        .mobile-subline {
+            display: none;
+        }
+
+        .empty-state {
+            padding: 40px 16px;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.88rem;
+        }
+
+        /* =====================================================================
+           TELA 3 — FICHA INDIVIDUAL (SLIDE-OVER DRAWER / MOBILE FULL-SCREEN)
+           ===================================================================== */
+        .drawer-backdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 80;
+            background: rgba(5, 8, 10, 0.64);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.16s ease;
+        }
+
+        .drawer-backdrop.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .drawer {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 90;
+            width: min(500px, 100vw);
+            background: var(--bg-surface);
+            border-left: 1px solid var(--border-strong);
+            display: flex;
+            flex-direction: column;
+            transform: translateX(100%);
+            transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .drawer.open {
+            transform: translateX(0);
+        }
+
+        .drawer-topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .drawer-nav {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .drawer-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 18px 18px 36px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .drawer-hero {
+            border-left: 3px solid var(--tc);
+            padding-left: 13px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .drawer-name {
+            font-size: 1.45rem;
+            font-weight: 700;
+            line-height: 1.15;
+            letter-spacing: -0.02em;
+        }
+
+        .drawer-role {
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            margin-top: 3px;
+        }
+
+        .drawer-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        /* Caixa de conflito Forms ≠ */
+        .conflict-box {
+            border: 1px solid rgba(240, 180, 41, 0.45);
+            background: var(--alert-conflict-bg);
+            border-radius: var(--radius);
+            padding: 12px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .conflict-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--alert-conflict);
+        }
+
+        .conflict-compare {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            font-size: 0.82rem;
+        }
+
+        .conflict-col {
+            background: rgba(12, 17, 20, 0.65);
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            padding: 8px 10px;
+        }
+
+        .conflict-col span {
+            display: block;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-bottom: 2px;
+        }
+
+        .conflict-col strong {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            font-weight: 500;
+            word-break: break-word;
+        }
+
+        .drawer-section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        .drawer-section-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .drawer-section-title {
+            font-size: 0.74rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .field.full {
+            grid-column: 1 / -1;
+        }
+
+        .field label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .input-inline-row {
+            display: flex;
+            gap: 6px;
+        }
+
+        .field input,
+        .field textarea {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 8px 10px;
+            font-size: 0.88rem;
+            color: var(--text-primary);
+        }
+
+        .field input:focus,
+        .field textarea:focus {
+            border-color: var(--border-strong);
+            outline: none;
+        }
+
+        .field textarea {
+            min-height: 68px;
+            resize: vertical;
+        }
+
+        /* Pílulas dos 11 dias na ficha */
+        .mini-days {
+            display: grid;
+            grid-template-columns: repeat(11, 1fr);
+            gap: 4px;
+        }
+
+        .mini-day {
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 3px;
+            border: 1px solid var(--border);
+            background: var(--bg-input);
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            color: var(--text-muted);
+        }
+
+        .mini-day.on {
+            background: var(--bg-elevated);
+            border-color: var(--tc);
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .kv-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px 14px;
+            font-size: 0.84rem;
+        }
+
+        .kv-item.full {
+            grid-column: 1 / -1;
+        }
+
+        .kv-k {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            margin-bottom: 2px;
+        }
+
+        .kv-v {
+            color: var(--text-primary);
+            word-break: break-word;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .doc-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .doc-cell {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 8px 10px;
+        }
+
+        .doc-cell span {
+            display: block;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-bottom: 2px;
+        }
+
+        .doc-cell strong {
+            font-family: var(--font-mono);
+            font-size: 0.84rem;
+            font-weight: 500;
+        }
+
+        /* =====================================================================
+           DIALOG NATIVO DE EXPORTAÇÃO
+           ===================================================================== */
+        dialog.export-dialog {
+            margin: auto;
+            width: min(380px, calc(100vw - 24px));
+            background: var(--bg-surface);
+            color: var(--text-primary);
+            border: 1px solid var(--border-strong);
+            border-radius: 6px;
+            padding: 0;
+        }
+
+        dialog.export-dialog::backdrop {
+            background: rgba(5, 8, 10, 0.72);
+        }
+
+        .dialog-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .dialog-body {
+            padding: 12px 16px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .preset-btn {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 12px 14px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            text-align: left;
+            cursor: pointer;
+            font-size: 0.88rem;
+            font-weight: 500;
+        }
+
+        .preset-btn:hover {
+            border-color: var(--border-strong);
+            background: var(--bg-hover);
+        }
+
+        .preset-btn span {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            color: var(--text-secondary);
+        }
+
+        /* =====================================================================
+           TOAST DISCRETO
+           ===================================================================== */
+        .toast-stack {
+            position: fixed;
+            bottom: 18px;
+            right: 18px;
+            z-index: 120;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+            border: 1px solid var(--border-strong);
+            padding: 9px 13px;
+            border-radius: var(--radius);
+            font-size: 0.82rem;
+            animation: fadeUp 0.14s ease-out;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* =====================================================================
+           ADAPTAÇÃO MOBILE (< 720px) — OPERAÇÃO COM POLEGAR EM PISTA
+           ===================================================================== */
+        @media (max-width: 720px) {
+            :root {
+                --header-h: 96px;
+            }
+
+            .topbar-inner {
+                flex-wrap: wrap;
+                padding: 8px 12px;
+                gap: 8px;
+            }
+
+            .topbar-left {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .topbar-right {
+                width: 100%;
+            }
+
+            .search-box {
+                max-width: none;
+            }
+
+            /* Evita zoom automático no iOS */
+            input, select, textarea {
+                font-size: 16px !important;
+            }
+
+            .main {
+                padding: 16px 12px 48px;
+            }
+
+            .teams-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .sticky-filters {
+                margin: -16px -12px 0;
+                padding: 8px 12px;
+            }
+
+            .roster-head {
+                display: none;
+            }
+
+            /* Linha mobile compacta de 2 andares + botão WhatsApp 44x44px */
+            .roster-row {
+                grid-template-columns: 1fr 44px;
+                gap: 10px;
+                padding: 11px 10px 11px 12px;
+            }
+
+            .col-role,
+            .col-handle,
+            .col-turns,
+            .col-diet {
+                display: none;
+            }
+
+            .col-name {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 3px;
+            }
+
+            .mobile-name-top {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                width: 100%;
+                min-width: 0;
+            }
+
+            .mobile-subline {
+                display: flex;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 6px;
+                font-size: 0.78rem;
+                color: var(--text-secondary);
+                max-width: 100%;
+            }
+
+            .wa-btn {
+                width: 44px;
+                height: 44px;
+                padding: 0;
+            }
+
+            .wa-btn .wa-label {
+                display: none;
+            }
+
+            .drawer {
+                width: 100vw;
+                border-left: none;
+            }
+
+            .form-grid,
+            .kv-list,
+            .doc-grid,
+            .conflict-compare {
+                grid-template-columns: 1fr;
+            }
+
+            .mini-days {
+                grid-template-columns: repeat(6, 1fr);
+            }
+
+            .toast-stack {
+                left: 12px;
+                right: 12px;
+                bottom: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER FIXO COMPACTO -->
+    <header class="topbar">
+        <div class="topbar-inner">
+            <div class="topbar-left">
+                <button type="button" class="brand-mark" id="btn-brand" title="Visão Geral">58</button>
+                <div class="nav-tabs" role="tablist">
+                    <button type="button" class="nav-tab" role="tab" data-tab="overview" aria-selected="true">Visão Geral</button>
+                    <button type="button" class="nav-tab" role="tab" data-tab="roster" aria-selected="false">Escala</button>
+                </div>
+            </div>
+
+            <div class="topbar-right">
+                <div class="search-box">
+                    <input type="search" id="global-search" class="search-input" placeholder="Buscar nome, função, @..." autocomplete="off">
+                    <button type="button" id="search-clear" class="search-clear" aria-label="Limpar busca">×</button>
+                </div>
+                <button type="button" class="btn" id="btn-open-export">Exportar</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ÁREA PRINCIPAL -->
+    <main class="main" id="app-root"></main>
+
+    <!-- GAVETA LATERAL (TELA 3 — FICHA INDIVIDUAL) -->
+    <div class="drawer-backdrop" id="drawer-backdrop"></div>
+    <aside class="drawer" id="profile-drawer" aria-hidden="true" aria-label="Ficha individual"></aside>
+
+    <!-- DIALOG NATIVO DE EXPORTAÇÃO -->
+    <dialog class="export-dialog" id="export-dialog">
+        <div class="dialog-head">
+            <span>Exportar</span>
+            <button type="button" class="btn btn-ghost btn-icon" id="btn-close-export" aria-label="Fechar">×</button>
+        </div>
+        <div class="dialog-body">
+            <button type="button" class="preset-btn" data-export="Ficha Técnica (Créditos) exportada">
+                Ficha Técnica (Créditos)
+                <span>Nome · @ · Função</span>
+            </button>
+            <button type="button" class="preset-btn" data-export="Lista Portaria / Segurança exportada (log registrado)">
+                Portaria / Segurança
+                <span>Civil · CPF · RG</span>
+            </button>
+            <button type="button" class="preset-btn" data-export="Preparando impressão A4 da escala atual">
+                Imprimir A4
+                <span>PDF / Papel</span>
+            </button>
+        </div>
+    </dialog>
+
+    <!-- TOASTS -->
+    <div class="toast-stack" id="toast-stack" aria-live="polite"></div>
+
+<script>
+/* ============================================================================
+   CONFIGURAÇÃO DE EQUIPES E CALENDÁRIO (20/11 a 30/11)
+   ============================================================================ */
+const TEAMS = {
+    maxima:  { id: 'maxima',  name: 'Máxima Weber',      short: 'Máxima',  color: '#e85d9e' },
+    lema:    { id: 'lema',    name: 'Lema+',             short: 'Lema+',   color: '#e5a93c' },
+    staff:   { id: 'staff',   name: 'Staff / Produção',  short: 'Staff',   color: '#4fb3d9' },
+    estagio: { id: 'estagio', name: 'Estágio',           short: 'Estágio', color: '#4ec28c' }
+};
+
+const DAYS = [
+    { key: '20/11', short: 'Qui 20', num: '20' },
+    { key: '21/11', short: 'Sex 21', num: '21' },
+    { key: '22/11', short: 'Sáb 22', num: '22' },
+    { key: '23/11', short: 'Dom 23', num: '23' },
+    { key: '24/11', short: 'Seg 24', num: '24' },
+    { key: '25/11', short: 'Ter 25', num: '25' },
+    { key: '26/11', short: 'Qua 26', num: '26' },
+    { key: '27/11', short: 'Sex 27', num: '27', peak: true },
+    { key: '28/11', short: 'Sáb 28', num: '28' },
+    { key: '29/11', short: 'Dom 29', num: '29' },
+    { key: '30/11', short: 'Seg 30', num: '30' }
+];
+
+const TURNS = ['Manhã', 'Tarde', 'Noite', 'Madrugada', 'Integral'];
+
+/* ============================================================================
+   16 PERFIS REALISTAS (5 MÁXIMA, 3 LEMA+, 5 STAFF, 3 ESTÁGIO)
+   ============================================================================ */
+const PEOPLE = [
+    // MÁXIMA WEBER (5)
+    {
+        id: 1, team: 'maxima',
+        nomeSocial: 'Luna Ferreira', nomeCivil: 'Lucas Henrique Ferreira', pronomes: 'Ela/dela',
+        funcao: 'Maquiadora Sênior', empresa: 'Máxima Weber',
+        instagram: '@luna.beauty', whatsapp: '(11) 98412-3301', email: 'luna.beauty@gmail.com',
+        cpf: '391.456.789-02', rg: '44.345.678-1',
+        dias: ['24/11','25/11','26/11','27/11','28/11','29/11'],
+        turnos: ['Integral'], alimentacao: 'Vegetariano',
+        obsForms: 'Maleta extra de aerógrafo no camarim 2.',
+        notaInterna: 'Chega às 11h nos dias de desfile.', conflitoForms: null
+    },
+    {
+        id: 2, team: 'maxima',
+        nomeSocial: 'Dante Oliveira', nomeCivil: 'Dante Oliveira', pronomes: 'Ele/dele',
+        funcao: 'Hair Stylist', empresa: 'Máxima Weber',
+        instagram: '@dantehair.sp', whatsapp: '(11) 97221-8890', email: 'dante.hair@outlook.com',
+        cpf: '284.119.503-44', rg: '39.882.104-5',
+        dias: ['24/11','25/11','26/11','27/11','28/11'],
+        turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição',
+        obsForms: '', notaInterna: '', conflitoForms: null
+    },
+    {
+        id: 3, team: 'maxima',
+        nomeSocial: 'Kira Sato', nomeCivil: 'Camila Sato Nogueira', pronomes: 'Elu/delu',
+        funcao: 'Assistente de Beleza', empresa: 'Máxima Weber',
+        instagram: '@kirasato.mua', whatsapp: '(11) 99304-1127', email: 'kirasato@gmail.com',
+        cpf: '452.908.312-19', rg: '51.209.443-8',
+        dias: ['25/11','26/11','27/11','28/11','29/11'],
+        turnos: ['Tarde','Noite'], alimentacao: 'Vegano',
+        obsForms: 'Alergia leve a amendoim.', notaInterna: 'Marmita vegana sem oleaginosas.',
+        conflitoForms: null
+    },
+    {
+        id: 4, team: 'maxima',
+        nomeSocial: 'Marina Teles', nomeCivil: 'Marina Teles Vasconcelos', pronomes: 'Ela/dela',
+        funcao: 'Coordenação de Beleza', empresa: 'Máxima Weber',
+        instagram: '@marinateles.beleza', whatsapp: '(11) 98110-4452', email: 'marina@maximaweber.com.br',
+        cpf: '312.667.890-71', rg: '41.903.221-0',
+        dias: ['23/11','24/11','25/11','26/11','27/11','28/11','29/11'],
+        turnos: ['Integral'], alimentacao: 'Sem restrição',
+        obsForms: 'Montagem das bancadas dia 23.', notaInterna: 'Ponto focal da beleza.',
+        conflitoForms: null
+    },
+    {
+        id: 5, team: 'maxima',
+        nomeSocial: 'Caio Veríssimo', nomeCivil: 'Caio Veríssimo Prado', pronomes: 'Ele/dele',
+        funcao: 'Maquiador', empresa: 'Máxima Weber',
+        instagram: '@caioverissimo.mua', whatsapp: '(11) 99104-7782', email: 'caio.mua@gmail.com',
+        cpf: '364.882.104-15', rg: '46.110.298-4',
+        dias: ['24/11','26/11','27/11','28/11','29/11'],
+        turnos: ['Tarde','Noite'], alimentacao: 'Vegetariano',
+        obsForms: '', notaInterna: '', conflitoForms: null
+    },
+
+    // LEMA+ (3)
+    {
+        id: 6, team: 'lema',
+        nomeSocial: 'Beatriz Lima', nomeCivil: 'Beatriz Lima Coutinho', pronomes: 'Ela/dela',
+        funcao: 'Assessoria de Imprensa', empresa: 'Lema+',
+        instagram: '@bialima.pr', whatsapp: '(11) 99543-7721', email: 'beatriz@agencialema.com.br',
+        cpf: '378.112.334-55', rg: '43.998.776-2',
+        dias: ['24/11','25/11','26/11','27/11','28/11','29/11'],
+        turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição',
+        obsForms: 'Credenciamento de imprensa.', notaInterna: 'Mesa hall principal.',
+        conflitoForms: null
+    },
+    {
+        id: 7, team: 'lema',
+        nomeSocial: 'Thiago Mendes', nomeCivil: 'Thiago Mendes Rocha', pronomes: 'Ele/dele',
+        funcao: 'Atendimento & VIPs', empresa: 'Lema+',
+        instagram: '@thiagomendes', whatsapp: '(11) 98872-1904', email: 'thiago@agencialema.com.br',
+        cpf: '405.774.219-80', rg: '47.310.882-9',
+        dias: ['24/11','26/11','27/11','28/11','29/11'],
+        turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição',
+        obsForms: '', notaInterna: '', conflitoForms: null
+    },
+    {
+        id: 8, team: 'lema',
+        nomeSocial: 'Renata Queiroz', nomeCivil: 'Renata Queiroz Dias', pronomes: 'Ela/dela',
+        funcao: 'Conteúdo & Redes', empresa: 'Lema+',
+        instagram: '@requeiroz', whatsapp: '(11) 97654-3318', email: 'renata@agencialema.com.br',
+        cpf: '419.332.108-63', rg: '49.115.602-4',
+        dias: ['24/11','25/11','26/11','27/11','28/11','29/11'],
+        turnos: ['Tarde','Noite'], alimentacao: 'Vegetariano',
+        obsForms: 'Acesso pit de fotógrafos.', notaInterna: 'Pulseira pit + backstage.',
+        conflitoForms: null
+    },
+
+    // STAFF / PRODUÇÃO (5)
+    {
+        id: 9, team: 'staff',
+        nomeSocial: 'Rafael Costa', nomeCivil: 'Rafael Henrique da Costa', pronomes: 'Ele/dele',
+        funcao: 'Técnico de Som', empresa: 'Áudio Live SP',
+        instagram: '@rafasom', whatsapp: '(11) 99123-4500', email: 'rafael@audiolivesp.com.br',
+        cpf: '356.891.234-11', rg: '38.456.789-3',
+        dias: ['20/11','21/11','22/11','23/11','24/11','25/11','26/11','27/11','28/11','29/11','30/11'],
+        turnos: ['Noite','Madrugada'], alimentacao: 'Sem restrição',
+        obsForms: 'Descarga de PA dia 20 às 14h.', notaInterna: 'Rádio canal 2.',
+        conflitoForms: {
+            type: 'field', field: 'instagram', label: '@Instagram',
+            painelVal: '@rafasom', formsVal: '@rafael_audio'
+        }
+    },
+    {
+        id: 10, team: 'staff',
+        nomeSocial: 'Carla Nogueira', nomeCivil: 'Carla Nogueira Prado', pronomes: 'Ela/dela',
+        funcao: 'Direção de Palco', empresa: 'Casa de Criadores',
+        instagram: '@carlanogueira.prod', whatsapp: '(11) 98234-9901', email: 'carla@casadecriadores.com.br',
+        cpf: '267.440.918-22', rg: '33.771.209-6',
+        dias: ['20/11','21/11','22/11','23/11','24/11','25/11','26/11','27/11','28/11','29/11','30/11'],
+        turnos: ['Integral'], alimentacao: 'Sem restrição',
+        obsForms: '', notaInterna: 'Rádio canal 1.', conflitoForms: null
+    },
+    {
+        id: 11, team: 'staff',
+        nomeSocial: 'Marcos Viana', nomeCivil: 'Marcos Antônio Viana', pronomes: 'Prefiro não informar',
+        funcao: 'Operador de Iluminação', empresa: 'Luz & Cena',
+        instagram: '@vianaluz', whatsapp: '(11) 97409-6622', email: 'marcos@luzecena.com.br',
+        cpf: '309.512.887-04', rg: '36.229.118-7',
+        dias: ['21/11','22/11','23/11','24/11','25/11','26/11','27/11','28/11','29/11','30/11'],
+        turnos: ['Tarde','Noite','Madrugada'], alimentacao: 'Sem restrição',
+        obsForms: 'Montagem de grid dia 21.', notaInterna: 'House mix sala de desfile.',
+        conflitoForms: null
+    },
+    {
+        id: 12, team: 'staff',
+        nomeSocial: 'Soraia Batista', nomeCivil: 'Soraia Batista Ramos', pronomes: 'Ela/dela',
+        funcao: 'Coordenação de Backstage', empresa: 'Casa de Criadores',
+        instagram: '@soraiabatista', whatsapp: '(11) 96883-1209', email: 'soraia@casadecriadores.com.br',
+        cpf: '298.601.445-39', rg: '35.118.902-0',
+        dias: ['20/11','22/11','23/11','24/11','25/11','26/11','27/11','28/11','29/11','30/11'],
+        turnos: ['Manhã','Tarde'], alimentacao: 'Sem restrição',
+        obsForms: '', notaInterna: '', conflitoForms: null
+    },
+    {
+        id: 13, team: 'staff',
+        nomeSocial: 'Bruno Alencar', nomeCivil: 'Bruno Alencar Moura', pronomes: 'Ele/dele',
+        funcao: 'Produtor Executivo', empresa: 'Casa de Criadores',
+        instagram: '@brunoalencar.prod', whatsapp: '(11) 99711-0842', email: 'bruno@casadecriadores.com.br',
+        cpf: '334.720.195-08', rg: '40.551.832-1',
+        dias: ['20/11','21/11','22/11','23/11','24/11','25/11','26/11','27/11','28/11','29/11','30/11'],
+        turnos: ['Integral'], alimentacao: 'Sem restrição',
+        obsForms: '', notaInterna: 'Acesso total ao prédio.', conflitoForms: null
+    },
+
+    // ESTÁGIO (3)
+    {
+        id: 14, team: 'estagio',
+        nomeSocial: 'Enzo Martins', nomeCivil: 'Enzo Gabriel Martins', pronomes: 'Ele/dele',
+        funcao: 'Assistência de Backstage', empresa: 'Santa Marcelina',
+        instagram: '@enzom.moda', whatsapp: '(11) 99410-2287', email: 'enzo.martins@gmail.com',
+        cpf: '489.554.321-07', rg: '54.112.233-9',
+        dias: ['24/11','25/11','26/11','27/11','28/11'],
+        turnos: ['Manhã','Tarde'], alimentacao: 'Vegano',
+        obsForms: 'Apoio em araras e passadoria.', notaInterna: 'Camarim B.',
+        conflitoForms: {
+            type: 'addDay', dayToAdd: '29/11', label: 'Dias de acesso',
+            painelVal: '24/11 a 28/11', formsVal: '+ 29/11'
+        }
+    },
+    {
+        id: 15, team: 'estagio',
+        nomeSocial: 'Maya Rocha', nomeCivil: 'Matheus Rocha da Silva', pronomes: 'Ela/dela',
+        funcao: 'Apoio de Produção', empresa: 'Anhembi Morumbi',
+        instagram: '@mayarocha_', whatsapp: '(11) 98765-0041', email: 'maya.rocha@hotmail.com',
+        cpf: '476.229.814-60', rg: '53.884.190-2',
+        dias: ['23/11','24/11','25/11','27/11','28/11','29/11'],
+        turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição',
+        obsForms: '', notaInterna: 'Recepção de marcas.', conflitoForms: null
+    },
+    {
+        id: 16, team: 'estagio',
+        nomeSocial: 'Júlia Pires', nomeCivil: 'Júlia Alencar Pires', pronomes: 'Ela/dela',
+        funcao: 'Recepção & Credenciamento', empresa: 'Senac Moda',
+        instagram: '@juliapires.m', whatsapp: '(11) 99201-5534', email: 'julia.pires@gmail.com',
+        cpf: '495.103.672-88', rg: '55.409.711-5',
+        dias: ['24/11','26/11','27/11','28/11','29/11'],
+        turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição',
+        obsForms: '', notaInterna: 'Fila convidados.', conflitoForms: null
+    }
+];
+
+/* ============================================================================
+   ESTADO DA APLICAÇÃO
+   ============================================================================ */
+const state = {
+    tab: 'overview',      // 'overview' | 'roster'
+    day: 'all',           // 'all' | '20/11'..'30/11'
+    team: 'all',          // 'all' | 'maxima' | 'lema' | 'staff' | 'estagio'
+    turn: 'all',          // 'all' | turno
+    onlyDiet: false,
+    onlyConflict: false,
+    search: '',
+    drawerId: null,       // id aberto na gaveta lateral (Tela 3)
+    revealedDocs: new Set()
+};
+
+/* ============================================================================
+   UTILITÁRIOS
+   ============================================================================ */
+function esc(s) {
+    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function norm(s) {
+    return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+function hasDiet(p) {
+    return p.alimentacao && p.alimentacao !== 'Sem restrição';
+}
+
+function maskCPF(v) {
+    const p = String(v || '').split('.');
+    return p.length === 3 ? `***.${p[1]}.${p[2].split('-')[0]}-**` : '***.***.***-**';
+}
+
+function maskRG(v) {
+    const p = String(v || '').split('.');
+    return p.length === 3 ? `**.${p[1]}.${p[2].split('-')[0]}-*` : '**.***.***-*';
+}
+
+function showToast(msg) {
+    const stack = document.getElementById('toast-stack');
+    const el = document.createElement('div');
+    el.className = 'toast';
+    el.textContent = msg;
+    stack.appendChild(el);
+    setTimeout(() => {
+        el.style.opacity = '0';
+        el.style.transition = 'opacity 0.15s';
+        setTimeout(() => el.remove(), 160);
+    }, 2200);
+}
+
+// Cópia segura compatível com iFrame (execCommand)
+function copyText(text, toastMsg) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); } catch (e) {}
+    ta.remove();
+    if (toastMsg) showToast(toastMsg);
+}
+
+function getFilteredPeople() {
+    const q = norm(state.search.trim());
+    return PEOPLE.filter(p => {
+        if (state.day !== 'all' && !p.dias.includes(state.day)) return false;
+        if (state.team !== 'all' && p.team !== state.team) return false;
+        if (state.turn !== 'all' && !p.turnos.includes(state.turn)) return false;
+        if (state.onlyDiet && !hasDiet(p)) return false;
+        if (state.onlyConflict && !p.conflitoForms) return false;
+        if (q) {
+            const hay = norm([p.nomeSocial, p.nomeCivil, p.funcao, p.empresa, p.instagram, TEAMS[p.team].name].join(' '));
+            if (!hay.includes(q)) return false;
+        }
+        return true;
+    });
+}
+
+/* ============================================================================
+   RENDERIZAÇÃO PRINCIPAL
+   ============================================================================ */
+function renderApp() {
+    document.querySelectorAll('.nav-tab').forEach(btn => {
+        btn.setAttribute('aria-selected', btn.dataset.tab === state.tab ? 'true' : 'false');
+    });
+
+    const root = document.getElementById('app-root');
+    root.innerHTML = state.tab === 'overview' ? renderOverview() : renderRoster();
+    bindMainEvents();
+
+    if (state.drawerId !== null) {
+        renderDrawer();
+    }
+}
+
+/* --- TELA 1: VISÃO GERAL --- */
+function renderOverview() {
+    const daysHtml = DAYS.map(d => {
+        const count = PEOPLE.filter(p => p.dias.includes(d.key)).length;
+        return `
+            <button type="button" class="day-btn ${d.peak ? 'is-peak' : ''}" data-go-day="${d.key}">
+                <span class="day-btn-top">${d.short}</span>
+                <span class="day-btn-num">${count}</span>
+            </button>
+        `;
+    }).join('');
+
+    const teamsHtml = Object.values(TEAMS).map(t => {
+        const count = PEOPLE.filter(p => p.team === t.id).length;
+        return `
+            <button type="button" class="team-row-btn" style="--tc:${t.color}" data-go-team="${t.id}">
+                <span class="team-row-name">${t.name}</span>
+                <span class="team-row-count">${count}</span>
+            </button>
+        `;
+    }).join('');
+
+    const conflicts = PEOPLE.filter(p => p.conflitoForms).length;
+    const diets = PEOPLE.filter(hasDiet);
+    const vegCount = diets.filter(p => p.alimentacao === 'Vegetariano').length;
+    const veganCount = diets.filter(p => p.alimentacao === 'Vegano').length;
+    const otherDiet = diets.length - vegCount - veganCount;
+    const dietParts = [];
+    if (vegCount) dietParts.push(`${vegCount} Veg`);
+    if (veganCount) dietParts.push(`${veganCount} Vegan`);
+    if (otherDiet) dietParts.push(`${otherDiet} Outros`);
+
+    return `
+        <div class="overview-stack">
+            <section>
+                <div class="block-label">Escala por dia</div>
+                <div class="days-strip">${daysHtml}</div>
+            </section>
+
+            <section>
+                <div class="block-label">Equipes</div>
+                <div class="teams-grid">${teamsHtml}</div>
+            </section>
+
+            <section>
+                <div class="block-label">Atenção</div>
+                <div class="attention-row">
+                    ${conflicts > 0 ? `
+                        <button type="button" class="attention-chip is-conflict" id="btn-go-conflicts">
+                            <strong>${conflicts} Forms ≠</strong>
+                        </button>
+                    ` : ''}
+                    <button type="button" class="attention-chip" id="btn-go-diets">
+                        <span>${diets.length} Restrições alimentares</span>
+                        ${dietParts.length ? `<span class="chip-sub">(${dietParts.join(' · ')})</span>` : ''}
+                    </button>
+                </div>
+            </section>
+        </div>
+    `;
+}
+
+/* --- TELA 2: ESCALA / LISTA OPERACIONAL --- */
+function renderRoster() {
+    const list = getFilteredPeople();
+    const dietTotal = list.filter(hasDiet).length;
+    const conflictTotal = PEOPLE.filter(p => p.conflitoForms).length;
+
+    const daysPills = `
+        <button type="button" class="day-pill ${state.day === 'all' ? 'active' : ''}" data-day="all">Todos</button>
+        ${DAYS.map(d => `
+            <button type="button" class="day-pill ${state.day === d.key ? 'active' : ''}" data-day="${d.key}">${d.key}</button>
+        `).join('')}
+    `;
+
+    const teamPills = `
+        <button type="button" class="chip-btn ${state.team === 'all' ? 'active' : ''}" data-team="all">Todas</button>
+        ${Object.values(TEAMS).map(t => `
+            <button type="button" class="chip-btn ${state.team === t.id ? 'active' : ''}" style="--tc:${t.color}" data-team="${t.id}">
+                <span class="team-dot" style="--tc:${t.color}"></span>${t.short}
+            </button>
+        `).join('')}
+    `;
+
+    const rowsHtml = list.length ? list.map(p => {
+        const t = TEAMS[p.team];
+        const turnsText = p.turnos.join(' · ');
+        const dietCell = hasDiet(p) ? `<span class="diet-tag">${esc(p.alimentacao)}</span>` : '—';
+
+        return `
+            <div class="roster-row ${state.drawerId === p.id ? 'is-selected' : ''}" style="--tc:${t.color}" data-open-id="${p.id}" tabindex="0" role="button">
+                <div class="col-name">
+                    <div class="mobile-name-top">
+                        <span class="name-text">${esc(p.nomeSocial)}</span>
+                        ${p.conflitoForms ? `<span class="conflict-pill">Forms ≠</span>` : ''}
+                    </div>
+                    <div class="mobile-subline">
+                        <span>${esc(p.funcao)}</span>
+                        <span>·</span>
+                        <span>${esc(turnsText)}</span>
+                        ${hasDiet(p) ? `<span class="diet-tag">${esc(p.alimentacao)}</span>` : ''}
+                    </div>
+                </div>
+
+                <div class="col-role cell-ellipsis">
+                    <span class="role-primary">${esc(p.funcao)}</span>
+                    <span class="role-company"> · ${esc(p.empresa)}</span>
+                </div>
+
+                <div class="col-handle cell-ellipsis">
+                    <button type="button" class="handle-btn" data-copy-handle="${esc(p.instagram)}" title="Copiar @">
+                        ${esc(p.instagram)}
+                    </button>
+                </div>
+
+                <div class="col-turns cell-ellipsis">${esc(turnsText)}</div>
+
+                <div class="col-diet">${dietCell}</div>
+
+                <div class="col-actions">
+                    <button type="button" class="wa-btn" data-wa="${esc(p.nomeSocial)} · ${esc(p.whatsapp)}" aria-label="WhatsApp ${esc(p.nomeSocial)}">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+                        </svg>
+                        <span class="wa-label">WhatsApp</span>
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('') : `
+        <div class="empty-state">
+            Nenhum resultado.
+            <button type="button" class="btn" id="btn-clear-filters" style="margin-left:8px;">Limpar filtros</button>
+        </div>
+    `;
+
+    return `
+        <div class="sticky-filters">
+            <div class="filter-days-scroll">${daysPills}</div>
+            <div class="filter-controls-row">
+                <div class="filter-group">${teamPills}</div>
+                <div class="filter-group">
+                    <select class="turn-select" id="select-turn" aria-label="Turno">
+                        <option value="all" ${state.turn === 'all' ? 'selected' : ''}>Todos turnos</option>
+                        ${TURNS.map(tr => `<option value="${tr}" ${state.turn === tr ? 'selected' : ''}>${tr}</option>`).join('')}
+                    </select>
+                    <button type="button" class="chip-btn toggle-diet ${state.onlyDiet ? 'active' : ''}" id="toggle-diet">Restrição</button>
+                    <button type="button" class="chip-btn toggle-conflict ${state.onlyConflict ? 'active' : ''}" id="toggle-conflict">
+                        Forms ≠${conflictTotal ? ` (${conflictTotal})` : ''}
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="list-meta-bar">
+            <span class="mono">${list.length} ${list.length === 1 ? 'pessoa' : 'pessoas'}${dietTotal ? ` · ${dietTotal} ${dietTotal === 1 ? 'restrição' : 'restrições'}` : ''}</span>
+            <div class="list-meta-actions">
+                <button type="button" class="btn btn-ghost" id="btn-copy-handles">Copiar @s</button>
+                <button type="button" class="btn btn-ghost" id="btn-print-list">Imprimir</button>
+            </div>
+        </div>
+
+        <div class="roster-wrap">
+            <div class="roster-head">
+                <span>Nome</span>
+                <span>Função · Empresa</span>
+                <span>Instagram</span>
+                <span>Turno</span>
+                <span>Alimentação</span>
+                <span style="text-align:right;">Contato</span>
+            </div>
+            ${rowsHtml}
+        </div>
+    `;
+}
+
+/* --- TELA 3: GAVETA LATERAL / FICHA INDIVIDUAL --- */
+function renderDrawer() {
+    const drawer = document.getElementById('profile-drawer');
+    const backdrop = document.getElementById('drawer-backdrop');
+    const p = PEOPLE.find(item => item.id === state.drawerId);
+
+    if (!p) {
+        drawer.classList.remove('open');
+        backdrop.classList.remove('open');
+        drawer.setAttribute('aria-hidden', 'true');
+        return;
+    }
+
+    const t = TEAMS[p.team];
+    const filtered = getFilteredPeople();
+    const idx = filtered.findIndex(item => item.id === p.id);
+    const prevId = idx > 0 ? filtered[idx - 1].id : null;
+    const nextId = (idx >= 0 && idx < filtered.length - 1) ? filtered[idx + 1].id : null;
+    const revealed = state.revealedDocs.has(p.id);
+
+    const conflictHtml = p.conflitoForms ? `
+        <div class="conflict-box">
+            <div class="conflict-header">
+                <span>Forms ≠ · ${esc(p.conflitoForms.label)}</span>
+            </div>
+            <div class="conflict-compare">
+                <div class="conflict-col">
+                    <span>Painel</span>
+                    <strong>${esc(p.conflitoForms.painelVal)}</strong>
+                </div>
+                <div class="conflict-col">
+                    <span>Google Forms</span>
+                    <strong>${esc(p.conflitoForms.formsVal)}</strong>
+                </div>
+            </div>
+            <div class="drawer-actions">
+                <button type="button" class="btn btn-primary" id="btn-accept-forms">Aceitar Forms</button>
+                <button type="button" class="btn" id="btn-keep-panel">Manter Painel</button>
+            </div>
+        </div>
+    ` : '';
+
+    const daysHtml = DAYS.map(d => `
+        <div class="mini-day ${p.dias.includes(d.key) ? 'on' : ''}" style="--tc:${t.color}">${d.num}</div>
+    `).join('');
+
+    drawer.innerHTML = `
+        <div class="drawer-topbar">
+            <button type="button" class="btn btn-ghost" id="btn-close-drawer">← Voltar</button>
+            <div class="drawer-nav">
+                <button type="button" class="btn btn-ghost btn-icon" ${prevId ? `data-nav-id="${prevId}"` : 'disabled'} aria-label="Anterior">←</button>
+                <button type="button" class="btn btn-ghost btn-icon" ${nextId ? `data-nav-id="${nextId}"` : 'disabled'} aria-label="Próxima">→</button>
+                <button type="button" class="btn btn-ghost btn-icon" id="btn-x-drawer" aria-label="Fechar">×</button>
+            </div>
+        </div>
+
+        <div class="drawer-body">
+            <div class="drawer-hero" style="--tc:${t.color}">
+                <div>
+                    <div class="drawer-name">${esc(p.nomeSocial)}</div>
+                    <div class="drawer-role">${esc(p.funcao)} · ${t.name}</div>
+                </div>
+                <div class="drawer-actions">
+                    <button type="button" class="btn btn-primary" data-wa="${esc(p.nomeSocial)} · ${esc(p.whatsapp)}">WhatsApp</button>
+                    <button type="button" class="btn" id="btn-copy-credit">Copiar crédito</button>
+                </div>
+            </div>
+
+            ${conflictHtml}
+
+            <form class="drawer-section" id="form-drawer-credit">
+                <div class="drawer-section-head">
+                    <span class="drawer-section-title">Crédito</span>
+                    <button type="submit" class="btn btn-primary" style="height:28px;font-size:0.76rem;">Salvar</button>
+                </div>
+                <div class="form-grid">
+                    <div class="field full">
+                        <label for="f-nome">Nome na ficha (Social)</label>
+                        <input id="f-nome" type="text" value="${esc(p.nomeSocial)}">
+                    </div>
+                    <div class="field">
+                        <label for="f-insta">@Instagram</label>
+                        <div class="input-inline-row">
+                            <input id="f-insta" type="text" class="mono" value="${esc(p.instagram)}">
+                            <button type="button" class="btn btn-icon" id="btn-copy-insta-in" title="Copiar @">⧉</button>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label for="f-funcao">Função</label>
+                        <input id="f-funcao" type="text" value="${esc(p.funcao)}">
+                    </div>
+                    <div class="field full">
+                        <label for="f-empresa">Empresa</label>
+                        <input id="f-empresa" type="text" value="${esc(p.empresa)}">
+                    </div>
+                </div>
+            </form>
+
+            <div class="drawer-section">
+                <span class="drawer-section-title">Escala &amp; Logística</span>
+                <div class="mini-days">${daysHtml}</div>
+                <div class="kv-list">
+                    <div class="kv-item">
+                        <div class="kv-k">Turnos</div>
+                        <div class="kv-v">${esc(p.turnos.join(' · '))}</div>
+                    </div>
+                    <div class="kv-item">
+                        <div class="kv-k">Alimentação</div>
+                        <div class="kv-v">${hasDiet(p) ? `<span class="diet-tag">${esc(p.alimentacao)}</span>` : 'Sem restrição'}</div>
+                    </div>
+                    ${p.obsForms ? `
+                        <div class="kv-item full">
+                            <div class="kv-k">Obs. Forms</div>
+                            <div class="kv-v" style="color:var(--text-secondary);">${esc(p.obsForms)}</div>
+                        </div>
+                    ` : ''}
+                    <div class="field full">
+                        <label for="f-nota">Nota interna</label>
+                        <textarea id="f-nota" placeholder="Rádio, acesso, horário...">${esc(p.notaInterna)}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="drawer-section">
+                <div class="drawer-section-head">
+                    <span class="drawer-section-title">Documentos &amp; Contato</span>
+                    <button type="button" class="btn" id="btn-toggle-doc" style="height:28px;font-size:0.76rem;">
+                        ${revealed ? 'Ocultar' : 'Revelar'}
+                    </button>
+                </div>
+                <div class="doc-grid">
+                    <div class="doc-cell">
+                        <span>CPF</span>
+                        <strong>${revealed ? esc(p.cpf) : maskCPF(p.cpf)}</strong>
+                    </div>
+                    <div class="doc-cell">
+                        <span>RG</span>
+                        <strong>${revealed ? esc(p.rg) : maskRG(p.rg)}</strong>
+                    </div>
+                </div>
+                <div class="kv-list">
+                    <div class="kv-item">
+                        <div class="kv-k">Nome civil</div>
+                        <div class="kv-v">${esc(p.nomeCivil)}</div>
+                    </div>
+                    <div class="kv-item">
+                        <div class="kv-k">Pronomes</div>
+                        <div class="kv-v">${esc(p.pronomes)}</div>
+                    </div>
+                    <div class="kv-item">
+                        <div class="kv-k">WhatsApp</div>
+                        <div class="kv-v mono">${esc(p.whatsapp)}</div>
+                    </div>
+                    <div class="kv-item">
+                        <div class="kv-k">E-mail</div>
+                        <div class="kv-v">
+                            <span class="cell-ellipsis">${esc(p.email)}</span>
+                            <button type="button" class="btn btn-ghost btn-icon" id="btn-copy-email" style="height:24px;width:24px;" title="Copiar e-mail">⧉</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    drawer.classList.add('open');
+    backdrop.classList.add('open');
+    drawer.setAttribute('aria-hidden', 'false');
+    bindDrawerEvents(p);
+}
+
+function closeDrawer() {
+    state.drawerId = null;
+    const drawer = document.getElementById('profile-drawer');
+    const backdrop = document.getElementById('drawer-backdrop');
+    drawer.classList.remove('open');
+    backdrop.classList.remove('open');
+    drawer.setAttribute('aria-hidden', 'true');
+    document.querySelectorAll('.roster-row.is-selected').forEach(r => r.classList.remove('is-selected'));
+}
+
+/* ============================================================================
+   EVENTOS
+   ============================================================================ */
+function bindGlobalEvents() {
+    document.getElementById('btn-brand').addEventListener('click', () => {
+        state.tab = 'overview';
+        renderApp();
+    });
+
+    document.querySelectorAll('.nav-tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+            state.tab = btn.dataset.tab;
+            renderApp();
+        });
+    });
+
+    const searchInput = document.getElementById('global-search');
+    const searchClear = document.getElementById('search-clear');
+
+    searchInput.addEventListener('input', (e) => {
+        state.search = e.target.value;
+        searchClear.classList.toggle('visible', state.search.length > 0);
+        if (state.search.trim() && state.tab !== 'roster') {
+            state.tab = 'roster';
+        }
+        renderApp();
+    });
+
+    searchClear.addEventListener('click', () => {
+        state.search = '';
+        searchInput.value = '';
+        searchClear.classList.remove('visible');
+        renderApp();
+        searchInput.focus();
+    });
+
+    // Dialog nativo de Exportação
+    const dialog = document.getElementById('export-dialog');
+    document.getElementById('btn-open-export').addEventListener('click', () => {
+        if (dialog.showModal) dialog.showModal();
+    });
+    document.getElementById('btn-close-export').addEventListener('click', () => dialog.close());
+    dialog.addEventListener('click', (e) => {
+        if (e.target === dialog) dialog.close();
+    });
+    dialog.querySelectorAll('[data-export]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            dialog.close();
+            showToast(btn.dataset.export);
+        });
+    });
+
+    // Fechar gaveta por backdrop ou ESC
+    document.getElementById('drawer-backdrop').addEventListener('click', closeDrawer);
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && state.drawerId !== null) {
+            closeDrawer();
+        }
+    });
+}
+
+function bindMainEvents() {
+    const root = document.getElementById('app-root');
+
+    // Tela 1 — Visão Geral
+    root.querySelectorAll('[data-go-day]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            state.tab = 'roster';
+            state.day = btn.dataset.goDay;
+            state.team = 'all';
+            state.turn = 'all';
+            state.onlyDiet = false;
+            state.onlyConflict = false;
+            renderApp();
+            window.scrollTo({ top: 0 });
+        });
+    });
+
+    root.querySelectorAll('[data-go-team]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            state.tab = 'roster';
+            state.day = 'all';
+            state.team = btn.dataset.goTeam;
+            state.turn = 'all';
+            state.onlyDiet = false;
+            state.onlyConflict = false;
+            renderApp();
+            window.scrollTo({ top: 0 });
+        });
+    });
+
+    const btnConflicts = root.querySelector('#btn-go-conflicts');
+    if (btnConflicts) {
+        btnConflicts.addEventListener('click', () => {
+            state.tab = 'roster';
+            state.day = 'all';
+            state.team = 'all';
+            state.onlyDiet = false;
+            state.onlyConflict = true;
+            renderApp();
+        });
+    }
+
+    const btnDiets = root.querySelector('#btn-go-diets');
+    if (btnDiets) {
+        btnDiets.addEventListener('click', () => {
+            state.tab = 'roster';
+            state.day = 'all';
+            state.team = 'all';
+            state.onlyConflict = false;
+            state.onlyDiet = true;
+            renderApp();
+        });
+    }
+
+    // Tela 2 — Filtros da Escala
+    root.querySelectorAll('[data-day]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            state.day = btn.dataset.day;
+            renderApp();
+        });
+    });
+
+    root.querySelectorAll('[data-team]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            state.team = btn.dataset.team;
+            renderApp();
+        });
+    });
+
+    const turnSelect = root.querySelector('#select-turn');
+    if (turnSelect) {
+        turnSelect.addEventListener('change', (e) => {
+            state.turn = e.target.value;
+            renderApp();
+        });
+    }
+
+    const toggleDiet = root.querySelector('#toggle-diet');
+    if (toggleDiet) {
+        toggleDiet.addEventListener('click', () => {
+            state.onlyDiet = !state.onlyDiet;
+            renderApp();
+        });
+    }
+
+    const toggleConflict = root.querySelector('#toggle-conflict');
+    if (toggleConflict) {
+        toggleConflict.addEventListener('click', () => {
+            state.onlyConflict = !state.onlyConflict;
+            renderApp();
+        });
+    }
+
+    const btnClear = root.querySelector('#btn-clear-filters');
+    if (btnClear) {
+        btnClear.addEventListener('click', () => {
+            state.day = 'all';
+            state.team = 'all';
+            state.turn = 'all';
+            state.onlyDiet = false;
+            state.onlyConflict = false;
+            state.search = '';
+            document.getElementById('global-search').value = '';
+            document.getElementById('search-clear').classList.remove('visible');
+            renderApp();
+        });
+    }
+
+    // Ações rápidas na barra de resumo
+    const btnCopyHandles = root.querySelector('#btn-copy-handles');
+    if (btnCopyHandles) {
+        btnCopyHandles.addEventListener('click', () => {
+            const handles = getFilteredPeople().map(p => p.instagram).filter(Boolean).join(' ');
+            copyText(handles, 'Arrobas copiados');
+        });
+    }
+
+    const btnPrint = root.querySelector('#btn-print-list');
+    if (btnPrint) {
+        btnPrint.addEventListener('click', () => showToast('Preparando impressão da escala'));
+    }
+
+    // Copiar @ direto na linha sem abrir a gaveta
+    root.querySelectorAll('[data-copy-handle]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const handle = btn.dataset.copyHandle;
+            copyText(handle);
+            const orig = btn.textContent;
+            btn.textContent = 'Copiado';
+            btn.classList.add('copied');
+            setTimeout(() => {
+                btn.textContent = orig;
+                btn.classList.remove('copied');
+            }, 900);
+        });
+    });
+
+    // WhatsApp direto na linha sem abrir a gaveta
+    root.querySelectorAll('[data-wa]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            showToast(`WhatsApp: ${btn.dataset.wa}`);
+        });
+    });
+
+    // Abrir Ficha Individual (Drawer) ao clicar na linha
+    root.querySelectorAll('[data-open-id]').forEach(row => {
+        const open = () => {
+            state.drawerId = Number(row.dataset.openId);
+            document.querySelectorAll('.roster-row.is-selected').forEach(r => r.classList.remove('is-selected'));
+            row.classList.add('is-selected');
+            renderDrawer();
+        };
+        row.addEventListener('click', open);
+        row.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                open();
+            }
+        });
+    });
+}
+
+function bindDrawerEvents(p) {
+    const drawer = document.getElementById('profile-drawer');
+
+    drawer.querySelector('#btn-close-drawer').addEventListener('click', closeDrawer);
+    drawer.querySelector('#btn-x-drawer').addEventListener('click', closeDrawer);
+
+    drawer.querySelectorAll('[data-nav-id]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            state.drawerId = Number(btn.dataset.navId);
+            renderApp();
+        });
+    });
+
+    drawer.querySelectorAll('[data-wa]').forEach(btn => {
+        btn.addEventListener('click', () => showToast(`WhatsApp: ${btn.dataset.wa}`));
+    });
+
+    const btnCredit = drawer.querySelector('#btn-copy-credit');
+    btnCredit.addEventListener('click', () => {
+        copyText(`${p.nomeSocial} — ${p.funcao} (${p.instagram})`);
+        btnCredit.textContent = 'Copiado';
+        setTimeout(() => { btnCredit.textContent = 'Copiar crédito'; }, 1000);
+    });
+
+    drawer.querySelector('#btn-copy-insta-in').addEventListener('click', () => {
+        copyText(drawer.querySelector('#f-insta').value.trim(), 'Instagram copiado');
+    });
+
+    drawer.querySelector('#btn-copy-email').addEventListener('click', () => {
+        copyText(p.email, 'E-mail copiado');
+    });
+
+    // Resolver conflito Forms ≠
+    const btnAccept = drawer.querySelector('#btn-accept-forms');
+    if (btnAccept) {
+        btnAccept.addEventListener('click', () => {
+            if (p.conflitoForms.type === 'field') {
+                p[p.conflitoForms.field] = p.conflitoForms.formsVal;
+            } else if (p.conflitoForms.type === 'addDay' && !p.dias.includes(p.conflitoForms.dayToAdd)) {
+                p.dias.push(p.conflitoForms.dayToAdd);
+            }
+            p.conflitoForms = null;
+            showToast('Atualizado com Forms');
+            renderApp();
+        });
+    }
+
+    const btnKeep = drawer.querySelector('#btn-keep-panel');
+    if (btnKeep) {
+        btnKeep.addEventListener('click', () => {
+            p.conflitoForms = null;
+            showToast('Versão do painel mantida');
+            renderApp();
+        });
+    }
+
+    // Salvar créditos editados
+    drawer.querySelector('#form-drawer-credit').addEventListener('submit', (e) => {
+        e.preventDefault();
+        p.nomeSocial = drawer.querySelector('#f-nome').value.trim() || p.nomeSocial;
+        p.instagram = drawer.querySelector('#f-insta').value.trim();
+        p.funcao = drawer.querySelector('#f-funcao').value.trim();
+        p.empresa = drawer.querySelector('#f-empresa').value.trim();
+        showToast('Salvo');
+        renderApp();
+    });
+
+    // Salvar nota interna ao sair do campo
+    drawer.querySelector('#f-nota').addEventListener('blur', (e) => {
+        const val = e.target.value.trim();
+        if (val !== p.notaInterna) {
+            p.notaInterna = val;
+            showToast('Nota salva');
+        }
+    });
+
+    // Revelar / Ocultar CPF e RG (LGPD + Log)
+    drawer.querySelector('#btn-toggle-doc').addEventListener('click', () => {
+        if (state.revealedDocs.has(p.id)) {
+            state.revealedDocs.delete(p.id);
+        } else {
+            state.revealedDocs.add(p.id);
+            showToast('Documento revelado · log registrado (Pedro)');
+        }
+        renderDrawer();
+    });
+}
+
+/* ============================================================================
+   BOOT
+   ============================================================================ */
+bindGlobalEvents();
+renderApp();
+</script>
+</body>
+</html>
