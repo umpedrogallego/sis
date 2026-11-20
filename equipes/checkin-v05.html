@@ -1,0 +1,3086 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0c1114">
+    <title>Portaria · Check-in — Casa de Criadores 58</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* =====================================================================
+           1. DESIGN TOKENS — MONOCROMIA GRAFITE-PETRÓLEO + COR FUNCIONAL
+           ===================================================================== */
+        :root {
+            --bg-base: #0c1114;
+            --bg-surface: #12181c;
+            --bg-elevated: #171f24;
+            --bg-hover: #1b242a;
+            --bg-input: #090d10;
+
+            --border: rgba(255, 255, 255, 0.09);
+            --border-strong: rgba(255, 255, 255, 0.22);
+
+            --text-primary: #eef2f4;
+            --text-secondary: #8b98a1;
+            --text-muted: #5a6872;
+
+            /* Cores das 4 equipes principais + marcas */
+            --team-maxima: #e85d9e;
+            --team-lema: #e5a93c;
+            --team-staff: #4fb3d9;
+            --team-estagio: #4ec28c;
+
+            /* Estados operacionais de portaria */
+            --status-in: #4ec28c;
+            --status-in-bg: rgba(78, 194, 140, 0.14);
+            --status-in-border: rgba(78, 194, 140, 0.44);
+            --btn-liberar-bg: #1b5e3a;
+            --btn-liberar-hover: #237649;
+            --btn-liberar-border: #38a169;
+            --alert-warn: #f0b429;
+            --alert-warn-bg: rgba(240, 180, 41, 0.14);
+            --alert-diet: #d6c5a3;
+            --alert-diet-bg: rgba(214, 197, 163, 0.11);
+
+            /* Alturas exatas da pilha sticky */
+            --h-header: 52px;
+            --h-unified: 54px;
+            --h-thead: 32px;
+            --h-footer: 48px;
+
+            --radius: 4px;
+            --font-sans: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+            --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Sem overflow-x: hidden em html/body para preservar position: sticky no iOS Safari / Android Chrome */
+        html {
+            background: var(--bg-base);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            line-height: 1.35;
+            -webkit-font-smoothing: antialiased;
+            color-scheme: dark;
+        }
+
+        body {
+            min-height: 100dvh;
+            background: var(--bg-base);
+            color: var(--text-primary);
+        }
+
+        body.sheet-open {
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        button, input, select {
+            font-family: inherit;
+            color: inherit;
+        }
+
+        :focus-visible {
+            outline: 2px solid var(--text-primary);
+            outline-offset: 2px;
+        }
+
+        .mono {
+            font-family: var(--font-mono);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .tabular {
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* =====================================================================
+           2. CABEÇALHO LIMPO E FIXO (52px, top: 0)
+              [ Logo CdC ] [ ◑ TODOS / ○ FALTAM / ● ENTRARAM ]   (vazio)   [ ⚙️ ]
+           ===================================================================== */
+        .app-header {
+            position: sticky;
+            top: 0;
+            z-index: 60;
+            height: var(--h-header);
+            width: 100%;
+            background: rgba(12, 17, 20, 0.96);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .app-header-inner {
+            max-width: 1080px;
+            height: 100%;
+            margin: 0 auto;
+            padding: 0 8px 0 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .brand-logo-wrap {
+            display: inline-flex;
+            align-items: center;
+            height: 32px;
+            flex-shrink: 0;
+        }
+
+        .brand-logo {
+            height: 24px;
+            width: auto;
+            max-width: 110px;
+            object-fit: contain;
+            display: block;
+        }
+
+        .brand-logo-fallback {
+            display: none;
+            font-family: var(--font-mono);
+            font-size: 0.88rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+            white-space: nowrap;
+        }
+
+        /* Botão 3-estados: ◑ TODOS -> ○ FALTAM -> ● ENTRARAM */
+        .arrival-cycle-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            height: 34px;
+            padding: 0 10px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border-strong);
+            background: var(--bg-surface);
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background 0.12s, border-color 0.12s, color 0.12s;
+        }
+
+        .arrival-cycle-btn:hover {
+            background: var(--bg-elevated);
+        }
+
+        .arrival-cycle-btn.is-pending {
+            border-color: rgba(240, 180, 41, 0.5);
+            background: var(--alert-warn-bg);
+            color: var(--alert-warn);
+        }
+
+        .arrival-cycle-btn.is-in {
+            border-color: var(--status-in-border);
+            background: var(--status-in-bg);
+            color: var(--status-in);
+        }
+
+        .arrival-glyph {
+            font-size: 0.92rem;
+            line-height: 1;
+        }
+
+        /* Centro intencionalmente vazio para manter o cabeçalho descongestionado */
+        .header-spacer {
+            flex: 1;
+            min-width: 8px;
+        }
+
+        /* Botão único ⚙️ (44x44px hit target) */
+        .gear-btn {
+            position: relative;
+            width: 44px;
+            height: 44px;
+            border: none;
+            border-radius: var(--radius);
+            background: transparent;
+            color: var(--text-primary);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: background 0.12s;
+        }
+
+        .gear-btn:hover {
+            background: var(--bg-elevated);
+        }
+
+        .indicator-dot {
+            position: absolute;
+            top: 9px;
+            right: 9px;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--alert-warn);
+            box-shadow: 0 0 0 2px var(--bg-base);
+            pointer-events: none;
+        }
+
+        /* =====================================================================
+           3. BARRA UNIFICADA DE BUSCA + ALFABETO (54px, sticky top: 52px)
+           ===================================================================== */
+        .unified-bar {
+            position: sticky;
+            top: var(--h-header);
+            z-index: 50;
+            height: var(--h-unified);
+            width: 100%;
+            background: var(--bg-input);
+            border-bottom: 1px solid var(--border-strong);
+        }
+
+        .unified-bar-inner {
+            max-width: 1080px;
+            height: 100%;
+            margin: 0 auto;
+            display: flex;
+            align-items: stretch;
+        }
+
+        /* Botões fixos de 48px nas extremidades (Lupa ou sort_by_alpha) */
+        .unified-mode-btn {
+            position: relative;
+            width: 48px;
+            height: 100%;
+            flex-shrink: 0;
+            border: none;
+            background: var(--bg-surface);
+            color: var(--text-primary);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.12s, color 0.12s;
+        }
+
+        .unified-mode-btn:hover {
+            background: var(--bg-elevated);
+        }
+
+        .unified-mode-btn.is-left {
+            border-right: 1px solid var(--border-strong);
+        }
+
+        .unified-mode-btn.is-right {
+            border-left: 1px solid var(--border-strong);
+        }
+
+        .unified-mode-btn .indicator-dot {
+            top: 11px;
+            right: 11px;
+        }
+
+        /* MODO ALFABETO: Scroll horizontal strictly à direita da lupa com fade suave */
+        .alpha-scroll-viewport {
+            flex: 1;
+            min-width: 0;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scroll-snap-type: x proximity;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+            padding: 0 14px 0 8px;
+            gap: 4px;
+            /* Soft-edge mask-image fade (Modern Web Guidance) */
+            -webkit-mask-image: linear-gradient(to right, black 0, black calc(100% - 22px), transparent 100%);
+            mask-image: linear-gradient(to right, black 0, black calc(100% - 22px), transparent 100%);
+        }
+
+        .alpha-scroll-viewport::-webkit-scrollbar {
+            display: none;
+        }
+
+        .alpha-chip {
+            scroll-snap-align: start;
+            min-width: 38px;
+            height: 38px;
+            padding: 0 8px;
+            border: 1px solid transparent;
+            border-radius: var(--radius);
+            background: transparent;
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+            font-size: 0.86rem;
+            font-weight: 600;
+            cursor: pointer;
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.12s, color 0.12s, border-color 0.12s;
+        }
+
+        .alpha-chip:hover {
+            color: var(--text-primary);
+            background: var(--bg-surface);
+        }
+
+        .alpha-chip.active {
+            background: var(--text-primary);
+            color: var(--bg-base);
+            border-color: var(--text-primary);
+            font-weight: 700;
+        }
+
+        /* MODO BUSCA: Campo full-width (16px para evitar zoom automático no iOS Safari) */
+        .search-mode-field {
+            flex: 1;
+            min-width: 0;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            padding: 0 8px 0 12px;
+            gap: 8px;
+        }
+
+        .search-mode-icon {
+            color: var(--text-muted);
+            display: inline-flex;
+            flex-shrink: 0;
+        }
+
+        .unified-search-input {
+            flex: 1;
+            min-width: 0;
+            height: 100%;
+            border: none;
+            background: transparent;
+            font-size: 16px;
+            color: var(--text-primary);
+        }
+
+        .unified-search-input::placeholder {
+            color: var(--text-muted);
+            font-size: 0.88rem;
+        }
+
+        .unified-search-input:focus {
+            outline: none;
+        }
+
+        /* Remove o X nativo feio do webkit para usar o nosso botão tátil */
+        .unified-search-input::-webkit-search-cancel-button {
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .search-clear-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            background: var(--bg-surface);
+            color: var(--text-secondary);
+            font-size: 1.15rem;
+            line-height: 1;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .search-clear-btn.visible {
+            display: inline-flex;
+        }
+
+        .search-clear-btn:hover {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* =====================================================================
+           4. CABEÇALHO DE COLUNAS FIXO (sticky top: 106px) & CONTAINER PRINCIPAL
+           ===================================================================== */
+        .main-shell {
+            max-width: 1080px;
+            margin: 0 auto;
+            width: 100%;
+            /* overflow-x: clip não quebra position: sticky em Safari/Chrome */
+            overflow-x: clip;
+            padding-bottom: calc(var(--h-footer) + env(safe-area-inset-bottom, 0px) + 28px);
+        }
+
+        .table-head {
+            position: sticky;
+            top: calc(var(--h-header) + var(--h-unified));
+            z-index: 30;
+            display: grid;
+            grid-template-columns: var(--cols-mobile, minmax(0, 1.55fr) 54px minmax(0, 1fr));
+            align-items: center;
+            gap: 8px;
+            height: var(--h-thead);
+            padding: 0 12px 0 14px;
+            background: var(--bg-elevated);
+            border-bottom: 1px solid var(--border-strong);
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+        }
+
+        .th-cell {
+            min-width: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .th-cell.is-center {
+            text-align: center;
+        }
+
+        .th-cell.is-desktop-acesso {
+            display: none;
+        }
+
+        /* =====================================================================
+           5. LINHAS DA LISTA — 2 ESTÁGIOS DIRETOS + SWIPE BIDIRECIONAL
+              Otimizado para 1000+ registros com content-visibility: auto
+           ===================================================================== */
+        .row-shell {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+            border-bottom: 1px solid var(--border);
+            border-left: 3px solid var(--tc);
+            background: var(--bg-base);
+            content-visibility: auto;
+            contain-intrinsic-size: auto 56px;
+            transition: opacity 0.2s ease, max-height 0.24s ease, border-bottom-width 0.2s ease;
+            max-height: 160px;
+        }
+
+        .row-shell.is-exiting {
+            opacity: 0;
+            max-height: 0;
+            border-bottom-width: 0;
+            pointer-events: none;
+        }
+
+        /* Trilho de fundo revelado no swipe esquerda ou direita */
+        .swipe-track {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            background: var(--btn-liberar-bg);
+            color: #ffffff;
+            font-family: var(--font-mono);
+            font-size: 0.76rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.1s linear;
+        }
+
+        .swipe-track.is-undo {
+            background: #4e3911;
+            color: var(--alert-warn);
+        }
+
+        /* Superfície deslizável da linha */
+        .row-surface {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            min-height: 54px;
+            background: var(--bg-base);
+            touch-action: pan-y;
+            user-select: none;
+            transition: transform 0.2s cubic-bezier(0.2, 0.85, 0.25, 1), background-color 0.12s;
+        }
+
+        .row-surface.is-dragging {
+            transition: none;
+        }
+
+        .row-surface:hover {
+            background: var(--bg-surface);
+        }
+
+        .row-surface.is-checked-in {
+            background: #0e1915;
+        }
+
+        .row-surface.is-checked-in:hover {
+            background: #12211b;
+        }
+
+        /* Micro-chevrons discretos nas bordas (zero impacto na largura útil) */
+        .swipe-cue {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            opacity: 0.34;
+            pointer-events: none;
+            line-height: 1;
+        }
+
+        .swipe-cue.is-left { left: 3px; }
+        .swipe-cue.is-right { right: 3px; }
+
+        @keyframes swipeNudge {
+            0%, 100% { transform: translateX(0); }
+            28% { transform: translateX(18px); }
+            62% { transform: translateX(-14px); }
+            85% { transform: translateX(0); }
+        }
+
+        .row-surface.is-nudge {
+            animation: swipeNudge 1.1s cubic-bezier(0.25, 0.9, 0.3, 1) 0.45s 1;
+        }
+
+        /* ESTÁGIO 0 (Padrão): Grid compacto sem sobreposição + chip de horário à direita */
+        .stage-0 {
+            display: flex;
+            align-items: center;
+            min-height: 54px;
+            padding: 8px 12px 8px 14px;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .stage-0-cols {
+            flex: 1;
+            min-width: 0;
+            display: grid;
+            grid-template-columns: var(--cols-mobile, minmax(0, 1.55fr) 54px minmax(0, 1fr));
+            align-items: center;
+            gap: 8px;
+        }
+
+        .cell-val {
+            min-width: 0;
+            font-size: 0.86rem;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .cell-val.is-name {
+            font-weight: 600;
+            font-size: 0.91rem;
+        }
+
+        .cell-val.is-pronoun {
+            text-align: center;
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+        }
+
+        .cell-val.is-team {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.01em;
+        }
+
+        .cell-val.is-mono {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Chip de horário SEMPRE à direita no mobile/tablet, nunca colado no nome */
+        .mobile-time-chip {
+            margin-left: auto;
+            flex-shrink: 0;
+            padding: 3px 6px;
+            border-radius: 3px;
+            background: var(--status-in-bg);
+            border: 1px solid var(--status-in-border);
+            color: var(--status-in);
+            font-family: var(--font-mono);
+            font-variant-numeric: tabular-nums;
+            font-size: 0.67rem;
+            font-weight: 700;
+            line-height: 1.15;
+            white-space: nowrap;
+        }
+
+        .desktop-acesso-cell {
+            display: none;
+        }
+
+        /* ESTÁGIO 1 (1 clique direto no nome -> Modo Info: RG, CPF + botão PERFIL) */
+        .stage-1-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            min-height: 60px;
+            padding: 8px 12px 8px 14px;
+            background: var(--bg-elevated);
+            cursor: pointer;
+        }
+
+        .info-left {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .info-context-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 0;
+        }
+
+        .info-context-name {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .info-context-team {
+            font-family: var(--font-mono);
+            font-size: 0.66rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex-shrink: 1;
+        }
+
+        .info-fields-strip {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .info-field {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            min-width: 0;
+        }
+
+        .info-field-k {
+            font-family: var(--font-mono);
+            font-size: 0.6rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        .info-field-v {
+            font-family: var(--font-mono);
+            font-variant-numeric: tabular-nums;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            white-space: nowrap;
+        }
+
+        .info-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .perfil-btn {
+            height: 38px;
+            padding: 0 13px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border-strong);
+            background: var(--text-primary);
+            color: var(--bg-base);
+            font-family: var(--font-mono);
+            font-size: 0.74rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .perfil-btn:hover {
+            background: #dce4e8;
+        }
+
+        /* =====================================================================
+           6. ADAPTAÇÃO DESKTOP (>= 900px e hover): BOTÃO ACESSO + SEM CHIP EXTRA
+           ===================================================================== */
+        @media (min-width: 900px) and (hover: hover) {
+            .table-head {
+                grid-template-columns: var(--cols-desktop, minmax(220px, 1.55fr) 74px minmax(160px, 1fr) 124px);
+            }
+
+            .th-cell.is-desktop-acesso {
+                display: block;
+                text-align: center;
+            }
+
+            .stage-0 {
+                padding: 8px 12px 8px 14px;
+            }
+
+            .stage-0-cols {
+                grid-template-columns: var(--cols-desktop, minmax(220px, 1.55fr) 74px minmax(160px, 1fr) 124px);
+            }
+
+            .mobile-time-chip {
+                display: none !important;
+            }
+
+            .swipe-cue {
+                display: none;
+            }
+
+            .desktop-acesso-cell {
+                display: flex;
+                justify-content: flex-end;
+                align-items: center;
+            }
+
+            .acesso-btn {
+                width: 114px;
+                height: 36px;
+                padding: 0 8px;
+                border-radius: 3px;
+                font-family: var(--font-mono);
+                font-variant-numeric: tabular-nums;
+                font-size: 0.72rem;
+                font-weight: 700;
+                letter-spacing: 0.03em;
+                cursor: pointer;
+                display: inline-flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                line-height: 1.15;
+                transition: background 0.12s, border-color 0.12s;
+            }
+
+            .acesso-btn.is-liberar {
+                background: var(--btn-liberar-bg);
+                border: 1px solid var(--btn-liberar-border);
+                color: #ffffff;
+            }
+
+            .acesso-btn.is-liberar:hover {
+                background: var(--btn-liberar-hover);
+            }
+
+            .acesso-btn.is-entrou {
+                background: var(--status-in-bg);
+                border: 1px solid var(--status-in-border);
+                color: var(--status-in);
+            }
+
+            .acesso-btn.is-entrou:hover {
+                background: rgba(78, 194, 140, 0.22);
+            }
+
+            .acesso-btn-sub {
+                font-size: 0.62rem;
+                font-weight: 500;
+                opacity: 0.92;
+            }
+        }
+
+        .empty-state {
+            padding: 48px 16px;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.88rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            height: 36px;
+            padding: 0 12px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border-strong);
+            background: var(--bg-surface);
+            color: var(--text-primary);
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            background: var(--bg-elevated);
+        }
+
+        .btn-primary {
+            background: var(--text-primary);
+            color: var(--bg-base);
+            border-color: var(--text-primary);
+            font-weight: 700;
+        }
+
+        .btn-primary:hover {
+            background: #dce4e8;
+        }
+
+        /* =====================================================================
+           7. RODAPÉ DISCRETO E PERSISTENTE (CONTAGEM GERAL + ▲ EQUIPES)
+           ===================================================================== */
+        .footer-bar {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 55;
+            background: rgba(12, 17, 20, 0.97);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-top: 1px solid var(--border-strong);
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+        }
+
+        .footer-progress-track {
+            width: 100%;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .footer-progress-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--status-in);
+            transition: width 0.25s ease;
+        }
+
+        .footer-inner {
+            max-width: 1080px;
+            min-height: var(--h-footer);
+            margin: 0 auto;
+            padding: 0 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .footer-stats-trigger {
+            flex: 1;
+            min-width: 0;
+            height: var(--h-footer);
+            border: none;
+            background: transparent;
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            text-align: left;
+        }
+
+        .footer-tally {
+            font-family: var(--font-mono);
+            font-variant-numeric: tabular-nums;
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .footer-tally strong {
+            color: var(--status-in);
+            font-weight: 700;
+        }
+
+        .footer-cue {
+            font-family: var(--font-mono);
+            font-size: 0.71rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .footer-reset-btn {
+            height: 30px;
+            padding: 0 10px;
+            border-radius: var(--radius);
+            border: 1px solid rgba(240, 180, 41, 0.5);
+            background: var(--alert-warn-bg);
+            color: var(--alert-warn);
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        /* =====================================================================
+           8. MODAL UNIFICADO DE CONFIGURAÇÕES ⚙️ ([ Filtros ] | [ 👁️ Colunas ])
+           ===================================================================== */
+        dialog.settings-modal {
+            margin: auto;
+            width: min(500px, calc(100vw - 20px));
+            max-height: 86dvh;
+            background: var(--bg-surface);
+            color: var(--text-primary);
+            border: 1px solid var(--border-strong);
+            border-radius: 6px;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        dialog.settings-modal[open] {
+            display: flex;
+            flex-direction: column;
+        }
+
+        dialog.settings-modal::backdrop {
+            background: rgba(5, 8, 10, 0.78);
+            backdrop-filter: blur(3px);
+        }
+
+        .modal-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .modal-title {
+            font-size: 0.92rem;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            width: 34px;
+            height: 34px;
+            border: none;
+            border-radius: var(--radius);
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 1.25rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+        }
+
+        .modal-tabs-bar {
+            padding: 10px 14px 0;
+            flex-shrink: 0;
+        }
+
+        .segmented-tabs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px;
+            background: var(--bg-input);
+            padding: 3px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+
+        .seg-tab {
+            height: 34px;
+            border: none;
+            border-radius: 3px;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .seg-tab[aria-selected="true"] {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 14px;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            flex: 1;
+        }
+
+        .modal-section {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .modal-sec-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .modal-sec-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+        }
+
+        .link-action {
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            cursor: pointer;
+        }
+
+        .modal-select {
+            width: 100%;
+            height: 40px;
+            padding: 0 10px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border-strong);
+            background: var(--bg-input);
+            color: var(--text-primary);
+            font-size: 16px;
+        }
+
+        .teams-check-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 6px;
+        }
+
+        @media (max-width: 460px) {
+            .teams-check-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .team-chk-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 9px 10px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--tc);
+            background: var(--bg-elevated);
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .team-chk-card input {
+            accent-color: var(--text-primary);
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .team-chk-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 0;
+        }
+
+        .team-chk-name {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-weight: 500;
+        }
+
+        .team-chk-count {
+            font-family: var(--font-mono);
+            font-variant-numeric: tabular-nums;
+            font-size: 0.72rem;
+            color: var(--text-muted);
+        }
+
+        /* Sub-tabs e lista de colunas dentro da aba 👁️ Colunas */
+        .col-config-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .col-config-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 8px 10px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            background: var(--bg-elevated);
+        }
+
+        .col-config-left {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            flex: 1;
+            min-width: 0;
+            cursor: pointer;
+        }
+
+        .col-config-left input {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--text-primary);
+            cursor: pointer;
+        }
+
+        .col-pos-badge {
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 1px 5px;
+            border-radius: 3px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-strong);
+            color: var(--text-secondary);
+            flex-shrink: 0;
+        }
+
+        .col-config-label {
+            font-size: 0.83rem;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .col-order-btns {
+            display: inline-flex;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        .ord-btn {
+            width: 30px;
+            height: 30px;
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            background: var(--bg-surface);
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            cursor: pointer;
+        }
+
+        .ord-btn:disabled {
+            opacity: 0.28;
+            cursor: not-allowed;
+        }
+
+        .modal-foot {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 10px 14px;
+            border-top: 1px solid var(--border);
+            background: var(--bg-base);
+            flex-shrink: 0;
+        }
+
+        /* =====================================================================
+           9. BOTTOM SHEETS (PERFIL + ESTATÍSTICAS POR EQUIPE)
+              Rolável na metade inferior (~62dvh) com botão de ação fixo na base
+           ===================================================================== */
+        .sheet-backdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 80;
+            background: rgba(5, 8, 10, 0.74);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.16s ease;
+        }
+
+        .sheet-backdrop.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .bottom-sheet {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 90;
+            max-width: 680px;
+            margin: 0 auto;
+            height: 62dvh;
+            max-height: 85dvh;
+            background: var(--bg-surface);
+            border-top: 1px solid var(--border-strong);
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transform: translateY(105%);
+            transition: transform 0.22s cubic-bezier(0.2, 0.85, 0.25, 1);
+        }
+
+        .bottom-sheet.open {
+            transform: translateY(0);
+        }
+
+        @media (min-width: 900px) {
+            .bottom-sheet {
+                top: 0;
+                left: auto;
+                right: 0;
+                bottom: 0;
+                width: 440px;
+                height: 100dvh;
+                max-height: 100dvh;
+                border-radius: 0;
+                border-top: none;
+                border-left: 1px solid var(--border-strong);
+                transform: translateX(105%);
+            }
+
+            .bottom-sheet.open {
+                transform: translateX(0);
+            }
+        }
+
+        .sheet-grabber {
+            width: 36px;
+            height: 4px;
+            border-radius: 99px;
+            background: var(--border-strong);
+            margin: 8px auto 0;
+            flex-shrink: 0;
+        }
+
+        @media (min-width: 900px) {
+            .sheet-grabber {
+                display: none;
+            }
+        }
+
+        .sheet-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 8px 14px 10px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .sheet-body {
+            flex: 1;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch;
+            padding: 14px 16px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .sheet-pinned-foot {
+            flex-shrink: 0;
+            padding: 10px 14px calc(12px + env(safe-area-inset-bottom, 0px));
+            border-top: 1px solid var(--border-strong);
+            background: var(--bg-base);
+        }
+
+        .sheet-hero {
+            border-left: 3px solid var(--tc);
+            padding-left: 12px;
+        }
+
+        .sheet-kicker {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            color: var(--text-secondary);
+        }
+
+        .sheet-name {
+            font-size: 1.28rem;
+            font-weight: 700;
+            line-height: 1.15;
+            margin-top: 2px;
+        }
+
+        .sheet-civil {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 3px;
+        }
+
+        .doc-box {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .doc-pair {
+            display: flex;
+            gap: 18px;
+            flex-wrap: wrap;
+        }
+
+        .doc-pair span {
+            display: block;
+            font-size: 0.66rem;
+            color: var(--text-muted);
+        }
+
+        .doc-pair strong {
+            font-family: var(--font-mono);
+            font-variant-numeric: tabular-nums;
+            font-size: 0.86rem;
+            font-weight: 600;
+        }
+
+        .sheet-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px 14px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border);
+        }
+
+        .kv-item.full {
+            grid-column: 1 / -1;
+        }
+
+        .kv-label {
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--text-muted);
+            margin-bottom: 2px;
+        }
+
+        .kv-val {
+            font-size: 0.84rem;
+            color: var(--text-primary);
+            word-break: break-word;
+        }
+
+        .days-mini-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .day-chip-mini {
+            padding: 2px 6px;
+            border-radius: 3px;
+            border: 1px solid var(--border);
+            background: var(--bg-input);
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        .day-chip-mini.on {
+            border-color: var(--tc);
+            color: var(--text-primary);
+            background: var(--bg-elevated);
+            font-weight: 600;
+        }
+
+        .diet-badge {
+            display: inline-block;
+            padding: 2px 7px;
+            border-radius: 3px;
+            background: var(--alert-diet-bg);
+            color: var(--alert-diet);
+            font-size: 0.75rem;
+        }
+
+        .sheet-cta-btn {
+            width: 100%;
+            height: 46px;
+            border-radius: var(--radius);
+            border: 1px solid var(--btn-liberar-border);
+            background: var(--btn-liberar-bg);
+            color: #ffffff;
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            cursor: pointer;
+        }
+
+        .sheet-cta-btn:hover {
+            background: var(--btn-liberar-hover);
+        }
+
+        .sheet-cta-btn.is-undo {
+            background: var(--bg-elevated);
+            color: var(--alert-warn);
+            border-color: rgba(240, 180, 41, 0.48);
+        }
+
+        /* Linhas de estatísticas por equipe no Stats Sheet */
+        .team-stat-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .team-stat-btn {
+            width: 100%;
+            text-align: left;
+            padding: 10px 12px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--tc);
+            background: var(--bg-elevated);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            transition: border-color 0.12s, background 0.12s;
+        }
+
+        .team-stat-btn:hover {
+            background: var(--bg-hover);
+            border-color: var(--border-strong);
+            border-left-color: var(--tc);
+        }
+
+        .team-stat-btn.is-active {
+            border-color: var(--tc);
+            background: var(--bg-hover);
+        }
+
+        .team-stat-top {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .team-stat-name {
+            font-size: 0.86rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .team-stat-nums {
+            font-family: var(--font-mono);
+            font-variant-numeric: tabular-nums;
+            font-size: 0.74rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .team-stat-nums strong {
+            color: var(--status-in);
+        }
+
+        .team-stat-bar {
+            width: 100%;
+            height: 3px;
+            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.08);
+            overflow: hidden;
+        }
+
+        .team-stat-bar-fill {
+            height: 100%;
+            background: var(--tc);
+        }
+
+        /* =====================================================================
+           10. TOAST COM DESFAZER (POSICIONADO ACIMA DO RODAPÉ FIXO)
+           ===================================================================== */
+        .toast-bar {
+            position: fixed;
+            left: 12px;
+            right: 12px;
+            bottom: calc(var(--h-footer) + env(safe-area-inset-bottom, 0px) + 10px);
+            z-index: 120;
+            max-width: 520px;
+            margin: 0 auto;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-strong);
+            border-radius: var(--radius);
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            font-size: 0.8rem;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.55);
+            transform: translateY(150%);
+            opacity: 0;
+            transition: transform 0.16s ease, opacity 0.16s ease;
+            pointer-events: none;
+        }
+
+        .toast-bar.visible {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .toast-undo-btn {
+            height: 28px;
+            padding: 0 10px;
+            border-radius: 3px;
+            border: 1px solid var(--border-strong);
+            background: var(--bg-surface);
+            color: var(--alert-warn);
+            font-family: var(--font-mono);
+            font-size: 0.74rem;
+            font-weight: 700;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- =======================================================================
+         1. CABEÇALHO LIMPO E FIXO (52px, top: 0)
+         ======================================================================= -->
+    <header class="app-header">
+        <div class="app-header-inner">
+            <div class="header-left">
+                <div class="brand-logo-wrap">
+                    <img
+                        src="https://casadecriadores.com.br/wp-content/uploads/2024/07/logo_site.png"
+                        alt="Casa de Criadores"
+                        class="brand-logo"
+                        onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';"
+                    >
+                    <span class="brand-logo-fallback">CdC 58</span>
+                </div>
+
+                <!-- 3 estados: ◑ TODOS -> ○ FALTAM -> ● ENTRARAM -->
+                <button type="button" class="arrival-cycle-btn" id="btn-arrival-cycle" title="Alternar filtro de chegada (Todos / Faltam / Entraram)">
+                    <span class="arrival-glyph" id="arrival-glyph" aria-hidden="true">◑</span>
+                    <span id="arrival-label">TODOS</span>
+                </button>
+            </div>
+
+            <!-- Espaço central intencionalmente livre -->
+            <div class="header-spacer" aria-hidden="true"></div>
+
+            <!-- Botão único de Configurações ⚙️ (Filtros + 👁️ Colunas) -->
+            <button type="button" class="gear-btn" id="btn-open-settings" title="Configurações e Colunas" aria-label="Configurações e Colunas">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+                <span class="indicator-dot hidden" id="gear-filter-dot"></span>
+            </button>
+        </div>
+    </header>
+
+    <!-- =======================================================================
+         2. BARRA UNIFICADA DE BUSCA + ALFABETO (54px, sticky top: 52px)
+         ======================================================================= -->
+    <section class="unified-bar" aria-label="Busca e índice alfabético">
+        <div class="unified-bar-inner">
+            <!-- ESTADO A (Padrão): Lupa fixa à esquerda + scroll de letras à direita -->
+            <button type="button" class="unified-mode-btn is-left" id="btn-enter-search" title="Buscar por nome, CPF, RG ou marca" aria-label="Ativar busca textual">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <span class="indicator-dot hidden" id="search-active-dot"></span>
+            </button>
+
+            <div class="alpha-scroll-viewport" id="alpha-strip" role="group" aria-label="Filtrar por inicial"></div>
+
+            <!-- ESTADO B (Modo Busca): Campo de texto full-width + sort_by_alpha fixo à direita -->
+            <div class="search-mode-field hidden" id="search-mode-field">
+                <span class="search-mode-icon" aria-hidden="true">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </span>
+                <input
+                    type="search"
+                    id="unified-search-input"
+                    class="unified-search-input"
+                    placeholder="Buscar nome, CPF, RG, marca ou @..."
+                    enterkeyhint="search"
+                    autocomplete="off"
+                    autocorrect="off"
+                    spellcheck="false"
+                >
+                <button type="button" class="search-clear-btn" id="btn-clear-search" aria-label="Limpar busca">×</button>
+            </div>
+
+            <button type="button" class="unified-mode-btn is-right hidden" id="btn-exit-search" title="Voltar ao índice alfabético" aria-label="Voltar ao índice alfabético">
+                <!-- Google Material Symbols Outlined: sort_by_alpha -->
+                <svg width="22" height="22" viewBox="0 -960 960 960" fill="currentColor" aria-hidden="true">
+                    <path d="M80-280 230-680h84l150 400h-76l-36-102H192l-36 102H80Zm136-168h112l-54-154h-4l-54 154Zm316 168v-72l214-256H546v-72h294v72L626-352h218v72H532Zm-52-514L388-886l56-56 36 36 36-36 56 56-92 92Zm0 732-92-92 56-56 36 36 36-36 56 56-92 92Z"/>
+                </svg>
+            </button>
+        </div>
+    </section>
+
+    <!-- =======================================================================
+         3. CABEÇALHO DE COLUNAS STICKY + LISTA OPERACIONAL
+         ======================================================================= -->
+    <main class="main-shell">
+        <div class="table-head" id="table-head"></div>
+        <div id="roster-list" role="list"></div>
+    </main>
+
+    <!-- =======================================================================
+         4. RODAPÉ PERSISTENTE (CONTAGEM GERAL + VOLTAR À LISTA + ▲ EQUIPES)
+         ======================================================================= -->
+    <footer class="footer-bar">
+        <div class="footer-progress-track">
+            <div class="footer-progress-fill" id="footer-progress-fill"></div>
+        </div>
+        <div class="footer-inner">
+            <button type="button" class="footer-stats-trigger" id="btn-open-stats" aria-label="Abrir estatísticas por equipe">
+                <span class="footer-tally" id="footer-tally"><strong>0</strong> / 0 entraram · 0 faltam</span>
+                <span class="footer-cue" id="footer-cue">▲ Equipes</span>
+            </button>
+            <button type="button" class="footer-reset-btn hidden" id="btn-footer-reset">← Voltar à lista geral</button>
+        </div>
+    </footer>
+
+    <!-- =======================================================================
+         5. MODAL UNIFICADO DE CONFIGURAÇÕES ⚙️ ([ Filtros ] | [ 👁️ Colunas ])
+         ======================================================================= -->
+    <dialog class="settings-modal" id="settings-modal" aria-labelledby="settings-modal-title">
+        <div class="modal-head">
+            <div class="modal-title" id="settings-modal-title">Configurações de Portaria</div>
+            <button type="button" class="modal-close" id="btn-close-settings" aria-label="Fechar">×</button>
+        </div>
+
+        <div class="modal-tabs-bar">
+            <div class="segmented-tabs" role="tablist">
+                <button type="button" class="seg-tab" role="tab" data-settings-tab="filters" aria-selected="true">
+                    Filtros
+                </button>
+                <button type="button" class="seg-tab" role="tab" data-settings-tab="columns" aria-selected="false">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    <span>Colunas</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="modal-body" id="settings-modal-body"></div>
+
+        <div class="modal-foot">
+            <button type="button" class="btn" id="btn-settings-reset">Restaurar padrão</button>
+            <button type="button" class="btn btn-primary" id="btn-settings-done">Concluir</button>
+        </div>
+    </dialog>
+
+    <!-- =======================================================================
+         6. BOTTOM SHEETS (PERFIL COMPLETO + ESTATÍSTICAS POR EQUIPE)
+         ======================================================================= -->
+    <div class="sheet-backdrop" id="sheet-backdrop"></div>
+
+    <aside class="bottom-sheet" id="profile-sheet" aria-hidden="true" aria-label="Perfil completo"></aside>
+
+    <aside class="bottom-sheet" id="stats-sheet" aria-hidden="true" aria-label="Estatísticas por equipe">
+        <div class="sheet-grabber" aria-hidden="true"></div>
+        <div class="sheet-head">
+            <span class="mono" style="font-size:0.75rem;font-weight:700;color:var(--text-secondary);">ESTATÍSTICAS POR EQUIPE / MARCA</span>
+            <button type="button" class="modal-close" id="btn-close-stats" aria-label="Fechar">×</button>
+        </div>
+        <div class="sheet-body" id="stats-sheet-body"></div>
+        <div class="sheet-pinned-foot">
+            <button type="button" class="btn" id="btn-stats-all-teams" style="width:100%;height:42px;">
+                Mostrar todas as equipes (Lista geral)
+            </button>
+        </div>
+    </aside>
+
+    <!-- =======================================================================
+         7. TOAST DISCRETO COM DESFAZER (4 SEGUNDOS)
+         ======================================================================= -->
+    <div class="toast-bar" id="toast-bar" role="status" aria-live="polite">
+        <span id="toast-msg">Entrada confirmada</span>
+        <button type="button" class="toast-undo-btn" id="toast-undo-btn">Desfazer</button>
+    </div>
+
+<script>
+/* ============================================================================
+   1. CATÁLOGO DE EQUIPES / MARCAS & CALENDÁRIO (20/11 a 30/11)
+   ============================================================================ */
+const TEAM_BUCKETS = {
+    'MAXI':            { id: 'MAXI',            label: 'MAXI',            full: 'Máxima Weber',             color: '#e85d9e' },
+    'LEMA':            { id: 'LEMA',            label: 'LEMA',            full: 'Lema+',                    color: '#e5a93c' },
+    'STAFF':           { id: 'STAFF',           label: 'STAFF',           full: 'Staff / Produção',         color: '#4fb3d9' },
+    'ESTÁGIO':         { id: 'ESTÁGIO',         label: 'ESTÁGIO',         full: 'Estágio',                  color: '#4ec28c' },
+    'TRAMA - CASTING': { id: 'TRAMA - CASTING', label: 'TRAMA - CASTING', full: 'Trama Afetiva · Casting',  color: '#a78bfa' },
+    'TRAMA - EQUIPE':  { id: 'TRAMA - EQUIPE',  label: 'TRAMA - EQUIPE',  full: 'Trama Afetiva · Equipe',   color: '#c084fc' },
+    'HELOISA FARIA':   { id: 'HELOISA FARIA',   label: 'HELOISA FARIA',   full: 'Heloisa Faria',            color: '#f472b6' },
+    'WALÉRIO ARAÚJO':  { id: 'WALÉRIO ARAÚJO',  label: 'WALÉRIO ARAÚJO',  full: 'Walério Araújo',           color: '#fb923c' },
+    'MARTINS':         { id: 'MARTINS',         label: 'MARTINS',         full: 'Martins',                  color: '#38bdf8' },
+    'ROBER DOGNANI':   { id: 'ROBER DOGNANI',   label: 'ROBER DOGNANI',   full: 'Rober Dognani',            color: '#facc15' },
+    'JORGE FEITOSA':   { id: 'JORGE FEITOSA',   label: 'JORGE FEITOSA',   full: 'Jorge Feitosa',            color: '#34d399' }
+};
+
+const ALL_BUCKET_IDS = Object.keys(TEAM_BUCKETS);
+
+const DAYS = [
+    { key: '20/11', label: 'Qui, 20/11' },
+    { key: '21/11', label: 'Sex, 21/11' },
+    { key: '22/11', label: 'Sáb, 22/11' },
+    { key: '23/11', label: 'Dom, 23/11' },
+    { key: '24/11', label: 'Seg, 24/11' },
+    { key: '25/11', label: 'Ter, 25/11' },
+    { key: '26/11', label: 'Qua, 26/11' },
+    { key: '27/11', label: 'Sex, 27/11 (Pico)' },
+    { key: '28/11', label: 'Sáb, 28/11' },
+    { key: '29/11', label: 'Dom, 29/11' },
+    { key: '30/11', label: 'Seg, 30/11' }
+];
+
+const ALL_DAYS = DAYS.map(d => d.key);
+const SHOW_DAYS = ['24/11', '25/11', '26/11', '27/11', '28/11', '29/11'];
+const TURNS = ['Manhã', 'Tarde', 'Noite', 'Madrugada', 'Integral'];
+
+/* SVG Material Symbols Outlined: sort_by_alpha */
+const SORT_ALPHA_SVG = `<svg width="20" height="20" viewBox="0 -960 960 960" fill="currentColor" aria-hidden="true"><path d="M80-280 230-680h84l150 400h-76l-36-102H192l-36 102H80Zm136-168h112l-54-154h-4l-54 154Zm316 168v-72l214-256H546v-72h294v72L626-352h218v72H532Zm-52-514L388-886l56-56 36 36 36-36 56 56-92 92Zm0 732-92-92 56-56 36 36 36-36 56 56-92 92Z"/></svg>`;
+
+/* ============================================================================
+   2. DATASET REALISTA DE 75 CREDENCIADOS (16 FIXOS + 41 TRAMA + 18 MARCAS)
+   ============================================================================ */
+const PEOPLE = [
+    // --- MÁXIMA WEBER (5) ---
+    { id: 1,  bucket: 'MAXI', nome_social: 'Luna Ferreira', nome_completo: 'Lucas Henrique Ferreira', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Maquiadora Sênior', empresa: 'Máxima Weber', instagram: '@luna.beauty', whatsapp: '(11) 98412-3301', email: 'luna.beauty@gmail.com', cpf: '391.456.789-02', rg: '44.345.678-1', dias: SHOW_DAYS, turnos: ['Integral'], alimentacao: 'Vegetariano', obs: 'Chega às 11h nos dias de desfile. Maleta extra de aerógrafo no camarim 2.' },
+    { id: 2,  bucket: 'MAXI', nome_social: 'Dante Oliveira', nome_completo: 'Dante Oliveira', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Hair Stylist', empresa: 'Máxima Weber', instagram: '@dantehair.sp', whatsapp: '(11) 97221-8890', email: 'dante.hair@outlook.com', cpf: '284.119.503-44', rg: '39.882.104-5', dias: ['24/11','25/11','26/11','27/11','28/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 3,  bucket: 'MAXI', nome_social: 'Kira Sato', nome_completo: 'Camila Sato Nogueira', pronome: 'Elu', pronomes_full: 'Elu/delu', funcao: 'Assistente de Beleza', empresa: 'Máxima Weber', instagram: '@kirasato.mua', whatsapp: '(11) 99304-1127', email: 'kirasato@gmail.com', cpf: '452.908.312-19', rg: '51.209.443-8', dias: ['25/11','26/11','27/11','28/11','29/11'], turnos: ['Tarde','Noite'], alimentacao: 'Vegano', obs: 'Alergia leve a amendoim. Marmita vegana sem oleaginosas.' },
+    { id: 4,  bucket: 'MAXI', nome_social: 'Marina Teles', nome_completo: 'Marina Teles Vasconcelos', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Coordenação de Beleza', empresa: 'Máxima Weber', instagram: '@marinateles.beleza', whatsapp: '(11) 98110-4452', email: 'marina@maximaweber.com.br', cpf: '312.667.890-71', rg: '41.903.221-0', dias: ['23/11',...SHOW_DAYS], turnos: ['Integral'], alimentacao: 'Sem restrição', obs: 'Ponto focal da beleza.' },
+    { id: 5,  bucket: 'MAXI', nome_social: 'Caio Veríssimo', nome_completo: 'Caio Veríssimo Prado', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Maquiador', empresa: 'Máxima Weber', instagram: '@caioverissimo.mua', whatsapp: '(11) 99104-7782', email: 'caio.mua@gmail.com', cpf: '364.882.104-15', rg: '46.110.298-4', dias: ['24/11','26/11','27/11','28/11','29/11'], turnos: ['Tarde','Noite'], alimentacao: 'Vegetariano', obs: '' },
+
+    // --- LEMA+ (3) ---
+    { id: 6,  bucket: 'LEMA', nome_social: 'Beatriz Lima', nome_completo: 'Beatriz Lima Coutinho', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Assessoria de Imprensa', empresa: 'Lema+', instagram: '@bialima.pr', whatsapp: '(11) 99543-7721', email: 'beatriz@agencialema.com.br', cpf: '378.112.334-55', rg: '43.998.776-2', dias: SHOW_DAYS, turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: 'Mesa hall principal. Credenciamento de imprensa.' },
+    { id: 7,  bucket: 'LEMA', nome_social: 'Thiago Mendes', nome_completo: 'Thiago Mendes Rocha', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Atendimento & VIPs', empresa: 'Lema+', instagram: '@thiagomendes', whatsapp: '(11) 98872-1904', email: 'thiago@agencialema.com.br', cpf: '405.774.219-80', rg: '47.310.882-9', dias: ['24/11','26/11','27/11','28/11','29/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 8,  bucket: 'LEMA', nome_social: 'Renata Queiroz', nome_completo: 'Renata Queiroz Dias', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Conteúdo & Redes', empresa: 'Lema+', instagram: '@requeiroz', whatsapp: '(11) 97654-3318', email: 'renata@agencialema.com.br', cpf: '419.332.108-63', rg: '49.115.602-4', dias: SHOW_DAYS, turnos: ['Tarde','Noite'], alimentacao: 'Vegetariano', obs: 'Pulseira pit + backstage.' },
+
+    // --- STAFF / PRODUÇÃO (5) ---
+    { id: 9,  bucket: 'STAFF', nome_social: 'Rafael Costa', nome_completo: 'Rafael Henrique da Costa', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Técnico de Som', empresa: 'Áudio Live SP', instagram: '@rafasom', whatsapp: '(11) 99123-4500', email: 'rafael@audiolivesp.com.br', cpf: '356.891.234-11', rg: '38.456.789-3', dias: ALL_DAYS, turnos: ['Noite','Madrugada'], alimentacao: 'Sem restrição', obs: 'Rádio canal 2. Descarga de PA.' },
+    { id: 10, bucket: 'STAFF', nome_social: 'Carla Nogueira', nome_completo: 'Carla Nogueira Prado', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Direção de Palco', empresa: 'Casa de Criadores', instagram: '@carlanogueira.prod', whatsapp: '(11) 98234-9901', email: 'carla@casadecriadores.com.br', cpf: '267.440.918-22', rg: '33.771.209-6', dias: ALL_DAYS, turnos: ['Integral'], alimentacao: 'Sem restrição', obs: 'Rádio canal 1.' },
+    { id: 11, bucket: 'STAFF', nome_social: 'Marcos Viana', nome_completo: 'Marcos Antônio Viana', pronome: '—', pronomes_full: 'Prefiro não informar', funcao: 'Operador de Iluminação', empresa: 'Luz & Cena', instagram: '@vianaluz', whatsapp: '(11) 97409-6622', email: 'marcos@luzecena.com.br', cpf: '309.512.887-04', rg: '36.229.118-7', dias: ['21/11','22/11','23/11',...SHOW_DAYS,'30/11'], turnos: ['Tarde','Noite','Madrugada'], alimentacao: 'Sem restrição', obs: 'House mix sala de desfile.' },
+    { id: 12, bucket: 'STAFF', nome_social: 'Soraia Batista', nome_completo: 'Soraia Batista Ramos', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Coordenação de Backstage', empresa: 'Casa de Criadores', instagram: '@soraiabatista', whatsapp: '(11) 96883-1209', email: 'soraia@casadecriadores.com.br', cpf: '298.601.445-39', rg: '35.118.902-0', dias: ['20/11','22/11','23/11',...SHOW_DAYS,'30/11'], turnos: ['Manhã','Tarde'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 13, bucket: 'STAFF', nome_social: 'Bruno Alencar', nome_completo: 'Bruno Alencar Moura', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Produtor Executivo', empresa: 'Casa de Criadores', instagram: '@brunoalencar.prod', whatsapp: '(11) 99711-0842', email: 'bruno@casadecriadores.com.br', cpf: '334.720.195-08', rg: '40.551.832-1', dias: ALL_DAYS, turnos: ['Integral'], alimentacao: 'Sem restrição', obs: 'Acesso total ao prédio.' },
+
+    // --- ESTÁGIO (3) ---
+    { id: 14, bucket: 'ESTÁGIO', nome_social: 'Enzo Martins', nome_completo: 'Enzo Gabriel Martins', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Assistência de Backstage', empresa: 'Santa Marcelina', instagram: '@enzom.moda', whatsapp: '(11) 99410-2287', email: 'enzo.martins@gmail.com', cpf: '489.554.321-07', rg: '54.112.233-9', dias: SHOW_DAYS, turnos: ['Manhã','Tarde'], alimentacao: 'Vegano', obs: 'Camarim B. Apoio em araras e passadoria.' },
+    { id: 15, bucket: 'ESTÁGIO', nome_social: 'Maya Rocha', nome_completo: 'Matheus Rocha da Silva', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Apoio de Produção', empresa: 'Anhembi Morumbi', instagram: '@mayarocha_', whatsapp: '(11) 98765-0041', email: 'maya.rocha@hotmail.com', cpf: '476.229.814-60', rg: '53.884.190-2', dias: ['23/11','24/11','25/11','27/11','28/11','29/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: 'Recepção de marcas.' },
+    { id: 16, bucket: 'ESTÁGIO', nome_social: 'Júlia Pires', nome_completo: 'Júlia Alencar Pires', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Recepção & Credenciamento', empresa: 'Senac Moda', instagram: '@juliapires.m', whatsapp: '(11) 99201-5534', email: 'julia.pires@gmail.com', cpf: '495.103.672-88', rg: '55.409.711-5', dias: ['24/11','26/11','27/11','28/11','29/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: 'Fila convidados.' },
+
+    // --- TRAMA - CASTING (20 REAIS DO CSV) ---
+    { id: 101, bucket: 'TRAMA - CASTING', nome_social: 'Alana Diniz', nome_completo: 'Alana Diniz', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Casting / Modelo', empresa: 'Trama Afetiva', instagram: '@alanadiniz', whatsapp: '(11) 99100-1101', email: 'alana.diniz@casting.sp', cpf: '412.608.910-31', rg: '38.742.519-0', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: 'Desfile Trama Afetiva · Sex 27/11.' },
+    { id: 102, bucket: 'TRAMA - CASTING', nome_social: 'Arthur Maciel', nome_completo: 'Arthur Silva Maciel', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Casting / Modelo', empresa: 'Trama Afetiva', instagram: '@arthurmaciel_', whatsapp: '(11) 99100-1102', email: 'arthur.maciel@casting.sp', cpf: '468.219.044-12', rg: '52.104.889-3', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 103, bucket: 'TRAMA - CASTING', nome_social: 'Babi', nome_completo: 'Bárbara Gomes da Silva', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Casting / Modelo', empresa: 'Trama Afetiva', instagram: '@babi.gomes', whatsapp: '(11) 99100-1103', email: 'babi.gomes@casting.sp', cpf: '439.881.203-77', rg: '49.660.112-8', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Vegetariano', obs: '' },
+    { id: 104, bucket: 'TRAMA - CASTING', nome_social: 'Cássio Rangel', nome_completo: 'Cássio Rangel de Souza', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Casting / Modelo', empresa: 'Trama Afetiva', instagram: '@cassiorangel', whatsapp: '(11) 99100-1104', email: 'cassio.rangel@casting.sp', cpf: '385.114.920-64', rg: '42.819.305-2', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 105, bucket: 'TRAMA - CASTING', nome_social: 'Dandara Cruz', nome_completo: 'Dandara Cristina Cruz', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Casting / Modelo', empresa: 'Trama Afetiva', instagram: '@dandaracruz', whatsapp: '(11) 99100-1105', email: 'dandara.cruz@casting.sp', cpf: '471.309.518-29', rg: '53.401.778-4', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 106, bucket: 'TRAMA - CASTING', nome_social: 'Eduardo Borges', nome_completo: 'Eduardo Henrique Borges', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Casting / Modelo', empresa: 'Trama Afetiva', instagram: '@eduborges', whatsapp: '(11) 99100-1106', email: 'edu.borges@casting.sp', cpf: '399.540.612-83', rg: '45.220.991-6', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 107, bucket: 'TRAMA - CASTING', nome_social: 'Fernanda Lins', nome_completo: 'Fernanda Lins Vasconcelos', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Casting / Modelo', empresa: 'Trama Afetiva', instagram: '@ferlins', whatsapp: '(11) 99100-1107', email: 'fer.lins@casting.sp', cpf: '421.773.890-15', rg: '47.908.334-1', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 108, bucket: 'TRAMA - CASTING', nome_social: 'Gabrielly Torres', nome_completo: 'Gabrielly Torres Nunes', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Casting / Modelo', empresa: 'Trama Afetiva', instagram: '@gabytorres', whatsapp: '(11) 99100-1108', email: 'gaby.torres@casting.sp', cpf: '482.190.334-50', rg: '54.812.667-9', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Vegano', obs: '' },
+    { id: 109, bucket: 'TRAMA - CASTING', nome_social: 'Henrique Salles', nome_completo: 'Henrique Salles Prado', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Casting / Modelo', empresa: 'Trama Afetiva', instagram: '@henriquesalles', whatsapp: '(11) 99100-1109', email: 'henrique.salles@casting.sp', cpf: '368.402.719-08', rg: '41.335.890-7', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 110, bucket: 'TRAMA - CASTING', nome_social: 'Iara Monteiro', nome_completo: 'Iara Monteiro Peixoto', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Casting / Modelo', empresa: 'Trama Afetiva', instagram: '@iaramonteiro', whatsapp: '(11) 99100-1110', email: 'iara.monteiro@casting.sp', cpf: '445.912.608-41', rg: '50.119.442-5', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 111, bucket: 'TRAMA - CASTING', nome_social: 'João Pedro Paiva', nome_completo: 'João Pedro Paiva Alves', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Casting / Modelo', empresa: 'Trama Afetiva', instagram: '@jppaiva', whatsapp: '(11) 99100-1111', email: 'jp.paiva@casting.sp', cpf: '463.801.229-92', rg: '51.994.308-0', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 112, bucket: 'TRAMA - CASTING', nome_social: 'Kauã Ribeiro', nome_completo: 'Kauã Ribeiro dos Santos', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Casting / Modelo', empresa: 'Trama Afetiva', instagram: '@kauaribeiro', whatsapp: '(11) 99100-1112', email: 'kaua.ribeiro@casting.sp', cpf: '491.225.704-36', rg: '55.310.882-3', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 113, bucket: 'TRAMA - CASTING', nome_social: 'Larissa Fonseca', nome_completo: 'Larissa Fonseca Melo', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Casting / Modelo', empresa: 'Trama Afetiva', instagram: '@larifonseca', whatsapp: '(11) 99100-1113', email: 'lari.fonseca@casting.sp', cpf: '417.663.901-74', rg: '46.774.129-8', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 114, bucket: 'TRAMA - CASTING', nome_social: 'Luana Xavier', nome_completo: 'Luana Xavier Costa', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Casting / Modelo', empresa: 'Trama Afetiva', instagram: '@luanaxavier', whatsapp: '(11) 99100-1114', email: 'luana.xavier@casting.sp', cpf: '432.518.440-19', rg: '48.662.501-4', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Vegetariano', obs: '' },
+    { id: 115, bucket: 'TRAMA - CASTING', nome_social: 'Matheus Cardoso', nome_completo: 'Matheus Cardoso Lima', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Casting / Modelo', empresa: 'Trama Afetiva', instagram: '@matheuscardoso', whatsapp: '(11) 99100-1115', email: 'matheus.cardoso@casting.sp', cpf: '458.904.112-60', rg: '51.408.993-2', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 116, bucket: 'TRAMA - CASTING', nome_social: 'Natália Rezende', nome_completo: 'Natália Rezende Franco', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Casting / Modelo', empresa: 'Trama Afetiva', instagram: '@natirezende', whatsapp: '(11) 99100-1116', email: 'nati.rezende@casting.sp', cpf: '408.337.819-25', rg: '45.881.204-9', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 117, bucket: 'TRAMA - CASTING', nome_social: 'Otávio Barros', nome_completo: 'Otávio Barros Ferraz', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Casting / Modelo', empresa: 'Trama Afetiva', instagram: '@otaviobarros', whatsapp: '(11) 99100-1117', email: 'otavio.barros@casting.sp', cpf: '374.990.512-48', rg: '42.105.776-1', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 118, bucket: 'TRAMA - CASTING', nome_social: 'Paola Menezes', nome_completo: 'Paola Menezes Duarte', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Casting / Modelo', empresa: 'Trama Afetiva', instagram: '@paolamenezes', whatsapp: '(11) 99100-1118', email: 'paola.menezes@casting.sp', cpf: '426.118.703-81', rg: '47.559.310-6', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 119, bucket: 'TRAMA - CASTING', nome_social: 'Ruan Tavares', nome_completo: 'Ruan Tavares Guimarães', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Casting / Modelo', empresa: 'Trama Afetiva', instagram: '@ruantavares', whatsapp: '(11) 99100-1119', email: 'ruan.tavares@casting.sp', cpf: '479.602.881-03', rg: '53.990.412-7', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 120, bucket: 'TRAMA - CASTING', nome_social: 'Yasmin Nogueira', nome_completo: 'Yasmin Nogueira Brito', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Casting / Modelo', empresa: 'Trama Afetiva', instagram: '@yasminnogueira', whatsapp: '(11) 99100-1120', email: 'yasmin.nogueira@casting.sp', cpf: '488.741.309-54', rg: '54.712.885-0', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+
+    // --- TRAMA - EQUIPE (21 REAIS DO CSV) ---
+    { id: 121, bucket: 'TRAMA - EQUIPE', nome_social: 'Jackson Araújo', nome_completo: 'Jackson Araújo dos Santos', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Direção Criativa', empresa: 'Trama Afetiva', instagram: '@jacksonaraujo', whatsapp: '(11) 99200-2101', email: 'jackson@tramaafetiva.com.br', cpf: '241.809.332-10', rg: '29.441.802-5', dias: ['26/11','27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: 'Estilista / Direção Trama Afetiva.' },
+    { id: 122, bucket: 'TRAMA - EQUIPE', nome_social: 'Luca Albuquerque', nome_completo: 'Luca Albuquerque Mendes', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Coordenação de Backstage', empresa: 'Trama Afetiva', instagram: '@lucaalbuquerque', whatsapp: '(11) 99200-2102', email: 'luca@tramaafetiva.com.br', cpf: '352.419.608-44', rg: '40.118.554-2', dias: ['26/11','27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: 'Araras e passadoria.' },
+    { id: 123, bucket: 'TRAMA - EQUIPE', nome_social: 'Camila Freitas', nome_completo: 'Camila Freitas Sampaio', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Styling', empresa: 'Trama Afetiva', instagram: '@camilafreitas.st', whatsapp: '(11) 99200-2103', email: 'camila@tramaafetiva.com.br', cpf: '389.772.104-91', rg: '44.209.661-8', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Vegetariano', obs: '' },
+    { id: 124, bucket: 'TRAMA - EQUIPE', nome_social: 'Diego Santana', nome_completo: 'Diego Santana Correia', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Assistente de Styling', empresa: 'Trama Afetiva', instagram: '@diegosantana', whatsapp: '(11) 99200-2104', email: 'diego@tramaafetiva.com.br', cpf: '414.503.882-37', rg: '46.883.120-4', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 125, bucket: 'TRAMA - EQUIPE', nome_social: 'Eliane Matos', nome_completo: 'Eliane Matos Ferreira', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Costureira / Camareira', empresa: 'Trama Afetiva', instagram: '@elianematos', whatsapp: '(11) 99200-2105', email: 'eliane@tramaafetiva.com.br', cpf: '279.661.405-82', rg: '33.552.901-7', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 126, bucket: 'TRAMA - EQUIPE', nome_social: 'Fábio Rezende', nome_completo: 'Fábio Rezende Martins', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Trilha Sonora', empresa: 'Trama Afetiva', instagram: '@fabiorezende.dj', whatsapp: '(11) 99200-2106', email: 'fabio@tramaafetiva.com.br', cpf: '341.908.227-16', rg: '39.104.778-9', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: 'Acesso cabine de som.' },
+    { id: 127, bucket: 'TRAMA - EQUIPE', nome_social: 'Giselle Andrade', nome_completo: 'Giselle Andrade Pinto', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Produção Executiva Marca', empresa: 'Trama Afetiva', instagram: '@giselleandrade', whatsapp: '(11) 99200-2107', email: 'giselle@tramaafetiva.com.br', cpf: '367.224.910-53', rg: '41.770.332-0', dias: ['26/11','27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 128, bucket: 'TRAMA - EQUIPE', nome_social: 'Hugo Vasconcelos', nome_completo: 'Hugo Vasconcelos Neto', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Fotógrafo Backstage', empresa: 'Trama Afetiva', instagram: '@hugovasconcelos.ph', whatsapp: '(11) 99200-2108', email: 'hugo@tramaafetiva.com.br', cpf: '402.815.669-28', rg: '45.663.908-5', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: 'Acesso camarim + pit.' },
+    { id: 129, bucket: 'TRAMA - EQUIPE', nome_social: 'Isabela Cunha', nome_completo: 'Isabela Cunha Moraes', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Camareira / Passadoria', empresa: 'Trama Afetiva', instagram: '@isabelacunha', whatsapp: '(11) 99200-2109', email: 'isabela@tramaafetiva.com.br', cpf: '436.109.774-65', rg: '49.002.418-1', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 130, bucket: 'TRAMA - EQUIPE', nome_social: 'Jéssica Moreira', nome_completo: 'Jéssica Moreira Lopes', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Social Media Marca', empresa: 'Trama Afetiva', instagram: '@jessmoreira', whatsapp: '(11) 99200-2110', email: 'jessica@tramaafetiva.com.br', cpf: '451.778.320-11', rg: '50.884.119-6', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Vegano', obs: '' },
+    { id: 131, bucket: 'TRAMA - EQUIPE', nome_social: 'Kleber Nunes', nome_completo: 'Kleber Nunes de Oliveira', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Videomaker', empresa: 'Trama Afetiva', instagram: '@klebernunes.rec', whatsapp: '(11) 99200-2111', email: 'kleber@tramaafetiva.com.br', cpf: '394.612.805-79', rg: '44.991.203-4', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 132, bucket: 'TRAMA - EQUIPE', nome_social: 'Lívia Teixeira', nome_completo: 'Lívia Teixeira Campos', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Assistente de Produção', empresa: 'Trama Afetiva', instagram: '@liviateixeira', whatsapp: '(11) 99200-2112', email: 'livia@tramaafetiva.com.br', cpf: '466.330.918-42', rg: '52.441.709-8', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 133, bucket: 'TRAMA - EQUIPE', nome_social: 'Marcelo Siqueira', nome_completo: 'Marcelo Siqueira Barros', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Cenografia / Adereços', empresa: 'Trama Afetiva', instagram: '@marcelosiqueira', whatsapp: '(11) 99200-2113', email: 'marcelo@tramaafetiva.com.br', cpf: '318.904.551-07', rg: '37.228.604-3', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 134, bucket: 'TRAMA - EQUIPE', nome_social: 'Nádia Barbosa', nome_completo: 'Nádia Barbosa Tavares', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Camareira', empresa: 'Trama Afetiva', instagram: '@nadiabarbosa', whatsapp: '(11) 99200-2114', email: 'nadia@tramaafetiva.com.br', cpf: '377.441.209-88', rg: '42.990.512-0', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 135, bucket: 'TRAMA - EQUIPE', nome_social: 'Paulo Sérgio', nome_completo: 'Paulo Sérgio da Conceição', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Apoio Logístico', empresa: 'Trama Afetiva', instagram: '@paulosergio.sp', whatsapp: '(11) 99200-2115', email: 'paulo@tramaafetiva.com.br', cpf: '329.880.114-51', rg: '38.112.904-7', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 136, bucket: 'TRAMA - EQUIPE', nome_social: 'Priscila Farias', nome_completo: 'Priscila Farias Guimarães', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Assistente de Styling', empresa: 'Trama Afetiva', instagram: '@prifarias', whatsapp: '(11) 99200-2116', email: 'priscila@tramaafetiva.com.br', cpf: '429.705.663-14', rg: '48.119.302-5', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 137, bucket: 'TRAMA - EQUIPE', nome_social: 'Rodrigo Amaral', nome_completo: 'Rodrigo Amaral Pacheco', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Direção de Casting', empresa: 'Trama Afetiva', instagram: '@rodrigoamaral', whatsapp: '(11) 99200-2117', email: 'rodrigo@tramaafetiva.com.br', cpf: '358.112.940-67', rg: '40.774.881-2', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 138, bucket: 'TRAMA - EQUIPE', nome_social: 'Sabrina Coelho', nome_completo: 'Sabrina Coelho Antunes', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Camareira', empresa: 'Trama Afetiva', instagram: '@sabrinacoelho', whatsapp: '(11) 99200-2118', email: 'sabrina@tramaafetiva.com.br', cpf: '441.889.302-95', rg: '49.771.608-9', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 139, bucket: 'TRAMA - EQUIPE', nome_social: 'Tatiane Borges', nome_completo: 'Tatiane Borges Monteiro', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Costureira', empresa: 'Trama Afetiva', instagram: '@tatiborges', whatsapp: '(11) 99200-2119', email: 'tatiane@tramaafetiva.com.br', cpf: '383.604.771-20', rg: '43.882.190-4', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 140, bucket: 'TRAMA - EQUIPE', nome_social: 'Vinícius Rocha', nome_completo: 'Vinícius Rocha Cavalcanti', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Assistente Backstage', empresa: 'Trama Afetiva', instagram: '@vinirocha', whatsapp: '(11) 99200-2120', email: 'vinicius@tramaafetiva.com.br', cpf: '474.219.508-33', rg: '53.109.442-6', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 141, bucket: 'TRAMA - EQUIPE', nome_social: 'Zélia Maria', nome_completo: 'Zélia Maria das Graças', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Artesã / Bordado', empresa: 'Trama Afetiva', instagram: '@zeliamaria.arte', whatsapp: '(11) 99200-2121', email: 'zelia@tramaafetiva.com.br', cpf: '215.448.902-76', rg: '26.883.110-1', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+
+    // --- OUTRAS MARCAS DO LINE-UP (18 REGISTROS) ---
+    { id: 201, bucket: 'HELOISA FARIA', nome_social: 'Heloisa Faria', nome_completo: 'Heloisa Faria de Souza', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Estilista / Direção', empresa: 'Heloisa Faria', instagram: '@heloisafaria', whatsapp: '(11) 99300-3101', email: 'heloisa@heloisafaria.com.br', cpf: '311.509.882-40', rg: '36.990.114-2', dias: ['27/11','28/11'], turnos: ['Tarde','Noite'], alimentacao: 'Vegetariano', obs: 'Desfile Sex 27/11.' },
+    { id: 202, bucket: 'HELOISA FARIA', nome_social: 'Amanda Klink', nome_completo: 'Amanda Klink Ferreira', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Styling', empresa: 'Heloisa Faria', instagram: '@amandaklink', whatsapp: '(11) 99300-3102', email: 'amanda@heloisafaria.com.br', cpf: '398.221.409-17', rg: '45.102.883-5', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 203, bucket: 'HELOISA FARIA', nome_social: 'Clarice Falcão', nome_completo: 'Clarice Ribeiro Falcão', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Casting / Modelo', empresa: 'Heloisa Faria', instagram: '@claricefalcao.m', whatsapp: '(11) 99300-3103', email: 'clarice@heloisafaria.com.br', cpf: '461.883.204-55', rg: '51.772.901-8', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 204, bucket: 'HELOISA FARIA', nome_social: 'Mateus Solano', nome_completo: 'Mateus Solano Vieira', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Casting / Modelo', empresa: 'Heloisa Faria', instagram: '@mateusvieira', whatsapp: '(11) 99300-3104', email: 'mateus@heloisafaria.com.br', cpf: '449.102.778-62', rg: '50.331.409-0', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 205, bucket: 'WALÉRIO ARAÚJO', nome_social: 'Walério Araújo', nome_completo: 'Walério Araújo da Silva', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Estilista / Direção', empresa: 'Walério Araújo', instagram: '@walerioaraujo', whatsapp: '(11) 99300-3201', email: 'walerio@walerioaraujo.com.br', cpf: '204.771.908-13', rg: '25.994.302-6', dias: ['27/11','29/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: 'Encerramento Sex 27/11.' },
+    { id: 206, bucket: 'WALÉRIO ARAÚJO', nome_social: 'Silvia Pfeifer', nome_completo: 'Silvia Regina Pfeifer', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Produção de Moda', empresa: 'Walério Araújo', instagram: '@silviaprod', whatsapp: '(11) 99300-3202', email: 'silvia@walerioaraujo.com.br', cpf: '295.440.118-70', rg: '34.881.209-4', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 207, bucket: 'WALÉRIO ARAÚJO', nome_social: 'Valentina Luz', nome_completo: 'Valmir Luz Santos', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Casting / Performance', empresa: 'Walério Araújo', instagram: '@valentinaluz', whatsapp: '(11) 99300-3203', email: 'valentina@walerioaraujo.com.br', cpf: '423.669.510-84', rg: '48.220.774-1', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 208, bucket: 'WALÉRIO ARAÚJO', nome_social: 'Drika Marinho', nome_completo: 'Adriana Marinho Costa', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Casting / Modelo', empresa: 'Walério Araújo', instagram: '@drikamarinho', whatsapp: '(11) 99300-3204', email: 'drika@walerioaraujo.com.br', cpf: '411.908.334-29', rg: '46.551.889-3', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 209, bucket: 'MARTINS', nome_social: 'Tom Martins', nome_completo: 'Antônio Carlos Martins', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Estilista / Direção', empresa: 'Martins', instagram: '@martins.tom', whatsapp: '(11) 99300-3301', email: 'tom@martins.moda', cpf: '349.812.604-95', rg: '39.772.118-0', dias: ['26/11','27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 210, bucket: 'MARTINS', nome_social: 'Renan Pacheco', nome_completo: 'Renan Pacheco Lima', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Styling', empresa: 'Martins', instagram: '@renanpacheco', whatsapp: '(11) 99300-3302', email: 'renan@martins.moda', cpf: '403.551.908-12', rg: '45.994.221-7', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Vegano', obs: '' },
+    { id: 211, bucket: 'MARTINS', nome_social: 'Cauan Prado', nome_completo: 'Cauan Santana Prado', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Casting / Modelo', empresa: 'Martins', instagram: '@cauansprado', whatsapp: '(11) 99300-3303', email: 'cauan@martins.moda', cpf: '472.309.881-46', rg: '53.220.664-9', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 212, bucket: 'MARTINS', nome_social: 'Sofia Vergara', nome_completo: 'Sofia Alves Vergara', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Casting / Modelo', empresa: 'Martins', instagram: '@sofiavergara.m', whatsapp: '(11) 99300-3304', email: 'sofia@martins.moda', cpf: '485.119.402-71', rg: '54.409.118-2', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 213, bucket: 'ROBER DOGNANI', nome_social: 'Rober Dognani', nome_completo: 'Roberto Dognani', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Estilista / Direção', empresa: 'Rober Dognani', instagram: '@roberdognani', whatsapp: '(11) 99300-3401', email: 'rober@roberdognani.com', cpf: '238.904.112-60', rg: '28.771.509-4', dias: ['27/11','28/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 214, bucket: 'ROBER DOGNANI', nome_social: 'Tânia Khalill', nome_completo: 'Tânia Khalill Campos', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Camareira Chefe', empresa: 'Rober Dognani', instagram: '@taniacamareira', whatsapp: '(11) 99300-3402', email: 'tania@roberdognani.com', cpf: '319.662.880-33', rg: '37.110.445-8', dias: ['27/11','28/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 215, bucket: 'ROBER DOGNANI', nome_social: 'Raquel Zimmermann', nome_completo: 'Raquel Zimmermann Silva', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Casting / Modelo', empresa: 'Rober Dognani', instagram: '@raquelz.sp', whatsapp: '(11) 99300-3403', email: 'raquel@roberdognani.com', cpf: '437.801.559-18', rg: '49.224.801-0', dias: ['28/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 216, bucket: 'JORGE FEITOSA', nome_social: 'Jorge Feitosa', nome_completo: 'Jorge Luís Feitosa', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Estilista / Direção', empresa: 'Jorge Feitosa', instagram: '@jorgefeitosa', whatsapp: '(11) 99300-3501', email: 'jorge@jorgefeitosa.com', cpf: '361.449.208-75', rg: '41.882.309-6', dias: ['28/11','29/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 217, bucket: 'JORGE FEITOSA', nome_social: 'Ícaro Silva', nome_completo: 'Ícaro Silva Montenegro', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Casting / Modelo', empresa: 'Jorge Feitosa', instagram: '@icaromontenegro', whatsapp: '(11) 99300-3502', email: 'icaro@jorgefeitosa.com', cpf: '454.902.118-90', rg: '51.119.660-3', dias: ['28/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 218, bucket: 'JORGE FEITOSA', nome_social: 'Nina Baiocchi', nome_completo: 'Nina Baiocchi Duarte', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Casting / Modelo', empresa: 'Jorge Feitosa', instagram: '@ninabaiocchi', whatsapp: '(11) 99300-3503', email: 'nina@jorgefeitosa.com', cpf: '469.773.401-22', rg: '52.881.904-5', dias: ['29/11'], turnos: ['Tarde','Noite'], alimentacao: 'Vegetariano', obs: '' }
+];
+
+/* ============================================================================
+   3. CATÁLOGO DE COLUNAS CONFIGURÁVEIS EM DOIS NÍVEIS (DENTRO DE ⚙️ -> 👁️ COLUNAS)
+   ============================================================================ */
+const COLUMN_CATALOG = [
+    { key: 'nome_social',   label: 'Nome Social',     head: 'NOME SOCIAL',    defaultAcesso: true,  defaultInfo: false, mobileTrack: 'minmax(0, 1.55fr)', desktopTrack: 'minmax(210px, 1.5fr)' },
+    { key: 'pronome',       label: 'Pronome',         head: 'PRONOME',        defaultAcesso: true,  defaultInfo: false, mobileTrack: '54px',              desktopTrack: '74px' },
+    { key: 'equipe',        label: 'Equipe / Marca',  head: 'EQUIPE / MARCA', defaultAcesso: true,  defaultInfo: false, mobileTrack: 'minmax(0, 1fr)',    desktopTrack: 'minmax(150px, 1fr)' },
+    { key: 'rg',            label: 'RG',              head: 'RG',             defaultAcesso: false, defaultInfo: true,  mobileTrack: '104px',             desktopTrack: '120px' },
+    { key: 'cpf',           label: 'CPF',             head: 'CPF',            defaultAcesso: false, defaultInfo: true,  mobileTrack: '122px',             desktopTrack: '140px' },
+    { key: 'nome_completo', label: 'Nome Civil',      head: 'NOME CIVIL',     defaultAcesso: false, defaultInfo: false, mobileTrack: 'minmax(140px, 1.3fr)', desktopTrack: 'minmax(190px, 1.3fr)' },
+    { key: 'funcao',        label: 'Função / Papel',  head: 'FUNÇÃO',         defaultAcesso: false, defaultInfo: false, mobileTrack: 'minmax(120px, 1fr)', desktopTrack: 'minmax(160px, 1fr)' },
+    { key: 'instagram',     label: '@Instagram',      head: 'INSTAGRAM',      defaultAcesso: false, defaultInfo: false, mobileTrack: '112px',             desktopTrack: '136px' },
+    { key: 'turnos',        label: 'Turnos',          head: 'TURNOS',         defaultAcesso: false, defaultInfo: false, mobileTrack: '108px',             desktopTrack: '128px' }
+];
+
+const STORAGE_CHECKINS_KEY = 'cdc58_portaria_checkins_v4';
+const STORAGE_COLS_KEY = 'cdc58_portaria_cols_v4';
+
+const DEFAULT_SEED_CHECKINS = {
+    '27/11': {
+        1: '11:15',
+        4: '11:02',
+        6: '14:20',
+        9: '13:45',
+        10: '10:50',
+        13: '10:30',
+        121: '15:10',
+        122: '15:12',
+        127: '15:18',
+        101: '16:04',
+        102: '16:07',
+        105: '16:19'
+    }
+};
+
+function getDefaultColsConfig() {
+    return {
+        acessoOrder: COLUMN_CATALOG.map(c => c.key),
+        acessoActive: COLUMN_CATALOG.filter(c => c.defaultAcesso).map(c => c.key),
+        infoOrder: COLUMN_CATALOG.map(c => c.key),
+        infoActive: COLUMN_CATALOG.filter(c => c.defaultInfo).map(c => c.key)
+    };
+}
+
+function loadCheckins() {
+    try {
+        const raw = localStorage.getItem(STORAGE_CHECKINS_KEY);
+        if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && typeof parsed === 'object') return parsed;
+        }
+    } catch (e) {}
+    return JSON.parse(JSON.stringify(DEFAULT_SEED_CHECKINS));
+}
+
+function loadColsConfig() {
+    try {
+        const raw = localStorage.getItem(STORAGE_COLS_KEY);
+        if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && Array.isArray(parsed.acessoActive) && Array.isArray(parsed.infoActive)) {
+                return parsed;
+            }
+        }
+    } catch (e) {}
+    return getDefaultColsConfig();
+}
+
+/* ============================================================================
+   4. ESTADO CENTRAL DA APLICAÇÃO
+   ============================================================================ */
+const state = {
+    day: 'all',                        // 'all' | '20/11'..'30/11'
+    selectedBuckets: new Set(ALL_BUCKET_IDS),
+    turn: 'all',
+    arrivalFilter: 'all',              // 'all' (◑ TODOS) | 'pending' (○ FALTAM) | 'in' (● ENTRARAM)
+    barMode: 'alpha',                  // 'alpha' | 'search'
+    letter: 'ALL',                     // 'ALL' (sort_by_alpha) ou 'A'..'Z'
+    search: '',
+    expandedInfoId: null,              // 1 clique direto na linha -> Modo Info (Stage 1)
+    settingsTab: 'filters',            // 'filters' | 'columns'
+    columnsTier: 'acesso',             // 'acesso' | 'info'
+    colsConfig: loadColsConfig(),
+    activeSheet: null,                 // null | 'profile' | 'stats'
+    sheetPersonId: null,
+    revealedDocs: new Set(),
+    checkins: loadCheckins(),
+    hasShownSwipeHint: false,
+    lastUndo: null,
+    toastTimer: null
+};
+
+function saveCheckins() {
+    try { localStorage.setItem(STORAGE_CHECKINS_KEY, JSON.stringify(state.checkins)); } catch (e) {}
+}
+
+function saveColsConfig() {
+    try { localStorage.setItem(STORAGE_COLS_KEY, JSON.stringify(state.colsConfig)); } catch (e) {}
+}
+
+/* ============================================================================
+   5. UTILITÁRIOS DE TEXTO, HORÁRIO, MÁSCARAS E COLUNAS
+   ============================================================================ */
+function esc(str) {
+    return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+function norm(str) {
+    return String(str || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+}
+
+function digitsOnly(str) {
+    return String(str || '').replace(/\D/g, '');
+}
+
+function getInitialLetter(name) {
+    const clean = norm(name).trim();
+    if (!clean) return '#';
+    const first = clean[0].toUpperCase();
+    return (first >= 'A' && first <= 'Z') ? first : '#';
+}
+
+function nowHHMM() {
+    const d = new Date();
+    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
+function getOperationalDayKey() {
+    return state.day === 'all' ? '27/11' : state.day;
+}
+
+function getCheckinTime(personId, dayKey = getOperationalDayKey()) {
+    return state.checkins[dayKey]?.[personId] || null;
+}
+
+function setCheckinTime(personId, timeStr, dayKey = getOperationalDayKey()) {
+    if (!state.checkins[dayKey]) state.checkins[dayKey] = {};
+    if (timeStr) {
+        state.checkins[dayKey][personId] = timeStr;
+    } else {
+        delete state.checkins[dayKey][personId];
+    }
+    saveCheckins();
+}
+
+function maskCPF(cpf) {
+    const p = String(cpf || '').split('.');
+    return p.length === 3 ? `***.${p[1]}.${p[2].split('-')[0]}-**` : '***.***.***-**';
+}
+
+function maskRG(rg) {
+    const p = String(rg || '').split('.');
+    return p.length === 3 ? `**.${p[1]}.${p[2].split('-')[0]}-*` : '**.***.***-*';
+}
+
+function getOrderedActiveCols(tier) {
+    const order = tier === 'acesso' ? state.colsConfig.acessoOrder : state.colsConfig.infoOrder;
+    const activeSet = new Set(tier === 'acesso' ? state.colsConfig.acessoActive : state.colsConfig.infoActive);
+    return order
+        .filter(key => activeSet.has(key))
+        .map(key => COLUMN_CATALOG.find(c => c.key === key))
+        .filter(Boolean);
+}
+
+function getFieldText(p, key) {
+    switch (key) {
+        case 'nome_social': return p.nome_social;
+        case 'pronome': return p.pronome;
+        case 'equipe': return p.bucket;
+        case 'rg': return p.rg;
+        case 'cpf': return p.cpf;
+        case 'nome_completo': return p.nome_completo;
+        case 'funcao': return p.funcao;
+        case 'instagram': return p.instagram || '—';
+        case 'turnos': return p.turnos.join(' · ');
+        default: return '—';
+    }
+}
+
+/* ============================================================================
+   6. FILTRAGEM PROGRESSIVA (SCOPE -> ARRIVAL + SEARCH -> LETTER)
+   ============================================================================ */
+// Scope base (Dia, Equipes/Marcas, Turno) — usado pelo rodapé e estatísticas
+function getScopePeople() {
+    return PEOPLE.filter(p => {
+        if (state.day !== 'all' && !p.dias.includes(state.day)) return false;
+        if (!state.selectedBuckets.has(p.bucket)) return false;
+        if (state.turn !== 'all' && !p.turnos.includes(state.turn)) return false;
+        return true;
+    }).sort((a, b) => a.nome_social.localeCompare(b.nome_social, 'pt-BR'));
+}
+
+// Filtra pelo estado de chegada (◑/○/●) e busca textual (sem aplicar letra ainda)
+function getPreLetterPeople(scopePeople) {
+    const rawQuery = state.search.trim();
+    const qText = norm(rawQuery);
+    const qDigits = digitsOnly(rawQuery);
+    const dayKey = getOperationalDayKey();
+
+    return scopePeople.filter(p => {
+        const checked = Boolean(getCheckinTime(p.id, dayKey));
+        if (state.arrivalFilter === 'pending' && checked) return false;
+        if (state.arrivalFilter === 'in' && !checked) return false;
+
+        if (qText || qDigits) {
+            const hay = norm([
+                p.nome_social,
+                p.nome_completo,
+                p.bucket,
+                p.empresa,
+                p.funcao,
+                p.instagram
+            ].join(' '));
+            const matchText = qText ? hay.includes(qText) : false;
+            const docHay = `${digitsOnly(p.cpf)} ${digitsOnly(p.rg)}`;
+            const matchDigits = qDigits.length >= 2 ? docHay.includes(qDigits) : false;
+            if (!matchText && !matchDigits) return false;
+        }
+        return true;
+    });
+}
+
+function getVisiblePeople(preLetterPeople) {
+    if (state.letter === 'ALL') return preLetterPeople;
+    return preLetterPeople.filter(p => getInitialLetter(p.nome_social) === state.letter);
+}
+
+/* ============================================================================
+   7. TOGGLE DE ENTRADA + ANIMAÇÃO SUAVE NO MODO ○ FALTAM + TOAST DESFAZER
+   ============================================================================ */
+function togglePersonAccess(personId) {
+    const person = PEOPLE.find(p => p.id === personId);
+    if (!person) return;
+
+    const dayKey = getOperationalDayKey();
+    const prevTime = getCheckinTime(personId, dayKey);
+
+    if (navigator.vibrate) {
+        try { navigator.vibrate(18); } catch (e) {}
+    }
+
+    const willCheckIn = !prevTime;
+    const newTime = willCheckIn ? nowHHMM() : null;
+
+    if (willCheckIn) {
+        setCheckinTime(personId, newTime, dayKey);
+        showToast(`✓ LIBERADO: ${person.nome_social} (${newTime})`, {
+            personId,
+            dayKey,
+            restoreTime: null
+        });
+    } else {
+        setCheckinTime(personId, null, dayKey);
+        showToast(`Entrada desfeita: ${person.nome_social}`, {
+            personId,
+            dayKey,
+            restoreTime: prevTime
+        });
+    }
+
+    // Se estamos em ○ FALTAM e a pessoa acabou de entrar, ou em ● ENTRARAM e foi desfeita: anima saída suave
+    const shouldAnimateOut =
+        (state.arrivalFilter === 'pending' && willCheckIn) ||
+        (state.arrivalFilter === 'in' && !willCheckIn);
+
+    if (shouldAnimateOut) {
+        const shellEl = document.querySelector(`[data-shell-id="${personId}"]`);
+        if (shellEl) {
+            shellEl.classList.add('is-exiting');
+            if (state.expandedInfoId === personId) state.expandedInfoId = null;
+            setTimeout(() => {
+                renderApp();
+                if (state.activeSheet === 'profile' && state.sheetPersonId === personId) renderProfileSheet();
+                if (state.activeSheet === 'stats') renderStatsSheet();
+            }, 220);
+            return;
+        }
+    }
+
+    renderApp();
+    if (state.activeSheet === 'profile' && state.sheetPersonId === personId) renderProfileSheet();
+    if (state.activeSheet === 'stats') renderStatsSheet();
+}
+
+function showToast(msg, undoPayload) {
+    const bar = document.getElementById('toast-bar');
+    document.getElementById('toast-msg').textContent = msg;
+    const undoBtn = document.getElementById('toast-undo-btn');
+
+    state.lastUndo = undoPayload || null;
+    undoBtn.style.display = undoPayload ? '' : 'none';
+    bar.classList.add('visible');
+
+    if (state.toastTimer) clearTimeout(state.toastTimer);
+    state.toastTimer = setTimeout(() => {
+        bar.classList.remove('visible');
+        state.lastUndo = null;
+    }, 4000);
+}
+
+/* ============================================================================
+   8. RENDERIZAÇÃO PRINCIPAL (HEADER, BARRA UNIFICADA, THEAD, LINHAS, FOOTER)
+   ============================================================================ */
+function renderUnifiedBarMode() {
+    const isSearch = state.barMode === 'search';
+    document.getElementById('btn-enter-search').classList.toggle('hidden', isSearch);
+    document.getElementById('alpha-strip').classList.toggle('hidden', isSearch);
+    document.getElementById('search-mode-field').classList.toggle('hidden', !isSearch);
+    document.getElementById('btn-exit-search').classList.toggle('hidden', !isSearch);
+
+    const hasQuery = state.search.trim().length > 0;
+    document.getElementById('search-active-dot').classList.toggle('hidden', !hasQuery);
+    document.getElementById('btn-clear-search').classList.toggle('visible', hasQuery);
+}
+
+function renderApp() {
+    const dayKey = getOperationalDayKey();
+    const scopePeople = getScopePeople();
+    const preLetterPeople = getPreLetterPeople(scopePeople);
+
+    // 1. Atualiza botão 3-estados no cabeçalho (◑ TODOS / ○ FALTAM / ● ENTRARAM)
+    const arrivalBtn = document.getElementById('btn-arrival-cycle');
+    const arrivalGlyph = document.getElementById('arrival-glyph');
+    const arrivalLabel = document.getElementById('arrival-label');
+    arrivalBtn.classList.remove('is-pending', 'is-in');
+
+    if (state.arrivalFilter === 'all') {
+        arrivalGlyph.textContent = '◑';
+        arrivalLabel.textContent = 'TODOS';
+    } else if (state.arrivalFilter === 'pending') {
+        arrivalGlyph.textContent = '○';
+        arrivalLabel.textContent = 'FALTAM';
+        arrivalBtn.classList.add('is-pending');
+    } else {
+        arrivalGlyph.textContent = '●';
+        arrivalLabel.textContent = 'ENTRARAM';
+        arrivalBtn.classList.add('is-in');
+    }
+
+    // 2. Ponto indicador na engrenagem ⚙️ se filtros customizados estiverem ativos
+    const hasCustomFilters =
+        state.day !== 'all' ||
+        state.selectedBuckets.size < ALL_BUCKET_IDS.length ||
+        state.turn !== 'all';
+    document.getElementById('gear-filter-dot').classList.toggle('hidden', !hasCustomFilters);
+
+    // 3. Barra unificada Busca + Alfabeto
+    renderUnifiedBarMode();
+
+    const availableLettersSet = new Set();
+    preLetterPeople.forEach(p => availableLettersSet.add(getInitialLetter(p.nome_social)));
+    const availableLetters = [...availableLettersSet].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+
+    if (state.letter !== 'ALL' && !availableLettersSet.has(state.letter)) {
+        state.letter = 'ALL';
+    }
+
+    const alphaStrip = document.getElementById('alpha-strip');
+    alphaStrip.innerHTML = `
+        <button type="button" class="alpha-chip ${state.letter === 'ALL' ? 'active' : ''}" data-letter="ALL" title="Todas as letras" aria-label="Todas as letras">
+            ${SORT_ALPHA_SVG}
+        </button>
+        ${availableLetters.map(l => `
+            <button type="button" class="alpha-chip ${state.letter === l ? 'active' : ''}" data-letter="${l}">${l}</button>
+        `).join('')}
+    `;
+
+    alphaStrip.querySelectorAll('.alpha-chip').forEach(btn => {
+        btn.addEventListener('click', () => {
+            state.letter = btn.dataset.letter;
+            renderApp();
+        });
+    });
+
+    // 4. Cabeçalho de colunas sticky
+    const acessoCols = getOrderedActiveCols('acesso');
+    const mobileTracks = acessoCols.map(c => c.mobileTrack).join(' ');
+    const desktopTracks = `${acessoCols.map(c => c.desktopTrack).join(' ')} 124px`;
+
+    const tableHead = document.getElementById('table-head');
+    tableHead.style.setProperty('--cols-mobile', mobileTracks);
+    tableHead.style.setProperty('--cols-desktop', desktopTracks);
+    tableHead.innerHTML = `
+        ${acessoCols.map(c => `
+            <div class="th-cell ${c.key === 'pronome' ? 'is-center' : ''}">${esc(c.head)}</div>
+        `).join('')}
+        <div class="th-cell is-desktop-acesso">ACESSO</div>
+    `;
+
+    // 5. Renderiza linhas (2 estágios diretos: Stage 0 Padrão <-> Stage 1 Modo Info)
+    const visiblePeople = getVisiblePeople(preLetterPeople);
+    const rosterList = document.getElementById('roster-list');
+
+    if (!visiblePeople.length) {
+        rosterList.innerHTML = `
+            <div class="empty-state">
+                <div style="margin-bottom:12px;">
+                    ${state.arrivalFilter === 'pending' && scopePeople.length > 0 && !state.search.trim()
+                        ? 'Todas as pessoas deste recorte já entraram.'
+                        : 'Nenhuma pessoa encontrada para os filtros atuais.'
+                    }
+                </div>
+                <button type="button" class="btn" id="btn-empty-reset">Voltar à lista geral</button>
+            </div>
+        `;
+        const resetBtn = document.getElementById('btn-empty-reset');
+        if (resetBtn) resetBtn.addEventListener('click', resetAllFilters);
+    } else {
+        const infoCols = getOrderedActiveCols('info');
+        let firstPendingNudge = false;
+
+        rosterList.innerHTML = visiblePeople.map(p => {
+            const meta = TEAM_BUCKETS[p.bucket] || { color: '#4fb3d9' };
+            const checkedTime = getCheckinTime(p.id, dayKey);
+            const isInfoOpen = state.expandedInfoId === p.id;
+
+            let shouldNudge = false;
+            if (!state.hasShownSwipeHint && !checkedTime && !firstPendingNudge && !isInfoOpen) {
+                shouldNudge = true;
+                firstPendingNudge = true;
+                state.hasShownSwipeHint = true;
+            }
+
+            let innerHtml = '';
+            if (!isInfoOpen) {
+                // ESTÁGIO 0: Lista compacta + chip de horário à direita no mobile + botão ACESSO no desktop
+                const colsHtml = acessoCols.map(c => {
+                    if (c.key === 'nome_social') return `<div class="cell-val is-name">${esc(p.nome_social)}</div>`;
+                    if (c.key === 'pronome') return `<div class="cell-val is-pronoun">${esc(p.pronome)}</div>`;
+                    if (c.key === 'equipe') return `<div class="cell-val is-team">${esc(p.bucket)}</div>`;
+                    return `<div class="cell-val is-mono">${esc(getFieldText(p, c.key))}</div>`;
+                }).join('');
+
+                innerHtml = `
+                    <div class="stage-0" data-toggle-info="${p.id}">
+                        <div class="stage-0-cols" style="--cols-mobile:${mobileTracks};--cols-desktop:${desktopTracks};">
+                            ${colsHtml}
+                            <div class="desktop-acesso-cell">
+                                <button type="button" class="acesso-btn ${checkedTime ? 'is-entrou' : 'is-liberar'}" data-desktop-acesso="${p.id}">
+                                    ${checkedTime
+                                        ? `<span>✓ ENTROU</span><span class="acesso-btn-sub">${esc(checkedTime)}</span>`
+                                        : `<span>LIBERAR</span>`
+                                    }
+                                </button>
+                            </div>
+                        </div>
+                        ${checkedTime ? `<span class="mobile-time-chip">✓ ${esc(checkedTime)}</span>` : ''}
+                    </div>
+                `;
+            } else {
+                // ESTÁGIO 1 (1 clique direto): Modo Info com RG, CPF (Nível 2) + botão PERFIL à direita
+                const fieldsHtml = infoCols.map(c => `
+                    <div class="info-field">
+                        <span class="info-field-k">${esc(c.head)}</span>
+                        <span class="info-field-v">${esc(getFieldText(p, c.key))}</span>
+                    </div>
+                `).join('');
+
+                innerHtml = `
+                    <div class="stage-1-info" data-toggle-info="${p.id}">
+                        <div class="info-left">
+                            <div class="info-context-row">
+                                <span class="info-context-name">${esc(p.nome_social)}</span>
+                                <span class="info-context-team">· ${esc(p.bucket)}</span>
+                            </div>
+                            <div class="info-fields-strip">${fieldsHtml}</div>
+                        </div>
+                        <div class="info-right">
+                            ${checkedTime ? `<span class="mobile-time-chip">✓ ${esc(checkedTime)}</span>` : ''}
+                            <button type="button" class="perfil-btn" data-open-profile="${p.id}">PERFIL</button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="row-shell" style="--tc:${meta.color}" data-shell-id="${p.id}" role="listitem">
+                    <div class="swipe-track ${checkedTime ? 'is-undo' : ''}" aria-hidden="true">
+                        <span>${checkedTime ? '↩ DESFAZER ENTRADA' : '✓ LIBERAR ENTRADA'}</span>
+                        <span>${checkedTime ? '↩ DESFAZER' : '✓ LIBERAR'}</span>
+                    </div>
+                    <div class="row-surface ${checkedTime ? 'is-checked-in' : ''} ${shouldNudge ? 'is-nudge' : ''}" data-row-id="${p.id}">
+                        <span class="swipe-cue is-left" aria-hidden="true">‹</span>
+                        ${innerHtml}
+                        <span class="swipe-cue is-right" aria-hidden="true">›</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        bindRosterEvents();
+    }
+
+    // 6. Atualiza Rodapé Discreto (Contagem + Progresso + Voltar à lista geral)
+    let inCount = 0;
+    scopePeople.forEach(p => {
+        if (getCheckinTime(p.id, dayKey)) inCount++;
+    });
+    const totalCount = scopePeople.length;
+    const pendingCount = Math.max(0, totalCount - inCount);
+    const pct = totalCount > 0 ? Math.round((inCount / totalCount) * 100) : 0;
+
+    document.getElementById('footer-progress-fill').style.width = `${pct}%`;
+    document.getElementById('footer-tally').innerHTML =
+        `<strong>${inCount}</strong> / ${totalCount} entraram · ${pendingCount} faltam`;
+
+    const isTeamFiltered = state.selectedBuckets.size < ALL_BUCKET_IDS.length;
+    document.getElementById('btn-footer-reset').classList.toggle('hidden', !isTeamFiltered);
+    document.getElementById('footer-cue').classList.toggle('hidden', isTeamFiltered);
+}
+
+function resetAllFilters() {
+    state.day = 'all';
+    state.selectedBuckets = new Set(ALL_BUCKET_IDS);
+    state.turn = 'all';
+    state.arrivalFilter = 'all';
+    state.letter = 'ALL';
+    state.search = '';
+    state.barMode = 'alpha';
+    state.expandedInfoId = null;
+    document.getElementById('unified-search-input').value = '';
+    renderApp();
+}
+
+/* ============================================================================
+   9. INTERAÇÕES DAS LINHAS (1 CLIQUE DIRETO + SWIPE BIDIRECIONAL)
+   ============================================================================ */
+function bindRosterEvents() {
+    const list = document.getElementById('roster-list');
+
+    // 1 clique direto na linha alterna Stage 0 <-> Stage 1 (Modo Info)
+    list.querySelectorAll('[data-toggle-info]').forEach(el => {
+        el.addEventListener('click', (e) => {
+            if (e.target.closest('[data-desktop-acesso]') || e.target.closest('[data-open-profile]')) return;
+            const id = Number(el.dataset.toggleInfo);
+            state.expandedInfoId = state.expandedInfoId === id ? null : id;
+            renderApp();
+        });
+    });
+
+    // Botão PERFIL no Modo Info
+    list.querySelectorAll('[data-open-profile]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openProfileSheet(Number(btn.dataset.openProfile));
+        });
+    });
+
+    // Botão LIBERAR / ENTROU no Desktop
+    list.querySelectorAll('[data-desktop-acesso]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            togglePersonAccess(Number(btn.dataset.desktopAcesso));
+        });
+    });
+
+    // Swipe bidirecional (esquerda ou direita) em qualquer estágio
+    list.querySelectorAll('[data-shell-id]').forEach(shell => {
+        const id = Number(shell.dataset.shellId);
+        const surface = shell.querySelector('.row-surface');
+        const track = shell.querySelector('.swipe-track');
+
+        let startX = 0;
+        let startY = 0;
+        let deltaX = 0;
+        let isHorizontal = false;
+        let active = false;
+
+        const onStart = (x, y) => {
+            startX = x;
+            startY = y;
+            deltaX = 0;
+            isHorizontal = false;
+            active = true;
+            surface.classList.remove('is-nudge');
+        };
+
+        const onMove = (x, y, preventFn) => {
+            if (!active) return;
+            const dx = x - startX;
+            const dy = y - startY;
+
+            if (!isHorizontal) {
+                if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy) * 1.25) {
+                    isHorizontal = true;
+                    surface.classList.add('is-dragging');
+                } else if (Math.abs(dy) > 12) {
+                    active = false;
+                    return;
+                }
+            }
+
+            if (isHorizontal) {
+                if (preventFn) preventFn();
+                const clamped = Math.max(-136, Math.min(136, dx * 0.85));
+                deltaX = clamped;
+                surface.style.transform = `translateX(${clamped}px)`;
+                track.style.opacity = Math.min(1, Math.abs(clamped) / 68).toFixed(2);
+            }
+        };
+
+        const onEnd = () => {
+            if (!active) return;
+            active = false;
+            surface.classList.remove('is-dragging');
+
+            if (isHorizontal) {
+                const triggered = Math.abs(deltaX) >= 68;
+                surface.style.transform = 'translateX(0)';
+                track.style.opacity = '0';
+
+                // Impede clique residual imediatamente após soltar o swipe
+                const suppressClick = (ev) => {
+                    ev.stopPropagation();
+                    ev.preventDefault();
+                };
+                shell.addEventListener('click', suppressClick, { capture: true, once: true });
+
+                if (triggered) {
+                    togglePersonAccess(id);
+                }
+            }
+        };
+
+        surface.addEventListener('touchstart', (e) => {
+            if (e.touches.length !== 1) return;
+            onStart(e.touches[0].clientX, e.touches[0].clientY);
+        }, { passive: true });
+
+        surface.addEventListener('touchmove', (e) => {
+            if (e.touches.length !== 1) return;
+            onMove(e.touches[0].clientX, e.touches[0].clientY, () => e.preventDefault());
+        }, { passive: false });
+
+        surface.addEventListener('touchend', onEnd);
+        surface.addEventListener('touchcancel', onEnd);
+
+        surface.addEventListener('pointerdown', (e) => {
+            if (e.pointerType === 'touch' || e.button !== 0) return;
+            onStart(e.clientX, e.clientY);
+        });
+
+        surface.addEventListener('pointermove', (e) => {
+            if (e.pointerType === 'touch') return;
+            onMove(e.clientX, e.clientY, null);
+        });
+
+        surface.addEventListener('pointerup', (e) => {
+            if (e.pointerType === 'touch') return;
+            onEnd();
+        });
+    });
+}
+
+/* ============================================================================
+   10. MODAL UNIFICADO ⚙️ ([ Filtros ] | [ 👁️ Colunas ])
+   ============================================================================ */
+function renderSettingsModal() {
+    document.querySelectorAll('[data-settings-tab]').forEach(btn => {
+        btn.setAttribute('aria-selected', btn.dataset.settingsTab === state.settingsTab ? 'true' : 'false');
+    });
+
+    const body = document.getElementById('settings-modal-body');
+
+    if (state.settingsTab === 'filters') {
+        body.innerHTML = `
+            <div class="modal-section">
+                <span class="modal-sec-label">Dia da operação</span>
+                <select id="set-day-select" class="modal-select">
+                    <option value="all" ${state.day === 'all' ? 'selected' : ''}>Todos os dias (Lista completa · 75 pessoas)</option>
+                    ${DAYS.map(d => `<option value="${d.key}" ${state.day === d.key ? 'selected' : ''}>${d.label}</option>`).join('')}
+                </select>
+            </div>
+
+            <div class="modal-section">
+                <span class="modal-sec-label">Turno</span>
+                <select id="set-turn-select" class="modal-select">
+                    <option value="all" ${state.turn === 'all' ? 'selected' : ''}>Todos os turnos</option>
+                    ${TURNS.map(t => `<option value="${t}" ${state.turn === t ? 'selected' : ''}>${t}</option>`).join('')}
+                </select>
+            </div>
+
+            <div class="modal-section">
+                <div class="modal-sec-head">
+                    <span class="modal-sec-label">Equipes &amp; Marcas incluídas</span>
+                    <div style="display:flex;gap:10px;">
+                        <button type="button" class="link-action" id="btn-set-teams-all">Marcar todas</button>
+                        <button type="button" class="link-action" id="btn-set-teams-none">Desmarcar</button>
+                    </div>
+                </div>
+                <div class="teams-check-grid">
+                    ${ALL_BUCKET_IDS.map(bucketId => {
+                        const meta = TEAM_BUCKETS[bucketId];
+                        const count = PEOPLE.filter(p => p.bucket === bucketId && (state.day === 'all' || p.dias.includes(state.day))).length;
+                        const checked = state.selectedBuckets.has(bucketId);
+                        return `
+                            <label class="team-chk-card" style="--tc:${meta.color}">
+                                <span class="team-chk-left">
+                                    <input type="checkbox" data-bucket-chk="${bucketId}" ${checked ? 'checked' : ''}>
+                                    <span class="team-chk-name">${esc(meta.label)}</span>
+                                </span>
+                                <span class="team-chk-count">${count}</span>
+                            </label>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+        `;
+
+        document.getElementById('set-day-select').addEventListener('change', (e) => {
+            state.day = e.target.value;
+            renderSettingsModal();
+            renderApp();
+        });
+
+        document.getElementById('set-turn-select').addEventListener('change', (e) => {
+            state.turn = e.target.value;
+            renderApp();
+        });
+
+        document.getElementById('btn-set-teams-all').addEventListener('click', () => {
+            state.selectedBuckets = new Set(ALL_BUCKET_IDS);
+            renderSettingsModal();
+            renderApp();
+        });
+
+        document.getElementById('btn-set-teams-none').addEventListener('click', () => {
+            state.selectedBuckets.clear();
+            renderSettingsModal();
+            renderApp();
+        });
+
+        body.querySelectorAll('[data-bucket-chk]').forEach(chk => {
+            chk.addEventListener('change', (e) => {
+                const id = e.target.dataset.bucketChk;
+                if (e.target.checked) state.selectedBuckets.add(id);
+                else state.selectedBuckets.delete(id);
+                renderApp();
+            });
+        });
+    } else {
+        // ABA 👁️ COLUNAS (Nível 1: Modo Acesso | Nível 2: Modo Info)
+        const tier = state.columnsTier;
+        const order = tier === 'acesso' ? state.colsConfig.acessoOrder : state.colsConfig.infoOrder;
+        const activeSet = new Set(tier === 'acesso' ? state.colsConfig.acessoActive : state.colsConfig.infoActive);
+        const activeOrderList = order.filter(k => activeSet.has(k));
+
+        body.innerHTML = `
+            <div class="segmented-tabs" role="tablist">
+                <button type="button" class="seg-tab" role="tab" data-col-tier="acesso" aria-selected="${tier === 'acesso'}">
+                    Nível 1 · Modo Acesso
+                </button>
+                <button type="button" class="seg-tab" role="tab" data-col-tier="info" aria-selected="${tier === 'info'}">
+                    Nível 2 · Modo Info
+                </button>
+            </div>
+
+            <div class="modal-sec-head">
+                <span class="modal-sec-label">
+                    ${tier === 'acesso' ? 'Colunas da listagem principal' : 'Campos exibidos ao tocar no nome'}
+                </span>
+            </div>
+
+            <div class="col-config-list">
+                ${order.map((key, idx) => {
+                    const col = COLUMN_CATALOG.find(c => c.key === key);
+                    const isChecked = activeSet.has(key);
+                    const activePos = isChecked ? activeOrderList.indexOf(key) + 1 : null;
+                    return `
+                        <div class="col-config-row">
+                            <label class="col-config-left">
+                                <input type="checkbox" data-col-toggle="${key}" ${isChecked ? 'checked' : ''}>
+                                <span class="col-pos-badge">${activePos ? `#${activePos}` : '—'}</span>
+                                <span class="col-config-label">${esc(col.label)}</span>
+                            </label>
+                            <div class="col-order-btns">
+                                <button type="button" class="ord-btn" data-col-move="${key}" data-dir="-1" ${idx === 0 ? 'disabled' : ''} aria-label="Mover para cima">↑</button>
+                                <button type="button" class="ord-btn" data-col-move="${key}" data-dir="1" ${idx === order.length - 1 ? 'disabled' : ''} aria-label="Mover para baixo">↓</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+
+        body.querySelectorAll('[data-col-tier]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                state.columnsTier = btn.dataset.colTier;
+                renderSettingsModal();
+            });
+        });
+
+        body.querySelectorAll('[data-col-toggle]').forEach(chk => {
+            chk.addEventListener('change', (e) => {
+                const key = e.target.dataset.colToggle;
+                const arrKey = tier === 'acesso' ? 'acessoActive' : 'infoActive';
+                const set = new Set(state.colsConfig[arrKey]);
+
+                if (e.target.checked) {
+                    set.add(key);
+                } else {
+                    if (set.size <= 1) {
+                        e.target.checked = true;
+                        showToast('Mantenha pelo menos 1 coluna ativa');
+                        return;
+                    }
+                    set.delete(key);
+                }
+                state.colsConfig[arrKey] = [...set];
+                saveColsConfig();
+                renderSettingsModal();
+                renderApp();
+            });
+        });
+
+        body.querySelectorAll('[data-col-move]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const key = btn.dataset.colMove;
+                const dir = Number(btn.dataset.dir);
+                const ordKey = tier === 'acesso' ? 'acessoOrder' : 'infoOrder';
+                const arr = [...state.colsConfig[ordKey]];
+                const idx = arr.indexOf(key);
+                const targetIdx = idx + dir;
+                if (targetIdx < 0 || targetIdx >= arr.length) return;
+                [arr[idx], arr[targetIdx]] = [arr[targetIdx], arr[idx]];
+                state.colsConfig[ordKey] = arr;
+                saveColsConfig();
+                renderSettingsModal();
+                renderApp();
+            });
+        });
+    }
+}
+
+/* ============================================================================
+   11. BOTTOM SHEETS (PERFIL COM CTA FIXO + ESTATÍSTICAS POR EQUIPE)
+   ============================================================================ */
+function closeAllSheets() {
+    state.activeSheet = null;
+    state.sheetPersonId = null;
+    document.body.classList.remove('sheet-open');
+    document.getElementById('sheet-backdrop').classList.remove('open');
+
+    const pSheet = document.getElementById('profile-sheet');
+    const sSheet = document.getElementById('stats-sheet');
+    pSheet.classList.remove('open');
+    pSheet.setAttribute('aria-hidden', 'true');
+    sSheet.classList.remove('open');
+    sSheet.setAttribute('aria-hidden', 'true');
+}
+
+function openProfileSheet(personId) {
+    closeAllSheets();
+    state.activeSheet = 'profile';
+    state.sheetPersonId = personId;
+    renderProfileSheet();
+}
+
+function renderProfileSheet() {
+    const sheet = document.getElementById('profile-sheet');
+    const backdrop = document.getElementById('sheet-backdrop');
+    const p = PEOPLE.find(item => item.id === state.sheetPersonId);
+
+    if (!p) {
+        closeAllSheets();
+        return;
+    }
+
+    const meta = TEAM_BUCKETS[p.bucket] || { color: '#4fb3d9', full: p.bucket };
+    const dayKey = getOperationalDayKey();
+    const checkedTime = getCheckinTime(p.id, dayKey);
+    const revealed = state.revealedDocs.has(p.id);
+    const hasDiet = p.alimentacao && p.alimentacao !== 'Sem restrição';
+
+    sheet.innerHTML = `
+        <div class="sheet-grabber" aria-hidden="true"></div>
+        <div class="sheet-head">
+            <span class="mono" style="font-size:0.74rem;font-weight:700;color:var(--text-secondary);">PERFIL · CREDENCIAMENTO</span>
+            <button type="button" class="modal-close" id="btn-close-profile" aria-label="Fechar">×</button>
+        </div>
+
+        <div class="sheet-body">
+            <div class="sheet-hero" style="--tc:${meta.color}">
+                <div class="sheet-kicker">${esc(p.bucket)} · ${esc(p.empresa)}</div>
+                <h2 class="sheet-name">${esc(p.nome_social)}</h2>
+                <div class="sheet-civil">Civil: ${esc(p.nome_completo)} · ${esc(p.pronomes_full)}</div>
+            </div>
+
+            <div class="doc-box">
+                <div class="doc-pair">
+                    <div>
+                        <span>CPF</span>
+                        <strong>${revealed ? esc(p.cpf) : maskCPF(p.cpf)}</strong>
+                    </div>
+                    <div>
+                        <span>RG</span>
+                        <strong>${revealed ? esc(p.rg) : maskRG(p.rg)}</strong>
+                    </div>
+                </div>
+                <button type="button" class="btn" id="btn-toggle-doc" style="height:32px;font-size:0.75rem;">
+                    ${revealed ? 'Ocultar' : 'Revelar'}
+                </button>
+            </div>
+
+            <div class="sheet-grid">
+                <div class="kv-item">
+                    <div class="kv-label">Função / Papel</div>
+                    <div class="kv-val">${esc(p.funcao)}</div>
+                </div>
+                <div class="kv-item">
+                    <div class="kv-label">Instagram</div>
+                    <div class="kv-val mono">${esc(p.instagram || '—')}</div>
+                </div>
+                <div class="kv-item">
+                    <div class="kv-label">WhatsApp</div>
+                    <div class="kv-val mono">${esc(p.whatsapp || '—')}</div>
+                </div>
+                <div class="kv-item">
+                    <div class="kv-label">E-mail</div>
+                    <div class="kv-val">${esc(p.email || '—')}</div>
+                </div>
+                <div class="kv-item">
+                    <div class="kv-label">Turnos</div>
+                    <div class="kv-val">${esc(p.turnos.join(' · '))}</div>
+                </div>
+                <div class="kv-item">
+                    <div class="kv-label">Alimentação</div>
+                    <div class="kv-val">${hasDiet ? `<span class="diet-badge">${esc(p.alimentacao)}</span>` : 'Sem restrição'}</div>
+                </div>
+                <div class="kv-item full">
+                    <div class="kv-label">Dias credenciados</div>
+                    <div class="days-mini-row">
+                        ${DAYS.map(d => `
+                            <span class="day-chip-mini ${p.dias.includes(d.key) ? 'on' : ''}" style="--tc:${meta.color}">${d.key}</span>
+                        `).join('')}
+                    </div>
+                </div>
+                ${p.obs ? `
+                    <div class="kv-item full">
+                        <div class="kv-label">Observações</div>
+                        <div class="kv-val" style="color:var(--text-secondary);">${esc(p.obs)}</div>
+                    </div>
+                ` : ''}
+            </div>
+        </div>
+
+        <!-- Botão de ação sempre fixo na base da área do perfil -->
+        <div class="sheet-pinned-foot">
+            <button type="button" class="sheet-cta-btn ${checkedTime ? 'is-undo' : ''}" id="btn-profile-liberar">
+                ${checkedTime
+                    ? `↩ DESFAZER ENTRADA (${esc(checkedTime)})`
+                    : `✓ LIBERAR ENTRADA AGORA`
+                }
+            </button>
+        </div>
+    `;
+
+    document.body.classList.add('sheet-open');
+    backdrop.classList.add('open');
+    sheet.classList.add('open');
+    sheet.setAttribute('aria-hidden', 'false');
+
+    document.getElementById('btn-close-profile').addEventListener('click', closeAllSheets);
+    document.getElementById('btn-toggle-doc').addEventListener('click', () => {
+        if (state.revealedDocs.has(p.id)) {
+            state.revealedDocs.delete(p.id);
+        } else {
+            state.revealedDocs.add(p.id);
+            showToast('CPF/RG revelados · log LGPD registrado');
+        }
+        renderProfileSheet();
+    });
+    document.getElementById('btn-profile-liberar').addEventListener('click', () => {
+        togglePersonAccess(p.id);
+    });
+}
+
+function openStatsSheet() {
+    closeAllSheets();
+    state.activeSheet = 'stats';
+    renderStatsSheet();
+}
+
+function renderStatsSheet() {
+    const sheet = document.getElementById('stats-sheet');
+    const backdrop = document.getElementById('sheet-backdrop');
+    const body = document.getElementById('stats-sheet-body');
+    const dayKey = getOperationalDayKey();
+
+    // Calcula estatísticas sobre o dia e turno atuais para TODAS as equipes
+    const rows = ALL_BUCKET_IDS.map(bucketId => {
+        const meta = TEAM_BUCKETS[bucketId];
+        const members = PEOPLE.filter(p => {
+            if (p.bucket !== bucketId) return false;
+            if (state.day !== 'all' && !p.dias.includes(state.day)) return false;
+            if (state.turn !== 'all' && !p.turnos.includes(state.turn)) return false;
+            return true;
+        });
+        const total = members.length;
+        const entered = members.filter(p => Boolean(getCheckinTime(p.id, dayKey))).length;
+        const missing = total - entered;
+        const pct = total > 0 ? Math.round((entered / total) * 100) : 0;
+        const isOnlySelected = state.selectedBuckets.size === 1 && state.selectedBuckets.has(bucketId);
+
+        return { bucketId, meta, total, entered, missing, pct, isOnlySelected };
+    }).filter(r => r.total > 0);
+
+    body.innerHTML = `
+        <div class="team-stat-list">
+            ${rows.map(r => `
+                <button type="button" class="team-stat-btn ${r.isOnlySelected ? 'is-active' : ''}" style="--tc:${r.meta.color}" data-pick-bucket="${r.bucketId}">
+                    <div class="team-stat-top">
+                        <span class="team-stat-name">${esc(r.meta.full)}</span>
+                        <span class="team-stat-nums"><strong>${r.entered}</strong> / ${r.total} · ${r.missing} faltam</span>
+                    </div>
+                    <div class="team-stat-bar">
+                        <div class="team-stat-bar-fill" style="width:${r.pct}%;"></div>
+                    </div>
+                </button>
+            `).join('')}
+        </div>
+    `;
+
+    body.querySelectorAll('[data-pick-bucket]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const bucketId = btn.dataset.pickBucket;
+            state.selectedBuckets = new Set([bucketId]);
+            state.letter = 'ALL';
+            state.expandedInfoId = null;
+            closeAllSheets();
+            renderApp();
+        });
+    });
+
+    document.body.classList.add('sheet-open');
+    backdrop.classList.add('open');
+    sheet.classList.add('open');
+    sheet.setAttribute('aria-hidden', 'false');
+}
+
+/* ============================================================================
+   12. BINDING GLOBAL E INICIALIZAÇÃO
+   ============================================================================ */
+function bindGlobalEvents() {
+    // 1) Botão 3-estados de chegada (◑ TODOS -> ○ FALTAM -> ● ENTRARAM)
+    document.getElementById('btn-arrival-cycle').addEventListener('click', () => {
+        const order = ['all', 'pending', 'in'];
+        const nextIdx = (order.indexOf(state.arrivalFilter) + 1) % order.length;
+        state.arrivalFilter = order[nextIdx];
+        state.expandedInfoId = null;
+        renderApp();
+    });
+
+    // 2) Barra Unificada: alternar entre Modo Alfabeto e Modo Busca
+    const searchInput = document.getElementById('unified-search-input');
+
+    document.getElementById('btn-enter-search').addEventListener('click', () => {
+        state.barMode = 'search';
+        renderUnifiedBarMode();
+        requestAnimationFrame(() => searchInput.focus());
+    });
+
+    document.getElementById('btn-exit-search').addEventListener('click', () => {
+        state.barMode = 'alpha';
+        renderUnifiedBarMode();
+    });
+
+    searchInput.addEventListener('input', (e) => {
+        state.search = e.target.value;
+        state.expandedInfoId = null;
+        renderApp();
+    });
+
+    document.getElementById('btn-clear-search').addEventListener('click', () => {
+        state.search = '';
+        searchInput.value = '';
+        renderApp();
+        searchInput.focus();
+    });
+
+    // 3) Modal Unificado ⚙️ (Filtros + 👁️ Colunas)
+    const settingsModal = document.getElementById('settings-modal');
+
+    document.getElementById('btn-open-settings').addEventListener('click', () => {
+        renderSettingsModal();
+        if (settingsModal.showModal) settingsModal.showModal();
+    });
+
+    document.getElementById('btn-close-settings').addEventListener('click', () => settingsModal.close());
+    document.getElementById('btn-settings-done').addEventListener('click', () => settingsModal.close());
+    settingsModal.addEventListener('click', (e) => {
+        if (e.target === settingsModal) settingsModal.close();
+    });
+
+    document.querySelectorAll('[data-settings-tab]').forEach(tab => {
+        tab.addEventListener('click', () => {
+            state.settingsTab = tab.dataset.settingsTab;
+            renderSettingsModal();
+        });
+    });
+
+    document.getElementById('btn-settings-reset').addEventListener('click', () => {
+        if (state.settingsTab === 'filters') {
+            state.day = 'all';
+            state.selectedBuckets = new Set(ALL_BUCKET_IDS);
+            state.turn = 'all';
+            state.letter = 'ALL';
+        } else {
+            state.colsConfig = getDefaultColsConfig();
+            saveColsConfig();
+        }
+        renderSettingsModal();
+        renderApp();
+    });
+
+    // 4) Rodapé + Bottom Sheet de Estatísticas por Equipe
+    document.getElementById('btn-open-stats').addEventListener('click', openStatsSheet);
+    document.getElementById('btn-close-stats').addEventListener('click', closeAllSheets);
+    document.getElementById('btn-stats-all-teams').addEventListener('click', () => {
+        state.selectedBuckets = new Set(ALL_BUCKET_IDS);
+        state.letter = 'ALL';
+        closeAllSheets();
+        renderApp();
+    });
+
+    document.getElementById('btn-footer-reset').addEventListener('click', () => {
+        state.selectedBuckets = new Set(ALL_BUCKET_IDS);
+        state.letter = 'ALL';
+        renderApp();
+    });
+
+    // 5) Backdrop & ESC para fechar Bottom Sheets
+    document.getElementById('sheet-backdrop').addEventListener('click', closeAllSheets);
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && state.activeSheet) closeAllSheets();
+    });
+
+    // 6) Toast Desfazer
+    document.getElementById('toast-undo-btn').addEventListener('click', () => {
+        if (!state.lastUndo) return;
+        const { personId, dayKey, restoreTime } = state.lastUndo;
+        setCheckinTime(personId, restoreTime, dayKey);
+        state.lastUndo = null;
+        document.getElementById('toast-bar').classList.remove('visible');
+        renderApp();
+        if (state.activeSheet === 'profile' && state.sheetPersonId === personId) renderProfileSheet();
+        if (state.activeSheet === 'stats') renderStatsSheet();
+    });
+}
+
+bindGlobalEvents();
+renderApp();
+</script>
+</body>
+</html>
