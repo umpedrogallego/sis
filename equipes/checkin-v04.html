@@ -1,0 +1,3301 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Portaria · Check-in — Casa de Criadores 58</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* =====================================================================
+           1. DESIGN TOKENS — MONOCROMIA GRAFITE-PETRÓLEO + COR FUNCIONAL
+           ===================================================================== */
+        :root {
+            --bg-base: #0c1114;
+            --bg-surface: #12181c;
+            --bg-elevated: #171f24;
+            --bg-hover: #1b242a;
+            --bg-input: #090d10;
+
+            --border: rgba(255, 255, 255, 0.09);
+            --border-strong: rgba(255, 255, 255, 0.22);
+
+            --text-primary: #eef2f4;
+            --text-secondary: #8b98a1;
+            --text-muted: #5a6872;
+
+            /* Estados operacionais de portaria */
+            --status-in: #4ec28c;
+            --status-in-bg: rgba(78, 194, 140, 0.14);
+            --status-in-border: rgba(78, 194, 140, 0.44);
+            --btn-liberar-bg: #1b5e3a;
+            --btn-liberar-hover: #237649;
+            --btn-liberar-border: #38a169;
+            --alert-warn: #f0b429;
+            --alert-warn-bg: rgba(240, 180, 41, 0.13);
+            --alert-diet: #d6c5a3;
+            --alert-diet-bg: rgba(214, 197, 163, 0.11);
+
+            /* Alturas exatas da pilha sticky (zero folga / zero deslocamento) */
+            --header-h: 52px;
+            --search-h: 64px;
+            --alpha-h: 52px;
+            --thead-h: 34px;
+            --footer-h: 46px;
+
+            --radius: 4px;
+            --font-sans: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+            --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* IMPORTANTE: Nunca usar overflow-x: hidden em ancestor direto que quebre position: sticky */
+        html {
+            background: var(--bg-base);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            line-height: 1.35;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            min-height: 100dvh;
+            background: var(--bg-base);
+            color: var(--text-primary);
+            padding-bottom: calc(var(--footer-h) + env(safe-area-inset-bottom, 0px) + 20px);
+        }
+
+        button, input, select {
+            font-family: inherit;
+            color: inherit;
+        }
+
+        :focus-visible {
+            outline: 2px solid var(--text-primary);
+            outline-offset: 2px;
+        }
+
+        .mono {
+            font-family: var(--font-mono);
+        }
+
+        /* =====================================================================
+           2. CABEÇALHO FIXO (top: 0, height: 52px)
+              [ CdC 58 | 👁️ | ◑ | ESCOPO | ⚙️ ]
+           ===================================================================== */
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 65;
+            width: 100%;
+            height: var(--header-h);
+            background: rgba(12, 17, 20, 0.98);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-strong);
+        }
+
+        .topbar-grid {
+            max-width: 1080px;
+            margin: 0 auto;
+            height: 100%;
+            display: grid;
+            grid-template-columns: auto 50px auto 1fr 50px;
+            align-items: stretch;
+        }
+
+        .top-cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-right: 1px solid var(--border);
+            min-width: 0;
+        }
+
+        .top-cell:last-child {
+            border-right: none;
+        }
+
+        .brand-cell {
+            justify-content: flex-start;
+            gap: 7px;
+            padding: 0 11px;
+            font-weight: 700;
+            font-size: 0.96rem;
+            letter-spacing: -0.02em;
+            white-space: nowrap;
+        }
+
+        .brand-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--status-in);
+            flex-shrink: 0;
+        }
+
+        .icon-trigger {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: transparent;
+            color: var(--text-primary);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: background 0.12s, color 0.12s;
+        }
+
+        .icon-trigger:hover {
+            background: var(--bg-elevated);
+        }
+
+        .icon-trigger.has-active-filter {
+            color: var(--alert-warn);
+            background: var(--alert-warn-bg);
+        }
+
+        .badge-mini {
+            position: absolute;
+            top: 6px;
+            right: 5px;
+            min-width: 15px;
+            height: 15px;
+            padding: 0 3px;
+            border-radius: 3px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-strong);
+            font-family: var(--font-mono);
+            font-size: 0.6rem;
+            font-weight: 700;
+            line-height: 13px;
+            text-align: center;
+            color: var(--text-primary);
+        }
+
+        .icon-trigger.has-active-filter .badge-mini {
+            background: var(--alert-warn);
+            color: var(--bg-base);
+            border-color: var(--alert-warn);
+        }
+
+        /* Botão de 3 estados: ◑ Todos | ○ Faltam | ● Entraram */
+        .arrival-cycle-btn {
+            height: 100%;
+            padding: 0 11px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            white-space: nowrap;
+            transition: background 0.12s, color 0.12s;
+        }
+
+        .arrival-cycle-btn:hover {
+            background: var(--bg-elevated);
+        }
+
+        .arrival-symbol {
+            font-size: 1.18rem;
+            line-height: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .arrival-label {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+        }
+
+        .arrival-cycle-btn[data-mode="all"] {
+            color: var(--text-primary);
+        }
+
+        .arrival-cycle-btn[data-mode="pending"] {
+            color: var(--alert-warn);
+            background: var(--alert-warn-bg);
+        }
+
+        .arrival-cycle-btn[data-mode="in"] {
+            color: var(--status-in);
+            background: var(--status-in-bg);
+        }
+
+        /* Célula central de escopo ativo (dia / equipe filtrada) */
+        .scope-cell {
+            justify-content: flex-end;
+            padding: 0 10px;
+            gap: 6px;
+            overflow: hidden;
+        }
+
+        .scope-pill {
+            font-family: var(--font-mono);
+            font-size: 0.69rem;
+            font-weight: 600;
+            padding: 3px 7px;
+            border-radius: 3px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-strong);
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+
+        .scope-pill.is-filtered {
+            color: var(--alert-warn);
+            border-color: rgba(240, 180, 41, 0.45);
+        }
+
+        /* =====================================================================
+           3. BUSCA TYPEAHEAD (sticky top: 52px, height: 64px)
+           ===================================================================== */
+        .search-sticky {
+            position: sticky;
+            top: var(--header-h);
+            z-index: 60;
+            width: 100%;
+            height: var(--search-h);
+            background: var(--bg-input);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .search-inner {
+            max-width: 1080px;
+            margin: 0 auto;
+            height: 100%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            gap: 10px;
+        }
+
+        .search-icon {
+            color: var(--text-secondary);
+            display: inline-flex;
+            flex-shrink: 0;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 0;
+            height: 52px;
+            background: transparent;
+            border: none;
+            font-size: 16px;
+            color: var(--text-primary);
+        }
+
+        .search-input::placeholder {
+            color: var(--text-muted);
+            font-size: 0.88rem;
+        }
+
+        .search-input:focus {
+            outline: none;
+        }
+
+        .search-clear-btn {
+            width: 38px;
+            height: 38px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--bg-surface);
+            color: var(--text-secondary);
+            font-size: 1.15rem;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .search-clear-btn.visible {
+            display: inline-flex;
+        }
+
+        /* Dropdown Typeahead */
+        .typeahead-dropdown {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 100%;
+            z-index: 75;
+            background: var(--bg-surface);
+            border-bottom: 1px solid var(--border-strong);
+            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.78);
+            max-height: 310px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .typeahead-dropdown.open {
+            display: block;
+        }
+
+        .ta-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 11px 12px;
+            border-bottom: 1px solid var(--border);
+            border-left: 3px solid var(--tc);
+            cursor: pointer;
+        }
+
+        .ta-item:hover {
+            background: var(--bg-elevated);
+        }
+
+        .ta-main {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .ta-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .ta-sub {
+            font-size: 0.74rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .ta-quick-btn {
+            height: 34px;
+            padding: 0 11px;
+            border-radius: 3px;
+            border: 1px solid var(--btn-liberar-border);
+            background: var(--btn-liberar-bg);
+            color: #ffffff;
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            font-weight: 700;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .ta-quick-btn.is-in {
+            background: var(--status-in-bg);
+            border-color: var(--status-in-border);
+            color: var(--status-in);
+        }
+
+        /* =====================================================================
+           4. ÍNDICE ALFABÉTICO DINÂMICO (sticky top: 116px, height: 52px)
+           ===================================================================== */
+        .alpha-sticky {
+            position: sticky;
+            top: calc(var(--header-h) + var(--search-h));
+            z-index: 55;
+            width: 100%;
+            height: var(--alpha-h);
+            background: var(--bg-base);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .alpha-scroll {
+            max-width: 1080px;
+            margin: 0 auto;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 0 10px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .alpha-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .alpha-btn {
+            min-width: 34px;
+            height: 38px;
+            padding: 0 9px;
+            border: 1px solid transparent;
+            border-radius: 3px;
+            background: transparent;
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+            font-size: 0.84rem;
+            font-weight: 600;
+            cursor: pointer;
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.1s, color 0.1s;
+        }
+
+        .alpha-btn:hover {
+            color: var(--text-primary);
+            background: var(--bg-surface);
+        }
+
+        .alpha-btn.active {
+            background: var(--text-primary);
+            color: var(--bg-base);
+            font-weight: 700;
+        }
+
+        .alpha-sep {
+            color: var(--text-muted);
+            font-size: 0.72rem;
+            user-select: none;
+            flex-shrink: 0;
+        }
+
+        /* =====================================================================
+           5. CABEÇALHO DA LISTA (sticky top: 168px — SEMPRE PRESO SOB AS LETRAS)
+           ===================================================================== */
+        .table-head-sticky {
+            position: sticky;
+            top: calc(var(--header-h) + var(--search-h) + var(--alpha-h));
+            z-index: 50;
+            width: 100%;
+            height: var(--thead-h);
+            background: var(--bg-elevated);
+            border-bottom: 1px solid var(--border-strong);
+        }
+
+        .grid-header-inner {
+            max-width: 1080px;
+            margin: 0 auto;
+            height: 100%;
+            display: grid;
+            grid-template-columns: var(--cols-mobile, minmax(0, 1.55fr) 52px minmax(0, 1fr));
+            align-items: center;
+            gap: 8px;
+            padding: 0 12px;
+            font-size: 0.69rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+        }
+
+        .col-head {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .col-head.is-center {
+            text-align: center;
+        }
+
+        .col-head.is-desktop-acesso {
+            display: none;
+        }
+
+        /* =====================================================================
+           6. LISTA DE NOMES — 3 ESTÁGIOS + CHIP DE HORÁRIO SEMPRE À DIREITA + SWIPE
+           ===================================================================== */
+        .roster-container {
+            max-width: 1080px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .person-swipe-shell {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+            border-bottom: 1px solid var(--border);
+            border-left: 3px solid var(--tc);
+            background: var(--bg-base);
+            transition: max-height 0.2s ease, opacity 0.18s ease;
+        }
+
+        .person-swipe-shell.is-leaving {
+            opacity: 0;
+            transform: translateX(28px);
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+
+        /* Trilho verde/âmbar revelado ao deslizar esquerda ou direita */
+        .swipe-underlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            background: var(--btn-liberar-bg);
+            color: #ffffff;
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.1s linear;
+        }
+
+        .swipe-underlay.is-undo-track {
+            background: #5c4312;
+            color: var(--alert-warn);
+        }
+
+        /* Superfície deslizante da linha */
+        .person-row {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            min-height: 50px;
+            background: var(--bg-base);
+            transition: transform 0.2s cubic-bezier(0.2, 0.85, 0.25, 1), background-color 0.12s;
+            touch-action: pan-y;
+            user-select: none;
+        }
+
+        .person-row.is-dragging {
+            transition: none;
+        }
+
+        .person-row:hover {
+            background: var(--bg-surface);
+        }
+
+        .person-row.is-checked-in {
+            background: #0e1915;
+        }
+
+        .person-row.is-checked-in:hover {
+            background: #12211b;
+        }
+
+        /* Micro-chevrons nas extremidades sem ocupar largura */
+        .swipe-edge-cue {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            opacity: 0.34;
+            pointer-events: none;
+            line-height: 1;
+        }
+
+        .swipe-edge-cue.is-left {
+            left: 3px;
+        }
+
+        .swipe-edge-cue.is-right {
+            right: 3px;
+        }
+
+        @keyframes swipeNudgeHint {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(18px); }
+            55% { transform: translateX(-14px); }
+            80% { transform: translateX(0); }
+        }
+
+        .person-row.is-hint-nudge {
+            animation: swipeNudgeHint 1.15s cubic-bezier(0.25, 0.9, 0.3, 1) 0.45s 1;
+        }
+
+        /* ESTÁGIO 0: Lista Padrão (Nome Social, Pronome, Equipe/Marca + chip horário à direita no mobile) */
+        .stage-0-grid {
+            display: grid;
+            grid-template-columns: var(--cols-mobile, minmax(0, 1.55fr) 52px minmax(0, 1fr));
+            align-items: center;
+            gap: 8px;
+            min-height: 50px;
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+
+        .cell-val {
+            min-width: 0;
+            font-size: 0.86rem;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .cell-val.is-name {
+            font-weight: 600;
+            font-size: 0.91rem;
+        }
+
+        .cell-val.is-pronoun {
+            text-align: center;
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+        }
+
+        /* Célula da última coluna no Estágio 0: empurra o chip de horário sempre para a direita */
+        .cell-trailing-slot {
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+        }
+
+        .cell-trailing-text {
+            min-width: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .cell-val.is-mono {
+            font-family: var(--font-mono);
+            font-size: 0.74rem;
+            color: var(--text-secondary);
+        }
+
+        /* Chip de horário: SEMPRE flush à direita no mobile/tablet; oculto no desktop */
+        .in-time-pill {
+            margin-left: auto;
+            flex-shrink: 0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            background: var(--status-in-bg);
+            border: 1px solid var(--status-in-border);
+            color: var(--status-in);
+            font-family: var(--font-mono);
+            font-size: 0.66rem;
+            font-weight: 700;
+            line-height: 1.2;
+            white-space: nowrap;
+        }
+
+        .desktop-acesso-cell {
+            display: none;
+        }
+
+        /* ESTÁGIO 1 (+20% altura -> 60px): Nome Social grande + horário à direita + botão ⓘ */
+        .stage-1-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            min-height: 60px;
+            padding: 8px 12px;
+            background: var(--bg-surface);
+        }
+
+        .stage-1-name-btn {
+            flex: 1;
+            min-width: 0;
+            min-height: 44px;
+            border: none;
+            background: transparent;
+            text-align: left;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 2px 0;
+        }
+
+        .stage-1-name-text {
+            font-size: clamp(1.06rem, 4.4vw, 1.24rem);
+            font-weight: 700;
+            letter-spacing: -0.015em;
+            line-height: 1.18;
+            color: var(--text-primary);
+            word-break: break-word;
+        }
+
+        .info-circle-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 1px solid var(--border-strong);
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+            font-size: 1.05rem;
+            font-weight: 700;
+            cursor: pointer;
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.12s, border-color 0.12s;
+        }
+
+        .info-circle-btn:hover {
+            background: var(--text-primary);
+            color: var(--bg-base);
+            border-color: var(--text-primary);
+        }
+
+        /* ESTÁGIO 2 (Modo Info): Somente RG, CPF e botão 'PERFIL' à direita */
+        .stage-2-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            min-height: 60px;
+            padding: 8px 12px;
+            background: var(--bg-elevated);
+        }
+
+        .stage-2-docs {
+            flex: 1;
+            min-width: 0;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            cursor: pointer;
+        }
+
+        .doc-chip {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+
+        .doc-chip-k {
+            font-family: var(--font-mono);
+            font-size: 0.62rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 0.04em;
+        }
+
+        .doc-chip-v {
+            font-family: var(--font-mono);
+            font-size: 0.84rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            white-space: nowrap;
+        }
+
+        .perfil-btn {
+            height: 38px;
+            padding: 0 13px;
+            border-radius: 3px;
+            border: 1px solid var(--border-strong);
+            background: var(--text-primary);
+            color: var(--bg-base);
+            font-family: var(--font-mono);
+            font-size: 0.74rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .perfil-btn:hover {
+            background: #dce4e8;
+        }
+
+        /* =====================================================================
+           7. ADAPTAÇÃO DESKTOP (>= 900px e ponteiro fino):
+              - Mantém coluna ACESSO com botão LIBERAR / ✓ ENTROU HH:MM
+              - Oculta o chip de horário inline (pois já está no botão)
+           ===================================================================== */
+        @media (min-width: 900px) and (hover: hover) {
+            .grid-header-inner {
+                grid-template-columns: var(--cols-desktop, minmax(220px, 1.6fr) 76px minmax(160px, 1fr) 122px);
+            }
+
+            .col-head.is-desktop-acesso {
+                display: block;
+                text-align: center;
+            }
+
+            .stage-0-grid {
+                grid-template-columns: var(--cols-desktop, minmax(220px, 1.6fr) 76px minmax(160px, 1fr) 122px);
+            }
+
+            .in-time-pill {
+                display: none !important;
+            }
+
+            .desktop-acesso-cell {
+                display: flex;
+                justify-content: flex-end;
+                align-items: center;
+            }
+
+            .swipe-edge-cue {
+                display: none;
+            }
+
+            .acesso-btn {
+                width: 112px;
+                height: 36px;
+                padding: 0 8px;
+                border-radius: 3px;
+                font-family: var(--font-mono);
+                font-size: 0.73rem;
+                font-weight: 700;
+                letter-spacing: 0.03em;
+                cursor: pointer;
+                display: inline-flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                line-height: 1.1;
+                transition: background 0.12s, border-color 0.12s;
+            }
+
+            .acesso-btn.is-liberar {
+                background: var(--btn-liberar-bg);
+                border: 1px solid var(--btn-liberar-border);
+                color: #ffffff;
+            }
+
+            .acesso-btn.is-liberar:hover {
+                background: var(--btn-liberar-hover);
+            }
+
+            .acesso-btn.is-entrou {
+                background: var(--status-in-bg);
+                border: 1px solid var(--status-in-border);
+                color: var(--status-in);
+            }
+
+            .acesso-btn.is-entrou:hover {
+                background: rgba(78, 194, 140, 0.22);
+            }
+
+            .acesso-btn-sub {
+                font-size: 0.62rem;
+                font-weight: 500;
+                opacity: 0.9;
+            }
+        }
+
+        .empty-state {
+            padding: 44px 16px;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.88rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            height: 36px;
+            padding: 0 12px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border-strong);
+            background: var(--bg-surface);
+            color: var(--text-primary);
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: var(--bg-elevated);
+        }
+
+        .btn-primary {
+            background: var(--text-primary);
+            color: var(--bg-base);
+            border-color: var(--text-primary);
+            font-weight: 700;
+        }
+
+        /* =====================================================================
+           8. RODAPÉ DISCRETO SEMPRE VISÍVEL ("12 / 75 entraram" + Voltar à lista)
+           ===================================================================== */
+        .footer-bar {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 65;
+            min-height: var(--footer-h);
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+            background: rgba(12, 17, 20, 0.98);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid var(--border-strong);
+        }
+
+        .footer-inner {
+            max-width: 1080px;
+            margin: 0 auto;
+            height: var(--footer-h);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 0 12px;
+        }
+
+        .footer-stats-trigger {
+            flex: 1;
+            min-width: 0;
+            height: 100%;
+            border: none;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            text-align: left;
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+        }
+
+        .footer-stats-trigger:hover {
+            color: var(--text-primary);
+        }
+
+        .footer-stats-trigger strong {
+            color: var(--status-in);
+            font-weight: 700;
+        }
+
+        .footer-chevron {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            margin-left: auto;
+            white-space: nowrap;
+        }
+
+        .footer-back-btn {
+            height: 30px;
+            padding: 0 10px;
+            border-radius: 3px;
+            border: 1px solid rgba(240, 180, 41, 0.5);
+            background: var(--alert-warn-bg);
+            color: var(--alert-warn);
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+            flex-shrink: 0;
+            display: none;
+        }
+
+        .footer-back-btn.visible {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .footer-back-btn:hover {
+            background: rgba(240, 180, 41, 0.22);
+        }
+
+        /* =====================================================================
+           9. BOTTOM SHEETS (METADE INFERIOR DA TELA COM SCROLL INTERNO + BASE FIXA)
+              Usado tanto para Perfil Completo quanto para Estatísticas por Equipe
+           ===================================================================== */
+        .sheet-backdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 80;
+            background: rgba(5, 8, 10, 0.74);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.16s ease;
+        }
+
+        .sheet-backdrop.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .bottom-sheet {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 90;
+            max-width: 680px;
+            margin: 0 auto;
+            height: 60dvh;
+            max-height: 68dvh;
+            background: var(--bg-surface);
+            border-top: 1px solid var(--border-strong);
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            flex-direction: column;
+            transform: translateY(100%);
+            transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+            overflow: hidden;
+        }
+
+        .bottom-sheet.open {
+            transform: translateY(0);
+        }
+
+        .sheet-grabber {
+            width: 34px;
+            height: 4px;
+            border-radius: 2px;
+            background: var(--border-strong);
+            margin: 7px auto 2px;
+            flex-shrink: 0;
+        }
+
+        .sheet-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 14px 9px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .sheet-scroll-body {
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 14px 16px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 13px;
+        }
+
+        .sheet-pinned-footer {
+            flex-shrink: 0;
+            padding: 10px 14px calc(10px + env(safe-area-inset-bottom, 0px));
+            background: var(--bg-base);
+            border-top: 1px solid var(--border-strong);
+        }
+
+        .sheet-hero {
+            border-left: 3px solid var(--tc);
+            padding-left: 12px;
+        }
+
+        .sheet-kicker {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            color: var(--text-secondary);
+        }
+
+        .sheet-name {
+            font-size: 1.28rem;
+            font-weight: 700;
+            line-height: 1.15;
+            margin-top: 2px;
+        }
+
+        .sheet-civil {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 3px;
+        }
+
+        .doc-box {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .doc-pair {
+            display: flex;
+            gap: 18px;
+            flex-wrap: wrap;
+        }
+
+        .doc-pair span {
+            display: block;
+            font-size: 0.66rem;
+            color: var(--text-muted);
+        }
+
+        .doc-pair strong {
+            font-family: var(--font-mono);
+            font-size: 0.86rem;
+            font-weight: 600;
+        }
+
+        .sheet-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px 14px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border);
+        }
+
+        .kv-item.full {
+            grid-column: 1 / -1;
+        }
+
+        .kv-label {
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--text-muted);
+            margin-bottom: 2px;
+        }
+
+        .kv-val {
+            font-size: 0.84rem;
+            color: var(--text-primary);
+            word-break: break-word;
+        }
+
+        .days-mini-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .day-chip-mini {
+            padding: 2px 6px;
+            border-radius: 3px;
+            border: 1px solid var(--border);
+            background: var(--bg-input);
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        .day-chip-mini.on {
+            border-color: var(--tc);
+            color: var(--text-primary);
+            background: var(--bg-elevated);
+            font-weight: 600;
+        }
+
+        .diet-badge {
+            display: inline-block;
+            padding: 2px 7px;
+            border-radius: 3px;
+            background: var(--alert-diet-bg);
+            color: var(--alert-diet);
+            font-size: 0.75rem;
+        }
+
+        .sheet-cta-btn {
+            width: 100%;
+            height: 46px;
+            border-radius: var(--radius);
+            border: 1px solid var(--btn-liberar-border);
+            background: var(--btn-liberar-bg);
+            color: #ffffff;
+            font-family: var(--font-mono);
+            font-size: 0.84rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .sheet-cta-btn.is-undo {
+            background: var(--bg-elevated);
+            color: var(--alert-warn);
+            border-color: rgba(240, 180, 41, 0.45);
+        }
+
+        /* Linhas de Estatísticas por Equipe dentro do Bottom Sheet do Rodapé */
+        .team-stat-row {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--tc);
+            background: var(--bg-elevated);
+            cursor: pointer;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            transition: background 0.12s, border-color 0.12s;
+        }
+
+        .team-stat-row:hover {
+            background: var(--bg-hover);
+            border-color: var(--border-strong);
+        }
+
+        .team-stat-row.is-active-team {
+            border-color: var(--alert-warn);
+            background: var(--alert-warn-bg);
+        }
+
+        .team-stat-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .team-stat-name {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .team-stat-nums {
+            font-family: var(--font-mono);
+            font-size: 0.74rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        .team-stat-nums strong {
+            color: var(--status-in);
+        }
+
+        .team-stat-bar {
+            width: 100%;
+            height: 3px;
+            border-radius: 2px;
+            background: var(--bg-input);
+            overflow: hidden;
+        }
+
+        .team-stat-fill {
+            height: 100%;
+            background: var(--tc);
+            border-radius: 2px;
+        }
+
+        /* =====================================================================
+           10. MODAIS NATIVOS (<dialog>): ⚙️ FILTROS & 👁️ COLUNAS EM 2 NÍVEIS
+           ===================================================================== */
+        dialog.app-modal {
+            margin: auto;
+            width: min(500px, calc(100vw - 20px));
+            max-height: 86dvh;
+            background: var(--bg-surface);
+            color: var(--text-primary);
+            border: 1px solid var(--border-strong);
+            border-radius: 6px;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        dialog.app-modal[open] {
+            display: flex;
+            flex-direction: column;
+        }
+
+        dialog.app-modal::backdrop {
+            background: rgba(5, 8, 10, 0.78);
+            backdrop-filter: blur(3px);
+        }
+
+        .modal-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .modal-title {
+            font-size: 0.92rem;
+            font-weight: 700;
+        }
+
+        .modal-sub {
+            font-size: 0.74rem;
+            color: var(--text-secondary);
+            margin-top: 1px;
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: var(--radius);
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 14px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .modal-section {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .modal-sec-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .modal-sec-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+        }
+
+        .link-action {
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            cursor: pointer;
+        }
+
+        .modal-select {
+            width: 100%;
+            height: 38px;
+            padding: 0 10px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border-strong);
+            background: var(--bg-input);
+            color: var(--text-primary);
+            font-size: 0.85rem;
+        }
+
+        .segmented-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4px;
+            background: var(--bg-input);
+            padding: 3px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+
+        .seg-btn {
+            height: 32px;
+            border: none;
+            border-radius: 3px;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 0.78rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .seg-btn[aria-pressed="true"] {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+            font-weight: 700;
+        }
+
+        .teams-check-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 6px;
+        }
+
+        @media (max-width: 460px) {
+            .teams-check-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .team-chk-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 8px 10px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--tc);
+            background: var(--bg-elevated);
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .team-chk-card input {
+            accent-color: var(--text-primary);
+            width: 15px;
+            height: 15px;
+            cursor: pointer;
+        }
+
+        .team-chk-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 0;
+        }
+
+        .team-chk-name {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-weight: 500;
+        }
+
+        .team-chk-count {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        .tier-tabs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px;
+            background: var(--bg-input);
+            padding: 3px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+
+        .tier-tab {
+            height: 34px;
+            border: none;
+            border-radius: 3px;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .tier-tab[aria-selected="true"] {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+        }
+
+        .col-config-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .col-config-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 8px 10px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            background: var(--bg-elevated);
+        }
+
+        .col-config-left {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            flex: 1;
+            min-width: 0;
+            cursor: pointer;
+        }
+
+        .col-config-left input {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--text-primary);
+            cursor: pointer;
+        }
+
+        .col-pos-badge {
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 1px 5px;
+            border-radius: 3px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-strong);
+            color: var(--text-secondary);
+            flex-shrink: 0;
+        }
+
+        .col-config-label {
+            font-size: 0.83rem;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .col-order-btns {
+            display: inline-flex;
+            gap: 3px;
+            flex-shrink: 0;
+        }
+
+        .ord-btn {
+            width: 28px;
+            height: 28px;
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            background: var(--bg-surface);
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+
+        .ord-btn:disabled {
+            opacity: 0.28;
+            cursor: not-allowed;
+        }
+
+        .modal-foot {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 10px 14px;
+            border-top: 1px solid var(--border);
+            background: var(--bg-base);
+            flex-shrink: 0;
+        }
+
+        /* =====================================================================
+           11. TOAST DISCRETO COM DESFAZER (4 SEGUNDOS — ACIMA DO RODAPÉ)
+           ===================================================================== */
+        .toast-bar {
+            position: fixed;
+            left: 12px;
+            right: 12px;
+            bottom: calc(var(--footer-h) + env(safe-area-inset-bottom, 0px) + 10px);
+            z-index: 120;
+            max-width: 520px;
+            margin: 0 auto;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-strong);
+            border-radius: var(--radius);
+            padding: 9px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            font-size: 0.8rem;
+            transform: translateY(150%);
+            opacity: 0;
+            transition: transform 0.16s ease, opacity 0.16s ease;
+            pointer-events: none;
+        }
+
+        .toast-bar.visible {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .toast-undo-btn {
+            height: 28px;
+            padding: 0 10px;
+            border-radius: 3px;
+            border: 1px solid var(--border-strong);
+            background: var(--bg-surface);
+            color: var(--alert-warn);
+            font-family: var(--font-mono);
+            font-size: 0.74rem;
+            font-weight: 700;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- =======================================================================
+         1. CABEÇALHO FIXO (top: 0): [ CdC 58 | 👁️ | ◑ | ESCOPO | ⚙️ ]
+         ======================================================================= -->
+    <header class="topbar" id="topbar">
+        <div class="topbar-grid">
+            <div class="top-cell brand-cell">
+                <span class="brand-dot" aria-hidden="true"></span>
+                <span>CdC 58</span>
+            </div>
+
+            <!-- 👁️: Modal de Seleção de Colunas em 2 Níveis -->
+            <div class="top-cell">
+                <button type="button" class="icon-trigger" id="btn-open-cols" title="Personalizar colunas e posição (👁️)" aria-label="Personalizar colunas">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    <span class="badge-mini" id="cols-count-badge">3</span>
+                </button>
+            </div>
+
+            <!-- ◑ / ○ / ●: Filtro de 3 estados (Todos / Faltam / Entraram) -->
+            <div class="top-cell">
+                <button type="button" class="arrival-cycle-btn" id="btn-arrival-cycle" data-mode="all" title="Alternar: ◑ Todos · ○ Faltam · ● Entraram" aria-label="Alternar filtro de chegada">
+                    <span class="arrival-symbol" id="arrival-symbol">◑</span>
+                    <span class="arrival-label" id="arrival-label">Todos</span>
+                </button>
+            </div>
+
+            <!-- Indicador discreto de recorte ativo (Dia / Equipes) -->
+            <div class="top-cell scope-cell">
+                <span class="scope-pill" id="active-filter-pill">Todos os dias</span>
+            </div>
+
+            <!-- ⚙️: Modal de Filtros Fixos -->
+            <div class="top-cell">
+                <button type="button" class="icon-trigger" id="btn-open-filters" title="Filtros de plantão (⚙️)" aria-label="Filtros de plantão">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                    <span class="badge-mini" id="filters-count-badge" hidden>0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- =======================================================================
+         2. BUSCA TYPEAHEAD (sticky top: 52px, height: 64px)
+         ======================================================================= -->
+    <div class="search-sticky" id="search-container">
+        <div class="search-inner">
+            <span class="search-icon" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+            </span>
+            <input
+                type="search"
+                id="search-input"
+                class="search-input"
+                placeholder="BUSCAR NOME, CPF, RG, MARCA..."
+                autocomplete="off"
+                autocorrect="off"
+                spellcheck="false"
+            >
+            <button type="button" class="search-clear-btn" id="search-clear" aria-label="Limpar busca">×</button>
+            <div class="typeahead-dropdown" id="typeahead-dropdown" role="listbox"></div>
+        </div>
+    </div>
+
+    <!-- =======================================================================
+         3. ÍNDICE ALFABÉTICO DINÂMICO (sticky top: 116px, height: 52px)
+         ======================================================================= -->
+    <div class="alpha-sticky">
+        <div class="alpha-scroll" id="alpha-strip" role="group" aria-label="Filtro por inicial"></div>
+    </div>
+
+    <!-- =======================================================================
+         4. CABEÇALHO DA TABELA (sticky top: 168px — SEMPRE PRESO ABAIXO DAS LETRAS)
+         ======================================================================= -->
+    <div class="table-head-sticky" id="table-head">
+        <div class="grid-header-inner" id="grid-header"></div>
+    </div>
+
+    <!-- =======================================================================
+         5. LISTA DE PESSOAS
+         ======================================================================= -->
+    <main class="roster-container">
+        <div id="roster-body" role="list"></div>
+    </main>
+
+    <!-- =======================================================================
+         6. RODAPÉ DISCRETO SEMPRE VISÍVEL ("12 / 75 entraram" + Voltar à lista)
+         ======================================================================= -->
+    <footer class="footer-bar" id="footer-bar">
+        <div class="footer-inner">
+            <button type="button" class="footer-stats-trigger" id="btn-open-team-stats" title="Ver estatísticas detalhadas por equipe/marca">
+                <span><strong id="stat-in">0</strong> / <span id="stat-total">0</span> entraram</span>
+                <span id="stat-pending-inline" style="color:var(--text-muted);">· 0 faltam</span>
+                <span class="footer-chevron">▲ Equipes</span>
+            </button>
+
+            <button type="button" class="footer-back-btn" id="btn-footer-reset-team">
+                ← Voltar à lista geral
+            </button>
+        </div>
+    </footer>
+
+    <!-- =======================================================================
+         MODAL ⚙️: FILTRAR POR EQUIPE / MARCA, DIA, TURNO, STATUS
+         ======================================================================= -->
+    <dialog class="app-modal" id="filters-modal" aria-labelledby="filters-modal-title">
+        <div class="modal-head">
+            <div>
+                <div class="modal-title" id="filters-modal-title">Filtros Fixos de Portaria</div>
+                <div class="modal-sub">Restrinja o recorte para horários de rush ou mantenha todas as equipes</div>
+            </div>
+            <button type="button" class="modal-close" id="btn-close-filters" aria-label="Fechar">×</button>
+        </div>
+
+        <div class="modal-body">
+            <div class="modal-section">
+                <div class="modal-sec-head">
+                    <span class="modal-sec-label">Dia da operação</span>
+                </div>
+                <select id="modal-day-select" class="modal-select"></select>
+            </div>
+
+            <div class="modal-section">
+                <span class="modal-sec-label">Status de acesso (◑ / ○ / ●)</span>
+                <div class="segmented-row" id="modal-status-group">
+                    <button type="button" class="seg-btn" data-status="all" aria-pressed="true">◑ Todos</button>
+                    <button type="button" class="seg-btn" data-status="pending" aria-pressed="false">○ Faltam</button>
+                    <button type="button" class="seg-btn" data-status="in" aria-pressed="false">● Entraram</button>
+                </div>
+            </div>
+
+            <div class="modal-section">
+                <span class="modal-sec-label">Turno</span>
+                <select id="modal-turn-select" class="modal-select"></select>
+            </div>
+
+            <div class="modal-section">
+                <div class="modal-sec-head">
+                    <span class="modal-sec-label">Equipes &amp; Marcas incluídas</span>
+                    <div style="display:flex;gap:10px;">
+                        <button type="button" class="link-action" id="btn-teams-all">Marcar todas</button>
+                        <button type="button" class="link-action" id="btn-teams-none">Desmarcar</button>
+                    </div>
+                </div>
+                <div class="teams-check-grid" id="modal-teams-grid"></div>
+            </div>
+        </div>
+
+        <div class="modal-foot">
+            <button type="button" class="btn" id="btn-reset-filters">Limpar filtros</button>
+            <button type="button" class="btn btn-primary" id="btn-apply-filters">Aplicar na busca</button>
+        </div>
+    </dialog>
+
+    <!-- =======================================================================
+         MODAL 👁️: SELEÇÃO DE COLUNAS E POSIÇÃO EM DOIS NÍVEIS
+         ======================================================================= -->
+    <dialog class="app-modal" id="cols-modal" aria-labelledby="cols-modal-title">
+        <div class="modal-head">
+            <div>
+                <div class="modal-title" id="cols-modal-title">Personalizar Colunas &amp; Posição</div>
+                <div class="modal-sub">Configure a lista padrão (Estágio 0) e o modo info (Estágio 2)</div>
+            </div>
+            <button type="button" class="modal-close" id="btn-close-cols" aria-label="Fechar">×</button>
+        </div>
+
+        <div class="modal-body">
+            <div class="tier-tabs" role="tablist">
+                <button type="button" class="tier-tab" role="tab" data-tier="acesso" aria-selected="true">
+                    Nível 1 · Lista Padrão
+                </button>
+                <button type="button" class="tier-tab" role="tab" data-tier="info" aria-selected="false">
+                    Nível 2 · Modo Info (ⓘ)
+                </button>
+            </div>
+
+            <div class="modal-sec-head">
+                <span class="modal-sec-label" id="tier-desc">Colunas visíveis na listagem inicial</span>
+                <button type="button" class="link-action" id="btn-reset-cols">Restaurar padrão</button>
+            </div>
+
+            <div class="col-config-list" id="col-config-list"></div>
+        </div>
+
+        <div class="modal-foot">
+            <span style="font-size:0.74rem;color:var(--text-secondary);">Salvo automaticamente neste aparelho</span>
+            <button type="button" class="btn btn-primary" id="btn-done-cols">Concluir</button>
+        </div>
+    </dialog>
+
+    <!-- =======================================================================
+         BOTTOM SHEETS: 1) PERFIL COMPLETO  |  2) ESTATÍSTICAS POR EQUIPE
+         ======================================================================= -->
+    <div class="sheet-backdrop" id="sheet-backdrop"></div>
+
+    <!-- Bottom Sheet 1: Perfil Completo (Metade inferior com scroll + CTA fixo na base) -->
+    <aside class="bottom-sheet" id="profile-sheet" aria-hidden="true" aria-label="Perfil completo"></aside>
+
+    <!-- Bottom Sheet 2: Estatísticas por Equipe / Marca -->
+    <aside class="bottom-sheet" id="team-stats-sheet" aria-hidden="true" aria-label="Estatísticas por equipe"></aside>
+
+    <!-- =======================================================================
+         TOAST DISCRETO COM DESFAZER (4 SEGUNDOS — ACIMA DO RODAPÉ)
+         ======================================================================= -->
+    <div class="toast-bar" id="toast-bar" role="status" aria-live="polite">
+        <span id="toast-msg">Entrada confirmada</span>
+        <button type="button" class="toast-undo-btn" id="toast-undo-btn">Desfazer</button>
+    </div>
+
+<script>
+/* ============================================================================
+   1. CATÁLOGO DE EQUIPES / MARCAS & CALENDÁRIO (20/11 a 30/11)
+   ============================================================================ */
+const TEAM_BUCKETS = {
+    'MAXI':            { id: 'MAXI',            label: 'MAXI',            full: 'Máxima Weber',             color: '#e85d9e' },
+    'LEMA':            { id: 'LEMA',            label: 'LEMA',            full: 'Lema+',                    color: '#e5a93c' },
+    'STAFF':           { id: 'STAFF',           label: 'STAFF',           full: 'Staff / Produção',         color: '#4fb3d9' },
+    'ESTÁGIO':         { id: 'ESTÁGIO',         label: 'ESTÁGIO',         full: 'Estágio',                  color: '#4ec28c' },
+    'TRAMA - CASTING': { id: 'TRAMA - CASTING', label: 'TRAMA - CASTING', full: 'Trama Afetiva · Casting',  color: '#a78bfa' },
+    'TRAMA - EQUIPE':  { id: 'TRAMA - EQUIPE',  label: 'TRAMA - EQUIPE',  full: 'Trama Afetiva · Equipe',   color: '#c084fc' },
+    'HELOISA FARIA':   { id: 'HELOISA FARIA',   label: 'HELOISA FARIA',   full: 'Heloisa Faria',            color: '#f472b6' },
+    'WALÉRIO ARAÚJO':  { id: 'WALÉRIO ARAÚJO',  label: 'WALÉRIO ARAÚJO',  full: 'Walério Araújo',           color: '#fb923c' },
+    'MARTINS':         { id: 'MARTINS',         label: 'MARTINS',         full: 'Martins',                  color: '#38bdf8' },
+    'ROBER DOGNANI':   { id: 'ROBER DOGNANI',   label: 'ROBER DOGNANI',   full: 'Rober Dognani',            color: '#facc15' },
+    'JORGE FEITOSA':   { id: 'JORGE FEITOSA',   label: 'JORGE FEITOSA',   full: 'Jorge Feitosa',            color: '#34d399' }
+};
+
+const ALL_BUCKET_IDS = Object.keys(TEAM_BUCKETS);
+
+const DAYS = [
+    { key: '20/11', label: 'Qui, 20/11' },
+    { key: '21/11', label: 'Sex, 21/11' },
+    { key: '22/11', label: 'Sáb, 22/11' },
+    { key: '23/11', label: 'Dom, 23/11' },
+    { key: '24/11', label: 'Seg, 24/11' },
+    { key: '25/11', label: 'Ter, 25/11' },
+    { key: '26/11', label: 'Qua, 26/11' },
+    { key: '27/11', label: 'Sex, 27/11 (Pico)' },
+    { key: '28/11', label: 'Sáb, 28/11' },
+    { key: '29/11', label: 'Dom, 29/11' },
+    { key: '30/11', label: 'Seg, 30/11' }
+];
+
+const ALL_DAYS = DAYS.map(d => d.key);
+const SHOW_DAYS = ['24/11', '25/11', '26/11', '27/11', '28/11', '29/11'];
+const TURNS = ['Manhã', 'Tarde', 'Noite', 'Madrugada', 'Integral'];
+
+/* ============================================================================
+   2. BASE REALISTA DE DADOS (75 CREDENCIADOS: 16 FIXOS + 41 TRAMA + 18 MARCAS)
+   ============================================================================ */
+const PEOPLE = [
+    // --- MÁXIMA WEBER (5) ---
+    { id: 1,  bucket: 'MAXI', nome_social: 'Luna Ferreira', nome_completo: 'Lucas Henrique Ferreira', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Maquiadora Sênior', empresa: 'Máxima Weber', instagram: '@luna.beauty', whatsapp: '(11) 98412-3301', cpf: '391.456.789-02', rg: '44.345.678-1', dias: SHOW_DAYS, turnos: ['Integral'], alimentacao: 'Vegetariano', obs: 'Chega às 11h nos dias de desfile.' },
+    { id: 2,  bucket: 'MAXI', nome_social: 'Dante Oliveira', nome_completo: 'Dante Oliveira', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Hair Stylist', empresa: 'Máxima Weber', instagram: '@dantehair.sp', whatsapp: '(11) 97221-8890', cpf: '284.119.503-44', rg: '39.882.104-5', dias: ['24/11','25/11','26/11','27/11','28/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 3,  bucket: 'MAXI', nome_social: 'Kira Sato', nome_completo: 'Camila Sato Nogueira', pronome: 'Elu', pronomes_full: 'Elu/delu', funcao: 'Assistente de Beleza', empresa: 'Máxima Weber', instagram: '@kirasato.mua', whatsapp: '(11) 99304-1127', cpf: '452.908.312-19', rg: '51.209.443-8', dias: ['25/11','26/11','27/11','28/11','29/11'], turnos: ['Tarde','Noite'], alimentacao: 'Vegano', obs: 'Alergia leve a amendoim.' },
+    { id: 4,  bucket: 'MAXI', nome_social: 'Marina Teles', nome_completo: 'Marina Teles Vasconcelos', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Coordenação de Beleza', empresa: 'Máxima Weber', instagram: '@marinateles.beleza', whatsapp: '(11) 98110-4452', cpf: '312.667.890-71', rg: '41.903.221-0', dias: ['23/11',...SHOW_DAYS], turnos: ['Integral'], alimentacao: 'Sem restrição', obs: 'Ponto focal da beleza.' },
+    { id: 5,  bucket: 'MAXI', nome_social: 'Caio Veríssimo', nome_completo: 'Caio Veríssimo Prado', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Maquiador', empresa: 'Máxima Weber', instagram: '@caioverissimo.mua', whatsapp: '(11) 99104-7782', cpf: '364.882.104-15', rg: '46.110.298-4', dias: ['24/11','26/11','27/11','28/11','29/11'], turnos: ['Tarde','Noite'], alimentacao: 'Vegetariano', obs: '' },
+
+    // --- LEMA+ (3) ---
+    { id: 6,  bucket: 'LEMA', nome_social: 'Beatriz Lima', nome_completo: 'Beatriz Lima Coutinho', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Assessoria de Imprensa', empresa: 'Lema+', instagram: '@bialima.pr', whatsapp: '(11) 99543-7721', cpf: '378.112.334-55', rg: '43.998.776-2', dias: SHOW_DAYS, turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: 'Mesa hall principal.' },
+    { id: 7,  bucket: 'LEMA', nome_social: 'Thiago Mendes', nome_completo: 'Thiago Mendes Rocha', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Atendimento & VIPs', empresa: 'Lema+', instagram: '@thiagomendes', whatsapp: '(11) 98872-1904', cpf: '405.774.219-80', rg: '47.310.882-9', dias: ['24/11','26/11','27/11','28/11','29/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 8,  bucket: 'LEMA', nome_social: 'Renata Queiroz', nome_completo: 'Renata Queiroz Dias', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Conteúdo & Redes', empresa: 'Lema+', instagram: '@requeiroz', whatsapp: '(11) 97654-3318', cpf: '419.332.108-63', rg: '49.115.602-4', dias: SHOW_DAYS, turnos: ['Tarde','Noite'], alimentacao: 'Vegetariano', obs: 'Pulseira pit + backstage.' },
+
+    // --- STAFF / PRODUÇÃO (5) ---
+    { id: 9,  bucket: 'STAFF', nome_social: 'Rafael Costa', nome_completo: 'Rafael Henrique da Costa', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Técnico de Som', empresa: 'Áudio Live SP', instagram: '@rafasom', whatsapp: '(11) 99123-4500', cpf: '356.891.234-11', rg: '38.456.789-3', dias: ALL_DAYS, turnos: ['Noite','Madrugada'], alimentacao: 'Sem restrição', obs: 'Rádio canal 2.' },
+    { id: 10, bucket: 'STAFF', nome_social: 'Carla Nogueira', nome_completo: 'Carla Nogueira Prado', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Direção de Palco', empresa: 'Casa de Criadores', instagram: '@carlanogueira.prod', whatsapp: '(11) 98234-9901', cpf: '267.440.918-22', rg: '33.771.209-6', dias: ALL_DAYS, turnos: ['Integral'], alimentacao: 'Sem restrição', obs: 'Rádio canal 1.' },
+    { id: 11, bucket: 'STAFF', nome_social: 'Marcos Viana', nome_completo: 'Marcos Antônio Viana', pronome: '—', pronomes_full: 'Prefiro não informar', funcao: 'Operador de Iluminação', empresa: 'Luz & Cena', instagram: '@vianaluz', whatsapp: '(11) 97409-6622', cpf: '309.512.887-04', rg: '36.229.118-7', dias: ['21/11','22/11','23/11',...SHOW_DAYS,'30/11'], turnos: ['Tarde','Noite','Madrugada'], alimentacao: 'Sem restrição', obs: 'House mix sala de desfile.' },
+    { id: 12, bucket: 'STAFF', nome_social: 'Soraia Batista', nome_completo: 'Soraia Batista Ramos', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Coordenação de Backstage', empresa: 'Casa de Criadores', instagram: '@soraiabatista', whatsapp: '(11) 96883-1209', cpf: '298.601.445-39', rg: '35.118.902-0', dias: ['20/11','22/11','23/11',...SHOW_DAYS,'30/11'], turnos: ['Manhã','Tarde'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 13, bucket: 'STAFF', nome_social: 'Bruno Alencar', nome_completo: 'Bruno Alencar Moura', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Produtor Executivo', empresa: 'Casa de Criadores', instagram: '@brunoalencar.prod', whatsapp: '(11) 99711-0842', cpf: '334.720.195-08', rg: '40.551.832-1', dias: ALL_DAYS, turnos: ['Integral'], alimentacao: 'Sem restrição', obs: 'Acesso total ao prédio.' },
+
+    // --- ESTÁGIO (3) ---
+    { id: 14, bucket: 'ESTÁGIO', nome_social: 'Enzo Martins', nome_completo: 'Enzo Gabriel Martins', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Assistência de Backstage', empresa: 'Santa Marcelina', instagram: '@enzom.moda', whatsapp: '(11) 99410-2287', cpf: '489.554.321-07', rg: '54.112.233-9', dias: SHOW_DAYS, turnos: ['Manhã','Tarde'], alimentacao: 'Vegano', obs: 'Camarim B.' },
+    { id: 15, bucket: 'ESTÁGIO', nome_social: 'Maya Rocha', nome_completo: 'Matheus Rocha da Silva', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Apoio de Produção', empresa: 'Anhembi Morumbi', instagram: '@mayarocha_', whatsapp: '(11) 98765-0041', cpf: '476.229.814-60', rg: '53.884.190-2', dias: ['23/11','24/11','25/11','27/11','28/11','29/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: 'Recepção de marcas.' },
+    { id: 16, bucket: 'ESTÁGIO', nome_social: 'Júlia Pires', nome_completo: 'Júlia Alencar Pires', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Recepção & Credenciamento', empresa: 'Senac Moda', instagram: '@juliapires.m', whatsapp: '(11) 99201-5534', cpf: '495.103.672-88', rg: '55.409.711-5', dias: ['24/11','26/11','27/11','28/11','29/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: 'Fila convidados.' },
+
+    // --- TRAMA - CASTING (20 REAIS DO CSV) ---
+    { id: 101, bucket: 'TRAMA - CASTING', nome_social: 'Alana Diniz', nome_completo: 'Alana Diniz', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Casting / Modelo', empresa: 'Trama Afetiva', instagram: '@alanadiniz', whatsapp: '(11) 99120-1101', cpf: '412.608.910-31', rg: '38.742.519-0', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: 'Desfile Trama Afetiva · Sex 27/11.' },
+    { id: 102, bucket: 'TRAMA - CASTING', nome_social: 'Arthur Maciel', nome_completo: 'Arthur Silva Maciel', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Casting / Modelo', empresa: 'Trama Afetiva', instagram: '@arthurmaciel_', whatsapp: '(11) 99120-1102', cpf: '468.219.044-12', rg: '52.104.889-3', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 103, bucket: 'TRAMA - CASTING', nome_social: 'Babi', nome_completo: 'Bárbara Gomes da Silva', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Casting / Modelo', empresa: 'Trama Afetiva', instagram: '@babi.gomes', whatsapp: '(11) 99120-1103', cpf: '439.881.203-77', rg: '49.660.112-8', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Vegetariano', obs: '' },
+    { id: 104, bucket: 'TRAMA - CASTING', nome_social: 'Cássio Rangel', nome_completo: 'Cássio Rangel de Souza', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Casting / Modelo', empresa: 'Trama Afetiva', instagram: '@cassiorangel', whatsapp: '(11) 99120-1104', cpf: '385.114.920-64', rg: '42.819.305-2', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 105, bucket: 'TRAMA - CASTING', nome_social: 'Dandara Cruz', nome_completo: 'Dandara Cristina Cruz', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Casting / Modelo', empresa: 'Trama Afetiva', instagram: '@dandaracruz', whatsapp: '(11) 99120-1105', cpf: '471.309.518-29', rg: '53.401.778-4', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 106, bucket: 'TRAMA - CASTING', nome_social: 'Eduardo Borges', nome_completo: 'Eduardo Henrique Borges', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Casting / Modelo', empresa: 'Trama Afetiva', instagram: '@eduborges', whatsapp: '(11) 99120-1106', cpf: '399.540.612-83', rg: '45.220.991-6', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 107, bucket: 'TRAMA - CASTING', nome_social: 'Fernanda Lins', nome_completo: 'Fernanda Lins Vasconcelos', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Casting / Modelo', empresa: 'Trama Afetiva', instagram: '@ferlins', whatsapp: '(11) 99120-1107', cpf: '421.773.890-15', rg: '47.908.334-1', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 108, bucket: 'TRAMA - CASTING', nome_social: 'Gabrielly Torres', nome_completo: 'Gabrielly Torres Nunes', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Casting / Modelo', empresa: 'Trama Afetiva', instagram: '@gabytorres', whatsapp: '(11) 99120-1108', cpf: '482.190.334-50', rg: '54.812.667-9', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Vegano', obs: '' },
+    { id: 109, bucket: 'TRAMA - CASTING', nome_social: 'Henrique Salles', nome_completo: 'Henrique Salles Prado', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Casting / Modelo', empresa: 'Trama Afetiva', instagram: '@henriquesalles', whatsapp: '(11) 99120-1109', cpf: '368.402.719-08', rg: '41.335.890-7', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 110, bucket: 'TRAMA - CASTING', nome_social: 'Iara Monteiro', nome_completo: 'Iara Monteiro Peixoto', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Casting / Modelo', empresa: 'Trama Afetiva', instagram: '@iaramonteiro', whatsapp: '(11) 99120-1110', cpf: '445.912.608-41', rg: '50.119.442-5', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 111, bucket: 'TRAMA - CASTING', nome_social: 'João Pedro Paiva', nome_completo: 'João Pedro Paiva Alves', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Casting / Modelo', empresa: 'Trama Afetiva', instagram: '@jppaiva', whatsapp: '(11) 99120-1111', cpf: '463.801.229-92', rg: '51.994.308-0', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 112, bucket: 'TRAMA - CASTING', nome_social: 'Kauã Ribeiro', nome_completo: 'Kauã Ribeiro dos Santos', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Casting / Modelo', empresa: 'Trama Afetiva', instagram: '@kauaribeiro', whatsapp: '(11) 99120-1112', cpf: '491.225.704-36', rg: '55.310.882-3', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 113, bucket: 'TRAMA - CASTING', nome_social: 'Larissa Fonseca', nome_completo: 'Larissa Fonseca Melo', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Casting / Modelo', empresa: 'Trama Afetiva', instagram: '@larifonseca', whatsapp: '(11) 99120-1113', cpf: '417.663.901-74', rg: '46.774.129-8', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 114, bucket: 'TRAMA - CASTING', nome_social: 'Luana Xavier', nome_completo: 'Luana Xavier Costa', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Casting / Modelo', empresa: 'Trama Afetiva', instagram: '@luanaxavier', whatsapp: '(11) 99120-1114', cpf: '432.518.440-19', rg: '48.662.501-4', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Vegetariano', obs: '' },
+    { id: 115, bucket: 'TRAMA - CASTING', nome_social: 'Matheus Cardoso', nome_completo: 'Matheus Cardoso Lima', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Casting / Modelo', empresa: 'Trama Afetiva', instagram: '@matheuscardoso', whatsapp: '(11) 99120-1115', cpf: '458.904.112-60', rg: '51.408.993-2', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 116, bucket: 'TRAMA - CASTING', nome_social: 'Natália Rezende', nome_completo: 'Natália Rezende Franco', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Casting / Modelo', empresa: 'Trama Afetiva', instagram: '@natirezende', whatsapp: '(11) 99120-1116', cpf: '408.337.819-25', rg: '45.881.204-9', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 117, bucket: 'TRAMA - CASTING', nome_social: 'Otávio Barros', nome_completo: 'Otávio Barros Ferraz', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Casting / Modelo', empresa: 'Trama Afetiva', instagram: '@otaviobarros', whatsapp: '(11) 99120-1117', cpf: '374.990.512-48', rg: '42.105.776-1', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 118, bucket: 'TRAMA - CASTING', nome_social: 'Paola Menezes', nome_completo: 'Paola Menezes Duarte', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Casting / Modelo', empresa: 'Trama Afetiva', instagram: '@paolamenezes', whatsapp: '(11) 99120-1118', cpf: '426.118.703-81', rg: '47.559.310-6', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 119, bucket: 'TRAMA - CASTING', nome_social: 'Ruan Tavares', nome_completo: 'Ruan Tavares Guimarães', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Casting / Modelo', empresa: 'Trama Afetiva', instagram: '@ruantavares', whatsapp: '(11) 99120-1119', cpf: '479.602.881-03', rg: '53.990.412-7', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 120, bucket: 'TRAMA - CASTING', nome_social: 'Yasmin Nogueira', nome_completo: 'Yasmin Nogueira Brito', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Casting / Modelo', empresa: 'Trama Afetiva', instagram: '@yasminnogueira', whatsapp: '(11) 99120-1120', cpf: '488.741.309-54', rg: '54.712.885-0', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+
+    // --- TRAMA - EQUIPE (21 REAIS DO CSV) ---
+    { id: 121, bucket: 'TRAMA - EQUIPE', nome_social: 'Jackson Araújo', nome_completo: 'Jackson Araújo dos Santos', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Direção Criativa', empresa: 'Trama Afetiva', instagram: '@jacksonaraujo', whatsapp: '(11) 99220-1201', cpf: '241.809.332-10', rg: '29.441.802-5', dias: ['26/11','27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: 'Estilista / Direção Trama Afetiva.' },
+    { id: 122, bucket: 'TRAMA - EQUIPE', nome_social: 'Luca Albuquerque', nome_completo: 'Luca Albuquerque Mendes', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Coordenação de Backstage', empresa: 'Trama Afetiva', instagram: '@lucaalbuquerque', whatsapp: '(11) 99220-1202', cpf: '352.419.608-44', rg: '40.118.554-2', dias: ['26/11','27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: 'Araras e passadoria.' },
+    { id: 123, bucket: 'TRAMA - EQUIPE', nome_social: 'Camila Freitas', nome_completo: 'Camila Freitas Sampaio', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Styling', empresa: 'Trama Afetiva', instagram: '@camilafreitas.st', whatsapp: '(11) 99220-1203', cpf: '389.772.104-91', rg: '44.209.661-8', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Vegetariano', obs: '' },
+    { id: 124, bucket: 'TRAMA - EQUIPE', nome_social: 'Diego Santana', nome_completo: 'Diego Santana Correia', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Assistente de Styling', empresa: 'Trama Afetiva', instagram: '@diegosantana', whatsapp: '(11) 99220-1204', cpf: '414.503.882-37', rg: '46.883.120-4', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 125, bucket: 'TRAMA - EQUIPE', nome_social: 'Eliane Matos', nome_completo: 'Eliane Matos Ferreira', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Costureira / Camareira', empresa: 'Trama Afetiva', instagram: '@elianematos', whatsapp: '(11) 99220-1205', cpf: '279.661.405-82', rg: '33.552.901-7', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 126, bucket: 'TRAMA - EQUIPE', nome_social: 'Fábio Rezende', nome_completo: 'Fábio Rezende Martins', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Trilha Sonora', empresa: 'Trama Afetiva', instagram: '@fabiorezende.dj', whatsapp: '(11) 99220-1206', cpf: '341.908.227-16', rg: '39.104.778-9', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: 'Acesso cabine de som.' },
+    { id: 127, bucket: 'TRAMA - EQUIPE', nome_social: 'Giselle Andrade', nome_completo: 'Giselle Andrade Pinto', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Produção Executiva Marca', empresa: 'Trama Afetiva', instagram: '@giselleandrade', whatsapp: '(11) 99220-1207', cpf: '367.224.910-53', rg: '41.770.332-0', dias: ['26/11','27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 128, bucket: 'TRAMA - EQUIPE', nome_social: 'Hugo Vasconcelos', nome_completo: 'Hugo Vasconcelos Neto', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Fotógrafo Backstage', empresa: 'Trama Afetiva', instagram: '@hugovasconcelos.ph', whatsapp: '(11) 99220-1208', cpf: '402.815.669-28', rg: '45.663.908-5', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: 'Acesso camarim + pit.' },
+    { id: 129, bucket: 'TRAMA - EQUIPE', nome_social: 'Isabela Cunha', nome_completo: 'Isabela Cunha Moraes', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Camareira / Passadoria', empresa: 'Trama Afetiva', instagram: '@isabelacunha', whatsapp: '(11) 99220-1209', cpf: '436.109.774-65', rg: '49.002.418-1', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 130, bucket: 'TRAMA - EQUIPE', nome_social: 'Jéssica Moreira', nome_completo: 'Jéssica Moreira Lopes', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Social Media Marca', empresa: 'Trama Afetiva', instagram: '@jessmoreira', whatsapp: '(11) 99220-1210', cpf: '451.778.320-11', rg: '50.884.119-6', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Vegano', obs: '' },
+    { id: 131, bucket: 'TRAMA - EQUIPE', nome_social: 'Kleber Nunes', nome_completo: 'Kleber Nunes de Oliveira', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Videomaker', empresa: 'Trama Afetiva', instagram: '@klebernunes.rec', whatsapp: '(11) 99220-1211', cpf: '394.612.805-79', rg: '44.991.203-4', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 132, bucket: 'TRAMA - EQUIPE', nome_social: 'Lívia Teixeira', nome_completo: 'Lívia Teixeira Campos', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Assistente de Produção', empresa: 'Trama Afetiva', instagram: '@liviateixeira', whatsapp: '(11) 99220-1212', cpf: '466.330.918-42', rg: '52.441.709-8', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 133, bucket: 'TRAMA - EQUIPE', nome_social: 'Marcelo Siqueira', nome_completo: 'Marcelo Siqueira Barros', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Cenografia / Adereços', empresa: 'Trama Afetiva', instagram: '@marcelosiqueira', whatsapp: '(11) 99220-1213', cpf: '318.904.551-07', rg: '37.228.604-3', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 134, bucket: 'TRAMA - EQUIPE', nome_social: 'Nádia Barbosa', nome_completo: 'Nádia Barbosa Tavares', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Camareira', empresa: 'Trama Afetiva', instagram: '@nadiabarbosa', whatsapp: '(11) 99220-1214', cpf: '377.441.209-88', rg: '42.990.512-0', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 135, bucket: 'TRAMA - EQUIPE', nome_social: 'Paulo Sérgio', nome_completo: 'Paulo Sérgio da Conceição', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Apoio Logístico', empresa: 'Trama Afetiva', instagram: '@paulosergio.sp', whatsapp: '(11) 99220-1215', cpf: '329.880.114-51', rg: '38.112.904-7', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 136, bucket: 'TRAMA - EQUIPE', nome_social: 'Priscila Farias', nome_completo: 'Priscila Farias Guimarães', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Assistente de Styling', empresa: 'Trama Afetiva', instagram: '@prifarias', whatsapp: '(11) 99220-1216', cpf: '429.705.663-14', rg: '48.119.302-5', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 137, bucket: 'TRAMA - EQUIPE', nome_social: 'Rodrigo Amaral', nome_completo: 'Rodrigo Amaral Pacheco', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Direção de Casting', empresa: 'Trama Afetiva', instagram: '@rodrigoamaral', whatsapp: '(11) 99220-1217', cpf: '358.112.940-67', rg: '40.774.881-2', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 138, bucket: 'TRAMA - EQUIPE', nome_social: 'Sabrina Coelho', nome_completo: 'Sabrina Coelho Antunes', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Camareira', empresa: 'Trama Afetiva', instagram: '@sabrinacoelho', whatsapp: '(11) 99220-1218', cpf: '441.889.302-95', rg: '49.771.608-9', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 139, bucket: 'TRAMA - EQUIPE', nome_social: 'Tatiane Borges', nome_completo: 'Tatiane Borges Monteiro', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Costureira', empresa: 'Trama Afetiva', instagram: '@tatiborges', whatsapp: '(11) 99220-1219', cpf: '383.604.771-20', rg: '43.882.190-4', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 140, bucket: 'TRAMA - EQUIPE', nome_social: 'Vinícius Rocha', nome_completo: 'Vinícius Rocha Cavalcanti', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Assistente Backstage', empresa: 'Trama Afetiva', instagram: '@vinirocha', whatsapp: '(11) 99220-1220', cpf: '474.219.508-33', rg: '53.109.442-6', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 141, bucket: 'TRAMA - EQUIPE', nome_social: 'Zélia Maria', nome_completo: 'Zélia Maria das Graças', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Artesã / Bordado', empresa: 'Trama Afetiva', instagram: '@zeliamaria.arte', whatsapp: '(11) 99220-1221', cpf: '215.448.902-76', rg: '26.883.110-1', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+
+    // --- OUTRAS MARCAS DO LINE-UP (18 REGISTROS) ---
+    { id: 201, bucket: 'HELOISA FARIA', nome_social: 'Heloisa Faria', nome_completo: 'Heloisa Faria de Souza', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Estilista / Direção', empresa: 'Heloisa Faria', instagram: '@heloisafaria', whatsapp: '(11) 99310-2001', cpf: '311.509.882-40', rg: '36.990.114-2', dias: ['27/11','28/11'], turnos: ['Tarde','Noite'], alimentacao: 'Vegetariano', obs: 'Desfile Sex 27/11.' },
+    { id: 202, bucket: 'HELOISA FARIA', nome_social: 'Amanda Klink', nome_completo: 'Amanda Klink Ferreira', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Styling', empresa: 'Heloisa Faria', instagram: '@amandaklink', whatsapp: '(11) 99310-2002', cpf: '398.221.409-17', rg: '45.102.883-5', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 203, bucket: 'HELOISA FARIA', nome_social: 'Clarice Falcão', nome_completo: 'Clarice Ribeiro Falcão', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Casting / Modelo', empresa: 'Heloisa Faria', instagram: '@claricefalcao.m', whatsapp: '(11) 99310-2003', cpf: '461.883.204-55', rg: '51.772.901-8', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 204, bucket: 'HELOISA FARIA', nome_social: 'Mateus Solano', nome_completo: 'Mateus Solano Vieira', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Casting / Modelo', empresa: 'Heloisa Faria', instagram: '@mateusvieira', whatsapp: '(11) 99310-2004', cpf: '449.102.778-62', rg: '50.331.409-0', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 205, bucket: 'WALÉRIO ARAÚJO', nome_social: 'Walério Araújo', nome_completo: 'Walério Araújo da Silva', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Estilista / Direção', empresa: 'Walério Araújo', instagram: '@walerioaraujo', whatsapp: '(11) 99320-2005', cpf: '204.771.908-13', rg: '25.994.302-6', dias: ['27/11','29/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: 'Encerramento Sex 27/11.' },
+    { id: 206, bucket: 'WALÉRIO ARAÚJO', nome_social: 'Silvia Pfeifer', nome_completo: 'Silvia Regina Pfeifer', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Produção de Moda', empresa: 'Walério Araújo', instagram: '@silviaprod', whatsapp: '(11) 99320-2006', cpf: '295.440.118-70', rg: '34.881.209-4', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 207, bucket: 'WALÉRIO ARAÚJO', nome_social: 'Valentina Luz', nome_completo: 'Valmir Luz Santos', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Casting / Performance', empresa: 'Walério Araújo', instagram: '@valentinaluz', whatsapp: '(11) 99320-2007', cpf: '423.669.510-84', rg: '48.220.774-1', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 208, bucket: 'WALÉRIO ARAÚJO', nome_social: 'Drika Marinho', nome_completo: 'Adriana Marinho Costa', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Casting / Modelo', empresa: 'Walério Araújo', instagram: '@drikamarinho', whatsapp: '(11) 99320-2008', cpf: '411.908.334-29', rg: '46.551.889-3', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 209, bucket: 'MARTINS', nome_social: 'Tom Martins', nome_completo: 'Antônio Carlos Martins', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Estilista / Direção', empresa: 'Martins', instagram: '@martins.tom', whatsapp: '(11) 99330-2009', cpf: '349.812.604-95', rg: '39.772.118-0', dias: ['26/11','27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 210, bucket: 'MARTINS', nome_social: 'Renan Pacheco', nome_completo: 'Renan Pacheco Lima', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Styling', empresa: 'Martins', instagram: '@renanpacheco', whatsapp: '(11) 99330-2010', cpf: '403.551.908-12', rg: '45.994.221-7', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Vegano', obs: '' },
+    { id: 211, bucket: 'MARTINS', nome_social: 'Cauan Prado', nome_completo: 'Cauan Santana Prado', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Casting / Modelo', empresa: 'Martins', instagram: '@cauansprado', whatsapp: '(11) 99330-2011', cpf: '472.309.881-46', rg: '53.220.664-9', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 212, bucket: 'MARTINS', nome_social: 'Sofia Vergara', nome_completo: 'Sofia Alves Vergara', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Casting / Modelo', empresa: 'Martins', instagram: '@sofiavergara.m', whatsapp: '(11) 99330-2012', cpf: '485.119.402-71', rg: '54.409.118-2', dias: ['27/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 213, bucket: 'ROBER DOGNANI', nome_social: 'Rober Dognani', nome_completo: 'Roberto Dognani', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Estilista / Direção', empresa: 'Rober Dognani', instagram: '@roberdognani', whatsapp: '(11) 99340-2013', cpf: '238.904.112-60', rg: '28.771.509-4', dias: ['27/11','28/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 214, bucket: 'ROBER DOGNANI', nome_social: 'Tânia Khalill', nome_completo: 'Tânia Khalill Campos', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Camareira Chefe', empresa: 'Rober Dognani', instagram: '@taniacamareira', whatsapp: '(11) 99340-2014', cpf: '319.662.880-33', rg: '37.110.445-8', dias: ['27/11','28/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 215, bucket: 'ROBER DOGNANI', nome_social: 'Raquel Zimmermann', nome_completo: 'Raquel Zimmermann Silva', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Casting / Modelo', empresa: 'Rober Dognani', instagram: '@raquelz.sp', whatsapp: '(11) 99340-2015', cpf: '437.801.559-18', rg: '49.224.801-0', dias: ['28/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 216, bucket: 'JORGE FEITOSA', nome_social: 'Jorge Feitosa', nome_completo: 'Jorge Luís Feitosa', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Estilista / Direção', empresa: 'Jorge Feitosa', instagram: '@jorgefeitosa', whatsapp: '(11) 99350-2016', cpf: '361.449.208-75', rg: '41.882.309-6', dias: ['28/11','29/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 217, bucket: 'JORGE FEITOSA', nome_social: 'Ícaro Silva', nome_completo: 'Ícaro Silva Montenegro', pronome: 'Ele', pronomes_full: 'Ele/dele', funcao: 'Casting / Modelo', empresa: 'Jorge Feitosa', instagram: '@icaromontenegro', whatsapp: '(11) 99350-2017', cpf: '454.902.118-90', rg: '51.119.660-3', dias: ['28/11'], turnos: ['Tarde','Noite'], alimentacao: 'Sem restrição', obs: '' },
+    { id: 218, bucket: 'JORGE FEITOSA', nome_social: 'Nina Baiocchi', nome_completo: 'Nina Baiocchi Duarte', pronome: 'Ela', pronomes_full: 'Ela/dela', funcao: 'Casting / Modelo', empresa: 'Jorge Feitosa', instagram: '@ninabaiocchi', whatsapp: '(11) 99350-2018', cpf: '469.773.401-22', rg: '52.881.904-5', dias: ['29/11'], turnos: ['Tarde','Noite'], alimentacao: 'Vegetariano', obs: '' }
+];
+
+/* ============================================================================
+   3. CATÁLOGO DE COLUNAS CONFIGURÁVEIS EM DOIS NÍVEIS (MODAL 👁️)
+   ============================================================================ */
+const COLUMN_CATALOG = [
+    { key: 'nome_social',   label: 'Nome Social',     head: 'NOME SOCIAL',    defaultAcesso: true,  defaultInfo: false, mobileTrack: 'minmax(0, 1.45fr)', desktopTrack: 'minmax(210px, 1.5fr)' },
+    { key: 'pronome',       label: 'Pronome',         head: 'PRONOME',        defaultAcesso: true,  defaultInfo: false, mobileTrack: '52px',              desktopTrack: '74px' },
+    { key: 'equipe',        label: 'Equipe / Marca',  head: 'EQUIPE / MARCA', defaultAcesso: true,  defaultInfo: false, mobileTrack: 'minmax(0, 1.15fr)', desktopTrack: 'minmax(150px, 1fr)' },
+    { key: 'rg',            label: 'RG',              head: 'RG',             defaultAcesso: false, defaultInfo: true,  mobileTrack: '108px',             desktopTrack: '122px' },
+    { key: 'cpf',           label: 'CPF',             head: 'CPF',            defaultAcesso: false, defaultInfo: true,  mobileTrack: '126px',             desktopTrack: '142px' },
+    { key: 'nome_completo', label: 'Nome Civil',      head: 'NOME CIVIL',     defaultAcesso: false, defaultInfo: false, mobileTrack: 'minmax(150px, 1.3fr)', desktopTrack: 'minmax(190px, 1.3fr)' },
+    { key: 'funcao',        label: 'Função / Papel',  head: 'FUNÇÃO',         defaultAcesso: false, defaultInfo: false, mobileTrack: 'minmax(130px, 1fr)', desktopTrack: 'minmax(160px, 1fr)' },
+    { key: 'instagram',     label: '@Instagram',      head: 'INSTAGRAM',      defaultAcesso: false, defaultInfo: false, mobileTrack: '120px',             desktopTrack: '140px' },
+    { key: 'turnos',        label: 'Turnos',          head: 'TURNOS',         defaultAcesso: false, defaultInfo: false, mobileTrack: '115px',             desktopTrack: '130px' }
+];
+
+const STORAGE_CHECKINS_KEY = 'cdc58_portaria_checkins_v4';
+const STORAGE_COLS_KEY = 'cdc58_portaria_cols_v4';
+
+const DEFAULT_SEED_CHECKINS = {
+    '27/11': {
+        1: '11:15',
+        4: '11:02',
+        6: '14:20',
+        9: '13:45',
+        10: '10:50',
+        13: '10:30',
+        121: '15:10',
+        122: '15:12',
+        127: '15:18',
+        101: '16:04',
+        102: '16:07',
+        105: '16:19'
+    }
+};
+
+function getDefaultColsConfig() {
+    return {
+        acessoOrder: COLUMN_CATALOG.map(c => c.key),
+        acessoActive: COLUMN_CATALOG.filter(c => c.defaultAcesso).map(c => c.key),
+        infoOrder: COLUMN_CATALOG.map(c => c.key),
+        infoActive: COLUMN_CATALOG.filter(c => c.defaultInfo).map(c => c.key)
+    };
+}
+
+function loadCheckins() {
+    try {
+        const raw = localStorage.getItem(STORAGE_CHECKINS_KEY);
+        if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && typeof parsed === 'object') return parsed;
+        }
+    } catch (e) {}
+    return JSON.parse(JSON.stringify(DEFAULT_SEED_CHECKINS));
+}
+
+function loadColsConfig() {
+    try {
+        const raw = localStorage.getItem(STORAGE_COLS_KEY);
+        if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && Array.isArray(parsed.acessoActive) && Array.isArray(parsed.infoActive)) {
+                return parsed;
+            }
+        }
+    } catch (e) {}
+    return getDefaultColsConfig();
+}
+
+/* ============================================================================
+   4. ESTADO CENTRAL DA APLICAÇÃO
+   ============================================================================ */
+const state = {
+    day: 'all',                        // 'all' | '20/11'..'30/11'
+    selectedBuckets: new Set(ALL_BUCKET_IDS),
+    turn: 'all',
+    statusFilter: 'all',               // 'all' (◑) | 'pending' (○) | 'in' (●)
+    letter: 'ALL',
+    search: '',
+    rowStages: new Map(),              // personId -> 0 | 1 | 2
+    colsConfig: loadColsConfig(),
+    activeModalTier: 'acesso',         // 'acesso' | 'info'
+    activeBottomSheet: null,           // null | 'profile' | 'teamStats'
+    sheetPersonId: null,
+    revealedDocs: new Set(),
+    checkins: loadCheckins(),
+    hasShownSwipeHint: false,
+    lastUndo: null,
+    toastTimer: null
+};
+
+function saveCheckins() {
+    try { localStorage.setItem(STORAGE_CHECKINS_KEY, JSON.stringify(state.checkins)); } catch (e) {}
+}
+
+function saveColsConfig() {
+    try { localStorage.setItem(STORAGE_COLS_KEY, JSON.stringify(state.colsConfig)); } catch (e) {}
+}
+
+/* ============================================================================
+   5. UTILITÁRIOS DE TEXTO, INICIAIS, MÁSCARAS E HORÁRIO
+   ============================================================================ */
+function esc(str) {
+    return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+function norm(str) {
+    return String(str || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+}
+
+function digitsOnly(str) {
+    return String(str || '').replace(/\D/g, '');
+}
+
+function getInitialLetter(name) {
+    const clean = norm(name).trim();
+    if (!clean) return '#';
+    const first = clean[0].toUpperCase();
+    return (first >= 'A' && first <= 'Z') ? first : '#';
+}
+
+function nowHHMM() {
+    const d = new Date();
+    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
+function getOperationalDayKey() {
+    return state.day === 'all' ? '27/11' : state.day;
+}
+
+function getCheckinTime(personId, dayKey = getOperationalDayKey()) {
+    return state.checkins[dayKey]?.[personId] || null;
+}
+
+function setCheckinTime(personId, timeStr, dayKey = getOperationalDayKey()) {
+    if (!state.checkins[dayKey]) state.checkins[dayKey] = {};
+    if (timeStr) {
+        state.checkins[dayKey][personId] = timeStr;
+    } else {
+        delete state.checkins[dayKey][personId];
+    }
+    saveCheckins();
+}
+
+function getRowStage(personId) {
+    return state.rowStages.get(personId) || 0;
+}
+
+function setRowStage(personId, stage) {
+    if (stage === 0) {
+        state.rowStages.delete(personId);
+    } else {
+        state.rowStages.set(personId, stage);
+    }
+}
+
+function maskCPF(cpf) {
+    const p = String(cpf || '').split('.');
+    return p.length === 3 ? `***.${p[1]}.${p[2].split('-')[0]}-**` : '***.***.***-**';
+}
+
+function maskRG(rg) {
+    const p = String(rg || '').split('.');
+    return p.length === 3 ? `**.${p[1]}.${p[2].split('-')[0]}-*` : '**.***.***-*';
+}
+
+function getOrderedActiveCols(tier) {
+    const order = tier === 'acesso' ? state.colsConfig.acessoOrder : state.colsConfig.infoOrder;
+    const activeSet = new Set(tier === 'acesso' ? state.colsConfig.acessoActive : state.colsConfig.infoActive);
+    return order
+        .filter(key => activeSet.has(key))
+        .map(key => COLUMN_CATALOG.find(c => c.key === key))
+        .filter(Boolean);
+}
+
+/* ============================================================================
+   6. FILTRAGEM EM CAMADAS (BASE -> STATUS ◑/○/● -> LETRA DINÂMICA)
+   ============================================================================ */
+// Camada 1: Filtra por dia, equipes/marcas selecionadas, turno e busca textual (usado também para o placar do rodapé)
+function getScopePeopleBeforeStatus() {
+    const rawQuery = state.search.trim();
+    const qText = norm(rawQuery);
+    const qDigits = digitsOnly(rawQuery);
+
+    return PEOPLE.filter(p => {
+        if (state.day !== 'all' && !p.dias.includes(state.day)) return false;
+        if (!state.selectedBuckets.has(p.bucket)) return false;
+        if (state.turn !== 'all' && !p.turnos.includes(state.turn)) return false;
+
+        if (qText || qDigits) {
+            const hay = norm([
+                p.nome_social,
+                p.nome_completo,
+                p.bucket,
+                p.empresa,
+                p.funcao,
+                p.instagram
+            ].join(' '));
+            const matchText = qText ? hay.includes(qText) : false;
+            const docHay = `${digitsOnly(p.cpf)} ${digitsOnly(p.rg)}`;
+            const matchDigits = qDigits.length >= 2 ? docHay.includes(qDigits) : false;
+            if (!matchText && !matchDigits) return false;
+        }
+
+        return true;
+    }).sort((a, b) => a.nome_social.localeCompare(b.nome_social, 'pt-BR'));
+}
+
+// Camada 2: Aplica o estado ◑ (all) / ○ (pending) / ● (in)
+function getFilteredAfterStatus(scopePeople) {
+    const dayKey = getOperationalDayKey();
+    if (state.statusFilter === 'all') return scopePeople;
+    return scopePeople.filter(p => {
+        const checked = Boolean(getCheckinTime(p.id, dayKey));
+        return state.statusFilter === 'in' ? checked : !checked;
+    });
+}
+
+// Camada 3: Aplica a inicial selecionada na faixa alfabética
+function getFinalVisiblePeople(afterStatusPeople) {
+    if (state.letter === 'ALL') return afterStatusPeople;
+    return afterStatusPeople.filter(p => getInitialLetter(p.nome_social) === state.letter);
+}
+
+/* ============================================================================
+   7. TOGGLE DE ENTRADA + ANIMAÇÃO DE SAÍDA NO MODO ○ + TOAST DESFAZER
+   ============================================================================ */
+function togglePersonAccess(personId) {
+    const person = PEOPLE.find(p => p.id === personId);
+    if (!person) return;
+
+    const dayKey = getOperationalDayKey();
+    const prevTime = getCheckinTime(personId, dayKey);
+
+    if (navigator.vibrate) {
+        try { navigator.vibrate(18); } catch (e) {}
+    }
+
+    const commitChange = () => {
+        if (!prevTime) {
+            const time = nowHHMM();
+            setCheckinTime(personId, time, dayKey);
+            showToast(`✓ LIBERADO: ${person.nome_social} (${time})`, {
+                personId,
+                dayKey,
+                restoreTime: null
+            });
+        } else {
+            setCheckinTime(personId, null, dayKey);
+            showToast(`Entrada desfeita: ${person.nome_social}`, {
+                personId,
+                dayKey,
+                restoreTime: prevTime
+            });
+        }
+
+        // Recolhe linha expandida ao liberar
+        setRowStage(personId, 0);
+        renderApp();
+
+        if (state.activeBottomSheet === 'profile' && state.sheetPersonId === personId) {
+            renderProfileSheet();
+        }
+        if (state.activeBottomSheet === 'teamStats') {
+            renderTeamStatsSheet();
+        }
+    };
+
+    // No modo ○ ("Faltam"), anima a linha deslizando para fora antes de remover da lista
+    const willDisappearFromFiltered = (!prevTime && state.statusFilter === 'pending') || (prevTime && state.statusFilter === 'in');
+    const shellEl = document.querySelector(`[data-shell-id="${personId}"]`);
+
+    if (willDisappearFromFiltered && shellEl) {
+        shellEl.classList.add('is-leaving');
+        setTimeout(commitChange, 190);
+    } else {
+        commitChange();
+    }
+}
+
+function showToast(msg, undoPayload) {
+    const bar = document.getElementById('toast-bar');
+    document.getElementById('toast-msg').textContent = msg;
+    const undoBtn = document.getElementById('toast-undo-btn');
+
+    state.lastUndo = undoPayload || null;
+    undoBtn.style.display = undoPayload ? '' : 'none';
+    bar.classList.add('visible');
+
+    if (state.toastTimer) clearTimeout(state.toastTimer);
+    state.toastTimer = setTimeout(() => {
+        bar.classList.remove('visible');
+        state.lastUndo = null;
+    }, 4000);
+}
+
+/* ============================================================================
+   8. RENDERIZAÇÃO PRINCIPAL (CABEÇALHO ◑/○/●, LETRAS, LINHAS, RODAPÉ)
+   ============================================================================ */
+function renderApp() {
+    const scopePeople = getScopePeopleBeforeStatus();
+    const afterStatusPeople = getFilteredAfterStatus(scopePeople);
+
+    // Letras disponíveis apenas no recorte ativo (oculta letras vazias)
+    const availableLettersSet = new Set();
+    afterStatusPeople.forEach(p => availableLettersSet.add(getInitialLetter(p.nome_social)));
+    const availableLetters = [...availableLettersSet].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+
+    if (state.letter !== 'ALL' && !availableLettersSet.has(state.letter)) {
+        state.letter = 'ALL';
+    }
+
+    const visiblePeople = getFinalVisiblePeople(afterStatusPeople);
+    const dayKey = getOperationalDayKey();
+
+    // Placar do rodapé (sobre o recorte de dia/equipes/busca)
+    let inCount = 0;
+    scopePeople.forEach(p => {
+        if (getCheckinTime(p.id, dayKey)) inCount++;
+    });
+    const pendingCount = scopePeople.length - inCount;
+
+    document.getElementById('stat-in').textContent = inCount;
+    document.getElementById('stat-total').textContent = scopePeople.length;
+    document.getElementById('stat-pending-inline').textContent = `· ${pendingCount} ${pendingCount === 1 ? 'falta' : 'faltam'}`;
+
+    // Botão "← Voltar à lista geral" no rodapé quando houver filtro de equipe específico ativo
+    const isTeamSubsetActive = state.selectedBuckets.size < ALL_BUCKET_IDS.length;
+    const backBtn = document.getElementById('btn-footer-reset-team');
+    backBtn.classList.toggle('visible', isTeamSubsetActive);
+
+    // Atualiza botão de 3 estados ◑ / ○ / ● no cabeçalho
+    const cycleBtn = document.getElementById('btn-arrival-cycle');
+    const symbolEl = document.getElementById('arrival-symbol');
+    const labelEl = document.getElementById('arrival-label');
+    cycleBtn.dataset.mode = state.statusFilter;
+
+    if (state.statusFilter === 'all') {
+        symbolEl.textContent = '◑';
+        labelEl.textContent = 'Todos';
+    } else if (state.statusFilter === 'pending') {
+        symbolEl.textContent = '○';
+        labelEl.textContent = 'Faltam';
+    } else {
+        symbolEl.textContent = '●';
+        labelEl.textContent = 'Entraram';
+    }
+
+    // Atualiza badges de 👁️ e ⚙️
+    const acessoCols = getOrderedActiveCols('acesso');
+    document.getElementById('cols-count-badge').textContent = acessoCols.length;
+
+    let activeFilterCount = 0;
+    if (state.day !== 'all') activeFilterCount++;
+    if (isTeamSubsetActive) activeFilterCount++;
+    if (state.turn !== 'all') activeFilterCount++;
+
+    const filtersBtn = document.getElementById('btn-open-filters');
+    const filtersBadge = document.getElementById('filters-count-badge');
+    filtersBtn.classList.toggle('has-active-filter', activeFilterCount > 0);
+    filtersBadge.hidden = activeFilterCount === 0;
+    filtersBadge.textContent = activeFilterCount;
+
+    // Pill discreta de recorte ativo no cabeçalho
+    const scopePill = document.getElementById('active-filter-pill');
+    const pillParts = [];
+    if (state.selectedBuckets.size === 1) {
+        const onlyBucket = [...state.selectedBuckets][0];
+        pillParts.push(TEAM_BUCKETS[onlyBucket]?.label || onlyBucket);
+    } else if (isTeamSubsetActive) {
+        pillParts.push(`${state.selectedBuckets.size} equipes`);
+    }
+    pillParts.push(state.day === 'all' ? 'Todos dias' : state.day);
+    if (state.turn !== 'all') pillParts.push(state.turn);
+
+    scopePill.textContent = pillParts.join(' · ');
+    scopePill.classList.toggle('is-filtered', activeFilterCount > 0);
+
+    // Barra alfabética dinâmica (apenas TODOS + iniciais que existem no recorte)
+    const alphaStrip = document.getElementById('alpha-strip');
+    const letterButtonsHtml = availableLetters.map(l => `
+        <span class="alpha-sep">/</span>
+        <button type="button" class="alpha-btn ${state.letter === l ? 'active' : ''}" data-letter="${l}">${l}</button>
+    `).join('');
+
+    alphaStrip.innerHTML = `
+        <button type="button" class="alpha-btn ${state.letter === 'ALL' ? 'active' : ''}" data-letter="ALL">TODOS</button>
+        ${letterButtonsHtml}
+    `;
+
+    alphaStrip.querySelectorAll('.alpha-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            state.letter = btn.dataset.letter;
+            renderApp();
+        });
+    });
+
+    // Cabeçalho fixo da tabela (top: 168px)
+    const mobileTracks = acessoCols.map(c => c.mobileTrack).join(' ');
+    const desktopTracks = `${acessoCols.map(c => c.desktopTrack).join(' ')} 122px`;
+
+    const gridHeader = document.getElementById('grid-header');
+    gridHeader.style.setProperty('--cols-mobile', mobileTracks);
+    gridHeader.style.setProperty('--cols-desktop', desktopTracks);
+
+    gridHeader.innerHTML = `
+        ${acessoCols.map(col => `
+            <div class="col-head ${col.key === 'pronome' ? 'is-center' : ''}">${esc(col.head)}</div>
+        `).join('')}
+        <div class="col-head is-desktop-acesso">ACESSO</div>
+    `;
+
+    // Renderiza lista de pessoas
+    const rosterBody = document.getElementById('roster-body');
+    if (!visiblePeople.length) {
+        const emptyTitle = state.statusFilter === 'pending'
+            ? 'Todas as pessoas previstas neste filtro já entraram!'
+            : 'Nenhuma pessoa encontrada neste filtro.';
+
+        rosterBody.innerHTML = `
+            <div class="empty-state">
+                <div style="margin-bottom:12px;">${emptyTitle}</div>
+                <button type="button" class="btn" id="btn-empty-clear">Mostrar todos (◑)</button>
+            </div>
+        `;
+        const clearBtn = document.getElementById('btn-empty-clear');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', () => {
+                state.statusFilter = 'all';
+                state.letter = 'ALL';
+                if (!scopePeople.length) {
+                    state.day = 'all';
+                    state.selectedBuckets = new Set(ALL_BUCKET_IDS);
+                    state.turn = 'all';
+                    state.search = '';
+                    document.getElementById('search-input').value = '';
+                    document.getElementById('search-clear').classList.remove('visible');
+                }
+                renderApp();
+            });
+        }
+        return;
+    }
+
+    let firstPendingHintApplied = false;
+
+    rosterBody.innerHTML = visiblePeople.map(p => {
+        const bucketMeta = TEAM_BUCKETS[p.bucket] || { color: '#4fb3d9' };
+        const checkedTime = getCheckinTime(p.id, dayKey);
+        const stage = getRowStage(p.id);
+
+        let shouldNudge = false;
+        if (!state.hasShownSwipeHint && !checkedTime && !firstPendingHintApplied) {
+            shouldNudge = true;
+            firstPendingHintApplied = true;
+            state.hasShownSwipeHint = true;
+        }
+
+        let innerStageHtml = '';
+
+        if (stage === 0) {
+            // ESTÁGIO 0: Lista Padrão (chip de horário SEMPRE flush à direita na última coluna mobile)
+            const lastColIdx = acessoCols.length - 1;
+            const cellsHtml = acessoCols.map((col, idx) =>
+                renderCellStage0(p, col.key, checkedTime, idx === lastColIdx)
+            ).join('');
+
+            innerStageHtml = `
+                <div class="stage-0-grid" style="--cols-mobile:${mobileTracks};--cols-desktop:${desktopTracks};" data-stage0-id="${p.id}">
+                    ${cellsHtml}
+                    <div class="desktop-acesso-cell">
+                        <button type="button" class="acesso-btn ${checkedTime ? 'is-entrou' : 'is-liberar'}" data-desktop-acesso="${p.id}">
+                            ${checkedTime
+                                ? `<span>✓ ENTROU</span><span class="acesso-btn-sub">${esc(checkedTime)}</span>`
+                                : `<span>LIBERAR</span>`
+                            }
+                        </button>
+                    </div>
+                </div>
+            `;
+        } else if (stage === 1) {
+            // ESTÁGIO 1 (+20% altura): Apenas Nome Social em fonte grande + horário à direita + ícone ⓘ
+            innerStageHtml = `
+                <div class="stage-1-bar">
+                    <button type="button" class="stage-1-name-btn" data-collapse-id="${p.id}" aria-label="Voltar para lista compacta">
+                        <span class="stage-1-name-text">${esc(p.nome_social)}</span>
+                        ${checkedTime ? `<span class="in-time-pill">✓ ${esc(checkedTime)}</span>` : ''}
+                    </button>
+                    <button type="button" class="info-circle-btn" data-info-id="${p.id}" title="Ver RG, CPF e Perfil" aria-label="Ver documentos de ${esc(p.nome_social)}">
+                        ⓘ
+                    </button>
+                </div>
+            `;
+        } else {
+            // ESTÁGIO 2 (Modo Info): Somente RG, CPF e botão 'PERFIL' à direita
+            const infoCols = getOrderedActiveCols('info');
+            const chipsHtml = infoCols.map(col => `
+                <div class="doc-chip">
+                    <span class="doc-chip-k">${esc(col.head)}</span>
+                    <span class="doc-chip-v">${esc(getFieldText(p, col.key))}</span>
+                </div>
+            `).join('');
+
+            innerStageHtml = `
+                <div class="stage-2-bar">
+                    <div class="stage-2-docs" data-collapse-id="${p.id}" role="button" tabindex="0" title="Toque para voltar à lista padrão">
+                        ${chipsHtml}
+                    </div>
+                    <button type="button" class="perfil-btn" data-open-profile="${p.id}">
+                        PERFIL
+                    </button>
+                </div>
+            `;
+        }
+
+        return `
+            <div class="person-swipe-shell" style="--tc:${bucketMeta.color}" data-shell-id="${p.id}" role="listitem">
+                <div class="swipe-underlay ${checkedTime ? 'is-undo-track' : ''}" aria-hidden="true">
+                    <span>${checkedTime ? '↩ DESFAZER ENTRADA' : '✓ LIBERAR ENTRADA'}</span>
+                    <span>${checkedTime ? '↩ DESFAZER' : '✓ LIBERAR'}</span>
+                </div>
+
+                <div class="person-row ${checkedTime ? 'is-checked-in' : ''} ${shouldNudge ? 'is-hint-nudge' : ''}" data-row-id="${p.id}">
+                    <span class="swipe-edge-cue is-left" aria-hidden="true">‹</span>
+                    ${innerStageHtml}
+                    <span class="swipe-edge-cue is-right" aria-hidden="true">›</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    bindRosterInteractions();
+}
+
+function getFieldText(p, key) {
+    switch (key) {
+        case 'nome_social': return p.nome_social;
+        case 'pronome': return p.pronome;
+        case 'equipe': return p.bucket;
+        case 'rg': return p.rg;
+        case 'cpf': return p.cpf;
+        case 'nome_completo': return p.nome_completo;
+        case 'funcao': return p.funcao;
+        case 'instagram': return p.instagram || '—';
+        case 'turnos': return p.turnos.join(' · ');
+        default: return '—';
+    }
+}
+
+// Renderiza cada célula do Estágio 0 garantindo que o chip de horário fique SEMPRE flush à direita (na última célula)
+function renderCellStage0(p, key, checkedTime, isTrailingCell) {
+    const timePillHtml = (isTrailingCell && checkedTime)
+        ? `<span class="in-time-pill">✓ ${esc(checkedTime)}</span>`
+        : '';
+
+    if (isTrailingCell) {
+        const textClass = key === 'nome_social'
+            ? 'cell-val is-name'
+            : (key === 'equipe' ? 'cell-trailing-text' : 'cell-val is-mono');
+        return `
+            <div class="cell-trailing-slot">
+                <span class="${textClass}">${esc(getFieldText(p, key))}</span>
+                ${timePillHtml}
+            </div>
+        `;
+    }
+
+    if (key === 'nome_social') {
+        return `<div class="cell-val is-name">${esc(p.nome_social)}</div>`;
+    }
+    if (key === 'pronome') {
+        return `<div class="cell-val is-pronoun">${esc(p.pronome)}</div>`;
+    }
+    if (key === 'equipe') {
+        return `<div class="cell-trailing-text">${esc(p.bucket)}</div>`;
+    }
+    return `<div class="cell-val is-mono">${esc(getFieldText(p, key))}</div>`;
+}
+
+/* ============================================================================
+   9. INTERAÇÕES DE LINHA: 3 ESTÁGIOS + SWIPE BIDIRECIONAL (TOUCH / POINTER)
+   ============================================================================ */
+function bindRosterInteractions() {
+    const body = document.getElementById('roster-body');
+
+    // Estágio 0 -> Estágio 1
+    body.querySelectorAll('[data-stage0-id]').forEach(el => {
+        el.addEventListener('click', (e) => {
+            if (e.target.closest('[data-desktop-acesso]')) return;
+            const id = Number(el.dataset.stage0Id);
+            state.rowStages.clear();
+            setRowStage(id, 1);
+            renderApp();
+        });
+    });
+
+    // Estágio 1 -> Estágio 2 (ⓘ)
+    body.querySelectorAll('[data-info-id]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const id = Number(btn.dataset.infoId);
+            setRowStage(id, 2);
+            renderApp();
+        });
+    });
+
+    // Estágio 1 ou 2 -> Estágio 0
+    body.querySelectorAll('[data-collapse-id]').forEach(el => {
+        el.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const id = Number(el.dataset.collapseId);
+            setRowStage(id, 0);
+            renderApp();
+        });
+    });
+
+    // Estágio 2 -> Abre Bottom Sheet de Perfil Completo
+    body.querySelectorAll('[data-open-profile]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openProfileSheet(Number(btn.dataset.openProfile));
+        });
+    });
+
+    // Desktop -> Botão LIBERAR / ENTROU
+    body.querySelectorAll('[data-desktop-acesso]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            togglePersonAccess(Number(btn.dataset.desktopAcesso));
+        });
+    });
+
+    // Swipe bidirecional (Esquerda ou Direita em qualquer estágio)
+    body.querySelectorAll('[data-shell-id]').forEach(shell => {
+        const id = Number(shell.dataset.shellId);
+        const row = shell.querySelector('.person-row');
+        const underlay = shell.querySelector('.swipe-underlay');
+
+        let startX = 0;
+        let startY = 0;
+        let deltaX = 0;
+        let isHorizontalSwipe = false;
+        let pointerActive = false;
+
+        const onStart = (x, y) => {
+            startX = x;
+            startY = y;
+            deltaX = 0;
+            isHorizontalSwipe = false;
+            pointerActive = true;
+            row.classList.remove('is-hint-nudge');
+        };
+
+        const onMove = (x, y, preventFn) => {
+            if (!pointerActive) return;
+            const dx = x - startX;
+            const dy = y - startY;
+
+            if (!isHorizontalSwipe) {
+                if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy) * 1.25) {
+                    isHorizontalSwipe = true;
+                    row.classList.add('is-dragging');
+                } else if (Math.abs(dy) > 12) {
+                    pointerActive = false;
+                    return;
+                }
+            }
+
+            if (isHorizontalSwipe) {
+                if (preventFn) preventFn();
+                const clamped = Math.max(-136, Math.min(136, dx * 0.85));
+                deltaX = clamped;
+                row.style.transform = `translateX(${clamped}px)`;
+                underlay.style.opacity = Math.min(1, Math.abs(clamped) / 68).toFixed(2);
+            }
+        };
+
+        const onEnd = () => {
+            if (!pointerActive) return;
+            pointerActive = false;
+            row.classList.remove('is-dragging');
+
+            if (isHorizontalSwipe) {
+                const triggered = Math.abs(deltaX) >= 68;
+                row.style.transform = 'translateX(0)';
+                underlay.style.opacity = '0';
+
+                const suppressClick = (ev) => {
+                    ev.stopPropagation();
+                    ev.preventDefault();
+                };
+                shell.addEventListener('click', suppressClick, { capture: true, once: true });
+
+                if (triggered) {
+                    togglePersonAccess(id);
+                }
+            }
+        };
+
+        row.addEventListener('touchstart', (e) => {
+            if (e.touches.length !== 1) return;
+            onStart(e.touches[0].clientX, e.touches[0].clientY);
+        }, { passive: true });
+
+        row.addEventListener('touchmove', (e) => {
+            if (e.touches.length !== 1) return;
+            onMove(e.touches[0].clientX, e.touches[0].clientY, () => e.preventDefault());
+        }, { passive: false });
+
+        row.addEventListener('touchend', onEnd);
+        row.addEventListener('touchcancel', onEnd);
+
+        row.addEventListener('pointerdown', (e) => {
+            if (e.pointerType === 'touch' || e.button !== 0) return;
+            onStart(e.clientX, e.clientY);
+        });
+
+        row.addEventListener('pointermove', (e) => {
+            if (e.pointerType === 'touch') return;
+            onMove(e.clientX, e.clientY, null);
+        });
+
+        row.addEventListener('pointerup', (e) => {
+            if (e.pointerType === 'touch') return;
+            onEnd();
+        });
+    });
+}
+
+/* ============================================================================
+   10. BUSCA TYPEAHEAD COMBOBOX
+   ============================================================================ */
+function renderTypeahead() {
+    const dropdown = document.getElementById('typeahead-dropdown');
+    const raw = state.search.trim();
+
+    if (!raw) {
+        dropdown.classList.remove('open');
+        dropdown.innerHTML = '';
+        return;
+    }
+
+    const matches = getScopePeopleBeforeStatus().slice(0, 7);
+    if (!matches.length) {
+        dropdown.classList.remove('open');
+        return;
+    }
+
+    const dayKey = getOperationalDayKey();
+    dropdown.innerHTML = matches.map(p => {
+        const meta = TEAM_BUCKETS[p.bucket] || { color: '#4fb3d9' };
+        const checkedTime = getCheckinTime(p.id, dayKey);
+        return `
+            <div class="ta-item" style="--tc:${meta.color}" data-ta-select="${p.id}">
+                <div class="ta-main">
+                    <div class="ta-name">${esc(p.nome_social)}</div>
+                    <div class="ta-sub">${esc(p.bucket)} · CPF ${esc(maskCPF(p.cpf))}</div>
+                </div>
+                <button type="button" class="ta-quick-btn ${checkedTime ? 'is-in' : ''}" data-ta-liberar="${p.id}">
+                    ${checkedTime ? `✓ ${esc(checkedTime)}` : 'LIBERAR'}
+                </button>
+            </div>
+        `;
+    }).join('');
+
+    dropdown.classList.add('open');
+
+    dropdown.querySelectorAll('[data-ta-liberar]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            togglePersonAccess(Number(btn.dataset.taLiberar));
+            renderTypeahead();
+        });
+    });
+
+    dropdown.querySelectorAll('[data-ta-select]').forEach(item => {
+        item.addEventListener('click', () => {
+            const id = Number(item.dataset.taSelect);
+            state.letter = 'ALL';
+            state.statusFilter = 'all';
+            state.rowStages.clear();
+            setRowStage(id, 1);
+            dropdown.classList.remove('open');
+            renderApp();
+        });
+    });
+}
+
+/* ============================================================================
+   11. BOTTOM SHEETS (METADE INFERIOR: PERFIL COMPLETO & ESTATÍSTICAS POR EQUIPE)
+   ============================================================================ */
+function closeAllBottomSheets() {
+    state.activeBottomSheet = null;
+    state.sheetPersonId = null;
+    document.getElementById('sheet-backdrop').classList.remove('open');
+    const profileSheet = document.getElementById('profile-sheet');
+    const teamSheet = document.getElementById('team-stats-sheet');
+    profileSheet.classList.remove('open');
+    profileSheet.setAttribute('aria-hidden', 'true');
+    teamSheet.classList.remove('open');
+    teamSheet.setAttribute('aria-hidden', 'true');
+}
+
+// Bottom Sheet 1: Perfil Completo (Scroll na área de dados + Botão Liberar fixo na base)
+function openProfileSheet(personId) {
+    closeAllBottomSheets();
+    state.activeBottomSheet = 'profile';
+    state.sheetPersonId = personId;
+    renderProfileSheet();
+}
+
+function renderProfileSheet() {
+    const sheet = document.getElementById('profile-sheet');
+    const backdrop = document.getElementById('sheet-backdrop');
+    const p = PEOPLE.find(item => item.id === state.sheetPersonId);
+
+    if (!p) {
+        closeAllBottomSheets();
+        return;
+    }
+
+    const meta = TEAM_BUCKETS[p.bucket] || { color: '#4fb3d9', full: p.bucket };
+    const dayKey = getOperationalDayKey();
+    const checkedTime = getCheckinTime(p.id, dayKey);
+    const revealed = state.revealedDocs.has(p.id);
+    const hasDiet = p.alimentacao && p.alimentacao !== 'Sem restrição';
+
+    sheet.innerHTML = `
+        <div class="sheet-grabber" aria-hidden="true"></div>
+        <div class="sheet-head">
+            <span class="mono" style="font-size:0.74rem;color:var(--text-secondary);">FICHA DE CREDENCIAMENTO</span>
+            <button type="button" class="modal-close" id="btn-close-profile-sheet" aria-label="Fechar">×</button>
+        </div>
+
+        <div class="sheet-scroll-body">
+            <div class="sheet-hero" style="--tc:${meta.color}">
+                <div class="sheet-kicker">${esc(p.bucket)} · ${esc(p.empresa)}</div>
+                <h2 class="sheet-name">${esc(p.nome_social)}</h2>
+                <div class="sheet-civil">Nome civil: ${esc(p.nome_completo)} · ${esc(p.pronomes_full)}</div>
+            </div>
+
+            <div class="doc-box">
+                <div class="doc-pair">
+                    <div>
+                        <span>CPF</span>
+                        <strong>${revealed ? esc(p.cpf) : maskCPF(p.cpf)}</strong>
+                    </div>
+                    <div>
+                        <span>RG</span>
+                        <strong>${revealed ? esc(p.rg) : maskRG(p.rg)}</strong>
+                    </div>
+                </div>
+                <button type="button" class="btn" id="btn-toggle-doc" style="height:30px;font-size:0.75rem;">
+                    ${revealed ? 'Ocultar' : 'Revelar'}
+                </button>
+            </div>
+
+            <div class="sheet-grid">
+                <div class="kv-item">
+                    <div class="kv-label">Função / Papel</div>
+                    <div class="kv-val">${esc(p.funcao)}</div>
+                </div>
+                <div class="kv-item">
+                    <div class="kv-label">Instagram</div>
+                    <div class="kv-val mono">${esc(p.instagram || '—')}</div>
+                </div>
+                <div class="kv-item">
+                    <div class="kv-label">WhatsApp</div>
+                    <div class="kv-val mono">${esc(p.whatsapp || '—')}</div>
+                </div>
+                <div class="kv-item">
+                    <div class="kv-label">Turnos</div>
+                    <div class="kv-val">${esc(p.turnos.join(' · '))}</div>
+                </div>
+                <div class="kv-item full">
+                    <div class="kv-label">Alimentação</div>
+                    <div class="kv-val">${hasDiet ? `<span class="diet-badge">${esc(p.alimentacao)}</span>` : 'Sem restrição'}</div>
+                </div>
+                <div class="kv-item full">
+                    <div class="kv-label">Dias credenciados</div>
+                    <div class="days-mini-row">
+                        ${DAYS.map(d => `
+                            <span class="day-chip-mini ${p.dias.includes(d.key) ? 'on' : ''}" style="--tc:${meta.color}">${d.key}</span>
+                        `).join('')}
+                    </div>
+                </div>
+                ${p.obs ? `
+                    <div class="kv-item full">
+                        <div class="kv-label">Observações</div>
+                        <div class="kv-val" style="color:var(--text-secondary);">${esc(p.obs)}</div>
+                    </div>
+                ` : ''}
+            </div>
+        </div>
+
+        <div class="sheet-pinned-footer">
+            <button type="button" class="sheet-cta-btn ${checkedTime ? 'is-undo' : ''}" id="btn-sheet-liberar">
+                ${checkedTime
+                    ? `↩ DESFAZER ENTRADA (ENTROU ÀS ${esc(checkedTime)})`
+                    : `✓ LIBERAR ENTRADA AGORA (${esc(dayKey)})`
+                }
+            </button>
+        </div>
+    `;
+
+    sheet.classList.add('open');
+    backdrop.classList.add('open');
+    sheet.setAttribute('aria-hidden', 'false');
+
+    document.getElementById('btn-close-profile-sheet').addEventListener('click', closeAllBottomSheets);
+    document.getElementById('btn-toggle-doc').addEventListener('click', () => {
+        if (state.revealedDocs.has(p.id)) {
+            state.revealedDocs.delete(p.id);
+        } else {
+            state.revealedDocs.add(p.id);
+        }
+        renderProfileSheet();
+    });
+
+    document.getElementById('btn-sheet-liberar').addEventListener('click', () => {
+        togglePersonAccess(p.id);
+    });
+}
+
+// Bottom Sheet 2: Estatísticas por Equipe / Marca (acionado ao clicar no rodapé)
+function openTeamStatsSheet() {
+    closeAllBottomSheets();
+    state.activeBottomSheet = 'teamStats';
+    renderTeamStatsSheet();
+}
+
+function renderTeamStatsSheet() {
+    const sheet = document.getElementById('team-stats-sheet');
+    const backdrop = document.getElementById('sheet-backdrop');
+    const dayKey = getOperationalDayKey();
+
+    // Calcula estatísticas de cada equipe dentro do dia/turno ativo
+    const statsList = ALL_BUCKET_IDS.map(bucketId => {
+        const meta = TEAM_BUCKETS[bucketId];
+        const members = PEOPLE.filter(p => {
+            if (p.bucket !== bucketId) return false;
+            if (state.day !== 'all' && !p.dias.includes(state.day)) return false;
+            if (state.turn !== 'all' && !p.turnos.includes(state.turn)) return false;
+            return true;
+        });
+        const entered = members.filter(p => Boolean(getCheckinTime(p.id, dayKey))).length;
+        const missing = members.length - entered;
+        const pct = members.length > 0 ? Math.round((entered / members.length) * 100) : 0;
+        return { bucketId, meta, total: members.length, entered, missing, pct };
+    }).filter(item => item.total > 0);
+
+    const isSingleFiltered = state.selectedBuckets.size === 1;
+    const activeSingleBucket = isSingleFiltered ? [...state.selectedBuckets][0] : null;
+
+    sheet.innerHTML = `
+        <div class="sheet-grabber" aria-hidden="true"></div>
+        <div class="sheet-head">
+            <div>
+                <div class="modal-title">Estatísticas por Equipe / Marca</div>
+                <div class="modal-sub">Toque em uma equipe para filtrar a lista (${state.day === 'all' ? 'Todos os dias' : state.day})</div>
+            </div>
+            <button type="button" class="modal-close" id="btn-close-team-sheet" aria-label="Fechar">×</button>
+        </div>
+
+        <div class="sheet-scroll-body">
+            ${statsList.map(st => `
+                <button type="button" class="team-stat-row ${activeSingleBucket === st.bucketId ? 'is-active-team' : ''}" style="--tc:${st.meta.color}" data-pick-team="${st.bucketId}">
+                    <div class="team-stat-top">
+                        <span class="team-stat-name">${esc(st.meta.full)}</span>
+                        <span class="team-stat-nums">
+                            <strong>${st.entered}</strong>/${st.total} entraram · ${st.missing} ${st.missing === 1 ? 'falta' : 'faltam'}
+                        </span>
+                    </div>
+                    <div class="team-stat-bar">
+                        <div class="team-stat-fill" style="width:${st.pct}%"></div>
+                    </div>
+                </button>
+            `).join('')}
+        </div>
+
+        ${state.selectedBuckets.size < ALL_BUCKET_IDS.length ? `
+            <div class="sheet-pinned-footer">
+                <button type="button" class="btn btn-primary" id="btn-sheet-all-teams" style="width:100%;height:42px;">
+                    ← Voltar à lista geral (Todas as equipes)
+                </button>
+            </div>
+        ` : ''}
+    `;
+
+    sheet.classList.add('open');
+    backdrop.classList.add('open');
+    sheet.setAttribute('aria-hidden', 'false');
+
+    document.getElementById('btn-close-team-sheet').addEventListener('click', closeAllBottomSheets);
+
+    sheet.querySelectorAll('[data-pick-team]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const picked = btn.dataset.pickTeam;
+            state.selectedBuckets = new Set([picked]);
+            state.letter = 'ALL';
+            state.rowStages.clear();
+            closeAllBottomSheets();
+            renderApp();
+        });
+    });
+
+    const resetBtn = document.getElementById('btn-sheet-all-teams');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', () => {
+            state.selectedBuckets = new Set(ALL_BUCKET_IDS);
+            state.letter = 'ALL';
+            closeAllBottomSheets();
+            renderApp();
+        });
+    }
+}
+
+/* ============================================================================
+   12. MODAL ⚙️ (FILTROS DE EQUIPE, DIA, TURNO, STATUS)
+   ============================================================================ */
+function renderFiltersModal() {
+    const daySelect = document.getElementById('modal-day-select');
+    daySelect.innerHTML = `<option value="all" ${state.day === 'all' ? 'selected' : ''}>Todos os dias (Lista completa · 75 pessoas)</option>` +
+        DAYS.map(d => `<option value="${d.key}" ${state.day === d.key ? 'selected' : ''}>${d.label}</option>`).join('');
+
+    const turnSelect = document.getElementById('modal-turn-select');
+    turnSelect.innerHTML = `<option value="all" ${state.turn === 'all' ? 'selected' : ''}>Todos os turnos</option>` +
+        TURNS.map(t => `<option value="${t}" ${state.turn === t ? 'selected' : ''}>${t}</option>`).join('');
+
+    document.querySelectorAll('#modal-status-group .seg-btn').forEach(btn => {
+        btn.setAttribute('aria-pressed', btn.dataset.status === state.statusFilter ? 'true' : 'false');
+    });
+
+    const grid = document.getElementById('modal-teams-grid');
+    grid.innerHTML = ALL_BUCKET_IDS.map(bucketId => {
+        const meta = TEAM_BUCKETS[bucketId];
+        const count = PEOPLE.filter(p => p.bucket === bucketId && (state.day === 'all' || p.dias.includes(state.day))).length;
+        const checked = state.selectedBuckets.has(bucketId);
+        return `
+            <label class="team-chk-card" style="--tc:${meta.color}">
+                <span class="team-chk-left">
+                    <input type="checkbox" data-bucket-chk="${bucketId}" ${checked ? 'checked' : ''}>
+                    <span class="team-chk-name">${esc(meta.label)}</span>
+                </span>
+                <span class="team-chk-count">${count}</span>
+            </label>
+        `;
+    }).join('');
+
+    grid.querySelectorAll('[data-bucket-chk]').forEach(chk => {
+        chk.addEventListener('change', (e) => {
+            const id = e.target.dataset.bucketChk;
+            if (e.target.checked) {
+                state.selectedBuckets.add(id);
+            } else {
+                state.selectedBuckets.delete(id);
+            }
+            renderApp();
+        });
+    });
+}
+
+/* ============================================================================
+   13. MODAL 👁️ (SELEÇÃO DE COLUNAS & POSIÇÃO EM DOIS NÍVEIS)
+   ============================================================================ */
+function renderColsModal() {
+    const tier = state.activeModalTier;
+    document.querySelectorAll('#cols-modal .tier-tab').forEach(tab => {
+        tab.setAttribute('aria-selected', tab.dataset.tier === tier ? 'true' : 'false');
+    });
+
+    document.getElementById('tier-desc').textContent = tier === 'acesso'
+        ? 'Nível 1: Colunas visíveis na lista padrão (Estágio 0)'
+        : 'Nível 2: Colunas visíveis no Modo Info após tocar em ⓘ (Estágio 2)';
+
+    const order = tier === 'acesso' ? state.colsConfig.acessoOrder : state.colsConfig.infoOrder;
+    const activeSet = new Set(tier === 'acesso' ? state.colsConfig.acessoActive : state.colsConfig.infoActive);
+    const activeOrderList = order.filter(k => activeSet.has(k));
+
+    const listEl = document.getElementById('col-config-list');
+    listEl.innerHTML = order.map((key, idx) => {
+        const col = COLUMN_CATALOG.find(c => c.key === key);
+        const isChecked = activeSet.has(key);
+        const activePos = isChecked ? activeOrderList.indexOf(key) + 1 : null;
+
+        return `
+            <div class="col-config-row">
+                <label class="col-config-left">
+                    <input type="checkbox" data-col-toggle="${key}" ${isChecked ? 'checked' : ''}>
+                    <span class="col-pos-badge">${activePos ? `#${activePos}` : '—'}</span>
+                    <span class="col-config-label">${esc(col.label)}</span>
+                </label>
+                <div class="col-order-btns">
+                    <button type="button" class="ord-btn" data-col-move="${key}" data-dir="-1" ${idx === 0 ? 'disabled' : ''} aria-label="Mover para cima">↑</button>
+                    <button type="button" class="ord-btn" data-col-move="${key}" data-dir="1" ${idx === order.length - 1 ? 'disabled' : ''} aria-label="Mover para baixo">↓</button>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    listEl.querySelectorAll('[data-col-toggle]').forEach(chk => {
+        chk.addEventListener('change', (e) => {
+            const key = e.target.dataset.colToggle;
+            const arrKey = tier === 'acesso' ? 'acessoActive' : 'infoActive';
+            const set = new Set(state.colsConfig[arrKey]);
+
+            if (e.target.checked) {
+                set.add(key);
+            } else {
+                if (set.size <= 1) {
+                    e.target.checked = true;
+                    showToast('Mantenha pelo menos 1 coluna ativa');
+                    return;
+                }
+                set.delete(key);
+            }
+            state.colsConfig[arrKey] = [...set];
+            saveColsConfig();
+            renderColsModal();
+            renderApp();
+        });
+    });
+
+    listEl.querySelectorAll('[data-col-move]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const key = btn.dataset.colMove;
+            const dir = Number(btn.dataset.dir);
+            const ordKey = tier === 'acesso' ? 'acessoOrder' : 'infoOrder';
+            const arr = [...state.colsConfig[ordKey]];
+            const idx = arr.indexOf(key);
+            const targetIdx = idx + dir;
+            if (targetIdx < 0 || targetIdx >= arr.length) return;
+            [arr[idx], arr[targetIdx]] = [arr[targetIdx], arr[idx]];
+            state.colsConfig[ordKey] = arr;
+            saveColsConfig();
+            renderColsModal();
+            renderApp();
+        });
+    });
+}
+
+/* ============================================================================
+   14. BINDING GLOBAL E INICIALIZAÇÃO
+   ============================================================================ */
+function bindGlobalEvents() {
+    // Botão 3 estados no cabeçalho: ◑ Todos -> ○ Faltam -> ● Entraram
+    document.getElementById('btn-arrival-cycle').addEventListener('click', () => {
+        const order = ['all', 'pending', 'in'];
+        const nextIdx = (order.indexOf(state.statusFilter) + 1) % order.length;
+        state.statusFilter = order[nextIdx];
+        renderApp();
+    });
+
+    // Busca Typeahead
+    const searchInput = document.getElementById('search-input');
+    const searchClear = document.getElementById('search-clear');
+
+    searchInput.addEventListener('input', (e) => {
+        state.search = e.target.value;
+        searchClear.classList.toggle('visible', state.search.length > 0);
+        renderApp();
+        renderTypeahead();
+    });
+
+    searchInput.addEventListener('focus', () => {
+        if (state.search.trim()) renderTypeahead();
+    });
+
+    searchClear.addEventListener('click', () => {
+        state.search = '';
+        searchInput.value = '';
+        searchClear.classList.remove('visible');
+        document.getElementById('typeahead-dropdown').classList.remove('open');
+        renderApp();
+        searchInput.focus();
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('#search-container')) {
+            document.getElementById('typeahead-dropdown').classList.remove('open');
+        }
+    });
+
+    // Rodapé interativo: abre Estatísticas por Equipe + botão "← Voltar à lista geral"
+    document.getElementById('btn-open-team-stats').addEventListener('click', openTeamStatsSheet);
+    document.getElementById('btn-footer-reset-team').addEventListener('click', () => {
+        state.selectedBuckets = new Set(ALL_BUCKET_IDS);
+        state.letter = 'ALL';
+        renderApp();
+    });
+
+    // Modal ⚙️ Filtros
+    const filtersModal = document.getElementById('filters-modal');
+    document.getElementById('btn-open-filters').addEventListener('click', () => {
+        renderFiltersModal();
+        if (filtersModal.showModal) filtersModal.showModal();
+    });
+    document.getElementById('btn-close-filters').addEventListener('click', () => filtersModal.close());
+    document.getElementById('btn-apply-filters').addEventListener('click', () => filtersModal.close());
+    filtersModal.addEventListener('click', (e) => { if (e.target === filtersModal) filtersModal.close(); });
+
+    document.getElementById('modal-day-select').addEventListener('change', (e) => {
+        state.day = e.target.value;
+        renderFiltersModal();
+        renderApp();
+    });
+
+    document.getElementById('modal-turn-select').addEventListener('change', (e) => {
+        state.turn = e.target.value;
+        renderApp();
+    });
+
+    document.querySelectorAll('#modal-status-group .seg-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            state.statusFilter = btn.dataset.status;
+            renderFiltersModal();
+            renderApp();
+        });
+    });
+
+    document.getElementById('btn-teams-all').addEventListener('click', () => {
+        state.selectedBuckets = new Set(ALL_BUCKET_IDS);
+        renderFiltersModal();
+        renderApp();
+    });
+
+    document.getElementById('btn-teams-none').addEventListener('click', () => {
+        state.selectedBuckets.clear();
+        renderFiltersModal();
+        renderApp();
+    });
+
+    document.getElementById('btn-reset-filters').addEventListener('click', () => {
+        state.day = 'all';
+        state.selectedBuckets = new Set(ALL_BUCKET_IDS);
+        state.turn = 'all';
+        state.statusFilter = 'all';
+        state.letter = 'ALL';
+        renderFiltersModal();
+        renderApp();
+    });
+
+    // Modal 👁️ Colunas
+    const colsModal = document.getElementById('cols-modal');
+    document.getElementById('btn-open-cols').addEventListener('click', () => {
+        renderColsModal();
+        if (colsModal.showModal) colsModal.showModal();
+    });
+    document.getElementById('btn-close-cols').addEventListener('click', () => colsModal.close());
+    document.getElementById('btn-done-cols').addEventListener('click', () => colsModal.close());
+    colsModal.addEventListener('click', (e) => { if (e.target === colsModal) colsModal.close(); });
+
+    document.querySelectorAll('#cols-modal .tier-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            state.activeModalTier = tab.dataset.tier;
+            renderColsModal();
+        });
+    });
+
+    document.getElementById('btn-reset-cols').addEventListener('click', () => {
+        state.colsConfig = getDefaultColsConfig();
+        saveColsConfig();
+        renderColsModal();
+        renderApp();
+    });
+
+    // Toast Desfazer
+    document.getElementById('toast-undo-btn').addEventListener('click', () => {
+        if (!state.lastUndo) return;
+        const { personId, dayKey, restoreTime } = state.lastUndo;
+        setCheckinTime(personId, restoreTime, dayKey);
+        state.lastUndo = null;
+        document.getElementById('toast-bar').classList.remove('visible');
+        renderApp();
+        if (state.activeBottomSheet === 'profile' && state.sheetPersonId === personId) renderProfileSheet();
+        if (state.activeBottomSheet === 'teamStats') renderTeamStatsSheet();
+    });
+
+    // Fechar Bottom Sheets por backdrop ou ESC
+    document.getElementById('sheet-backdrop').addEventListener('click', closeAllBottomSheets);
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && state.activeBottomSheet !== null) closeAllBottomSheets();
+    });
+}
+
+bindGlobalEvents();
+renderApp();
+</script>
+</body>
+</html>
